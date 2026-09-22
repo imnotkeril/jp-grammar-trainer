@@ -32,10 +32,15 @@ GENERATION_JSON_SCHEMA: dict[str, object] = {
                     "correct_answer_text",
                     "explanation_ru",
                 ],
+                # OpenAI structured-output "strict" mode requires additionalProperties:false
+                # on every object in the schema (see openai_adapter.py); Anthropic's tool-use
+                # schema tolerates the extra key harmlessly, so it's safe to set for both.
+                "additionalProperties": False,
             },
         }
     },
     "required": ["sentences"],
+    "additionalProperties": False,
 }
 
 

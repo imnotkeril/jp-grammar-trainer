@@ -44,11 +44,20 @@ class Question(Base):
     options: Mapped[list[dict[str, str]]] = mapped_column(JSONB, nullable=False)
     correct_option: Mapped[str] = mapped_column(String(1), nullable=False)
     explanation_ru: Mapped[str | None] = mapped_column(Text, nullable=True)
-    source: Mapped[QuestionSource] = mapped_column(Enum(QuestionSource, name="question_source"), nullable=False)
+    source: Mapped[QuestionSource] = mapped_column(
+        Enum(QuestionSource, name="question_source", values_callable=lambda enum_cls: [e.value for e in enum_cls]),
+        nullable=False,
+    )
     generation_model: Mapped[str | None] = mapped_column(String(128), nullable=True)
     generation_prompt_version: Mapped[str | None] = mapped_column(String(32), nullable=True)
     validation_status: Mapped[ValidationStatus] = mapped_column(
-        Enum(ValidationStatus, name="validation_status"), nullable=False, default=ValidationStatus.VALID
+        Enum(
+            ValidationStatus,
+            name="validation_status",
+            values_callable=lambda enum_cls: [e.value for e in enum_cls],
+        ),
+        nullable=False,
+        default=ValidationStatus.VALID,
     )
     used_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     dedup_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)

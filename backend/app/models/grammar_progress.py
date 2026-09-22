@@ -34,7 +34,9 @@ class GrammarProgress(Base):
         UUID(as_uuid=True), ForeignKey("grammar.id", ondelete="CASCADE"), primary_key=True
     )
     status: Mapped[GrammarStatus] = mapped_column(
-        Enum(GrammarStatus, name="grammar_status"), nullable=False, default=GrammarStatus.NEW
+        Enum(GrammarStatus, name="grammar_status", values_callable=lambda enum_cls: [e.value for e in enum_cls]),
+        nullable=False,
+        default=GrammarStatus.NEW,
     )
     first_seen: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     last_reviewed: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
