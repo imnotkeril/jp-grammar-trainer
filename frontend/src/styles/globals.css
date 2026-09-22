@@ -2,25 +2,109 @@
 @tailwind components;
 @tailwind utilities;
 
+/*
+ * Palette: warm paper + ink + a single hanko-red accent — deliberately not the generic
+ * dark-neutral/blue-gradient AI-app look. See frontend-dev design notes in review below.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f5efe1;
+  --surface: #fffdf7;
+  --surface-raised: #ffffff;
+  --ink: #221d14;
+  --ink-muted: #746a56;
+  --ink-faint: #a89c82;
+  --border: #ddd0b3;
+  --border-strong: #c7b78f;
+  --accent: #a8391c;
+  --accent-hover: #8f2f16;
+  --accent-ink: #fdf3e9;
+  --accent-soft: #f2e0cf;
+  --success: #3d6b3f;
+  --success-bg: #e8f0e2;
+  --success-border: #b9d1ab;
+  --error: #a3311d;
+  --error-bg: #fbe9e0;
+  --error-border: #e3b79d;
+  --focus-ring: #8f2f16;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --bg: #191510;
+    --surface: #221c14;
+    --surface-raised: #292218;
+    --ink: #f1e7d5;
+    --ink-muted: #b3a488;
+    --ink-faint: #7c715c;
+    --border: #3c3225;
+    --border-strong: #52462f;
+    --accent: #e07a4d;
+    --accent-hover: #ea8c62;
+    --accent-ink: #1c1108;
+    --accent-soft: #3a2a1a;
+    --success: #8fbb7d;
+    --success-bg: #253524;
+    --success-border: #3d5138;
+    --error: #e28466;
+    --error-bg: #3a241c;
+    --error-border: #5a3a2c;
+    --focus-ring: #e07a4d;
   }
 }
 
+* {
+  border-color: var(--border);
+}
+
+html {
+  background: var(--bg);
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-sans), "Hiragino Sans", "Yu Gothic", sans-serif;
+  /* Faint paper grain — cheap SVG noise, no image asset, ~3% opacity so it reads as
+     texture rather than decoration. Keeps the app off the "flat AI slop" look. */
+  background-image:
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--accent) 4%, transparent), transparent 45%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  background-attachment: fixed;
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.font-display {
+  font-family: var(--font-display), "Hiragino Mincho ProN", serif;
+}
+
+/* Applied to any element that renders Japanese source text (ruby markup, sentences) so it
+   gets a proper CJK font stack instead of falling through to the Latin UI font — see
+   FuriganaText.tsx. Native OS fonts (Hiragino/Yu/Noto) are used rather than an embedded
+   webfont: personal app running on the owner's own machine, and a full CJK subset webfont
+   is hundreds of KB-1MB+ for zero benefit here. */
+.jp-text {
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", "MS Mincho", serif;
+  letter-spacing: 0.01em;
 }
 
 /* Native <ruby>/<rt> furigana rendering — see FuriganaText.tsx and ARCHITECTURE.md §5 */
 rt {
-  font-size: 0.6em;
+  font-size: 0.55em;
+  color: var(--ink-muted);
   user-select: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .transition-standard {
+    transition: all 150ms ease;
+  }
 }

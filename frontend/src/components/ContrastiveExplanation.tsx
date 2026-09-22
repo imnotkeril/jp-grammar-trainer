@@ -16,15 +16,29 @@ export default function ContrastiveExplanation({
 }: ContrastiveExplanationProps) {
   return (
     <div
-      className={`rounded-lg border p-6 ${
+      className={`rounded-xl border p-6 ${
         isCorrect
-          ? "border-green-500 bg-green-50 dark:bg-green-950"
-          : "border-red-500 bg-red-50 dark:bg-red-950"
+          ? "border-[var(--success-border)] bg-[var(--success-bg)]"
+          : "border-[var(--error-border)] bg-[var(--error-bg)]"
       }`}
     >
-      <p className="font-semibold">{isCorrect ? "Верно" : "Неверно"}</p>
-      <FuriganaText html={sentenceFullHtml} mode={furiganaMode} className="mt-2 block text-lg leading-loose" />
-      {explanationRu && <p className="mt-3 text-sm text-neutral-600 dark:text-neutral-300">{explanationRu}</p>}
+      <p
+        className={`font-display text-lg font-semibold ${
+          isCorrect ? "text-[var(--success)]" : "text-[var(--error)]"
+        }`}
+      >
+        {isCorrect ? "Верно" : "Неверно"}
+      </p>
+      <FuriganaText
+        html={sentenceFullHtml}
+        mode={furiganaMode}
+        className="jp-text mt-3 block text-lg leading-loose text-[var(--ink)]"
+      />
+      {explanationRu && (
+        <p className="mt-4 border-t border-[var(--border)] pt-4 text-sm leading-relaxed text-[var(--ink-muted)]">
+          {explanationRu}
+        </p>
+      )}
     </div>
   );
 }
