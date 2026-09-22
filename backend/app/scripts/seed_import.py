@@ -14,18 +14,26 @@ hand-fixed in the source JSON).
 from __future__ import annotations
 
 import json
+import random
 import re
 import sys
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import TypedDict
 
 from beartype import beartype
 from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from app.db import SessionLocal
 from app.models.grammar import Grammar
 from app.models.grammar_progress import GrammarProgress, GrammarStatus
+from app.models.question import Question, QuestionSource, ValidationStatus
+from app.services.distractors import pick_distractors
+from app.services.generation.validate import dedup_hash as compute_dedup_hash
+
+_OPTION_KEYS = ("A", "B", "C", "D")
 
 _BOLD_RE = re.compile(r"<b>(.*?)</b>", re.DOTALL)
 _RT_SPAN_RE = re.compile(r"<rt>.*?</rt>", re.DOTALL)
@@ -112,6 +120,113 @@ def check_rt_payloads_are_kana(html: str) -> list[str]:
 
 
 @beartype
+def build_blanked_sentence_html(expression_html: str) -> str | None:
+    """Replace the target-construction `<b>...</b>` span with the same "___" blank marker
+    convention used by the AI-generation prompt (ARCHITECTURE.md §7.3), preserving any
+    `<ruby><rt>` markup outside that span so furigana on the rest of the sentence survives
+    intact. Returns None if `expression_html` has no `<b>` span at all — defensive: the only
+    205-row rows with an empty `target_construction` (ADR-6b) also lack this span entirely,
+    so a row reaching this function should always have one, but callers must not assume it.
+    """
+    if not _BOLD_RE.search(expression_html):
+        return None
+    return _BOLD_RE.sub("___", expression_html, count=1)
+
+
+class SeedQuestionReport(TypedDict):
+    inserted: int
+    skipped_existing: int
+    skipped_no_target: int
+    skipped_no_bold_span: int
+    skipped_insufficient_distractors: list[int]
+
+
+@beartype
+def import_seed_questions(db: Session) -> SeedQuestionReport:
+    """Build one first-party `Question` (source=SEED, validation_status=VALID — seed content
+    is owner-curated, not LLM output that needs the same review, per ARCHITECTURE.md §7.4/§3
+    default) per eligible `Grammar` row, from the grammar's own example sentence + target
+    construction. Distractors reuse `services/distractors.py::pick_distractors`, the same
+    function wired into the AI-generation path (`services/generation/trigger.py`).
+
+    Idempotent: skips any grammar item that already has a SEED question, same idempotency
+    pattern as the Grammar/GrammarProgress upsert above (safe to re-run).
+    """
+    all_grammar = list(db.scalars(select(Grammar)).all())
+    candidates: list[tuple[uuid.UUID, str]] = [
+        (g.id, g.target_construction) for g in all_grammar if g.target_construction
+    ]
+    existing_seed_grammar_ids = set(
+        db.scalars(select(Question.grammar_id).where(Question.source == QuestionSource.SEED))
+    )
+
+    inserted = 0
+    skipped_existing = 0
+    skipped_no_target = 0
+    skipped_no_bold_span = 0
+    skipped_insufficient_distractors: list[int] = []
+
+    for grammar in all_grammar:
+        if grammar.id in existing_seed_grammar_ids:
+            skipped_existing += 1
+            continue
+        if not grammar.target_construction:
+            # 3/205 rows, ADR-6b — no <b> markup at all, nothing to build a question from.
+            skipped_no_target += 1
+            continue
+        # `extract_target_construction` (called during the grammar upsert above) prefers the
+        # <b> span in `expression_html` (ruby-marked-up), falling back to the <b> span in
+        # `reading` (plain kana, no ruby) when `expression_html` has none — 29/205 real rows
+        # only mark the target in `reading`. Build the blank from whichever field actually
+        # carries the <b> span, so the blanked sentence and the plain-kana fallback rows both
+        # get a question instead of being dropped. See ARCHITECTURE.md §4.
+        source_html = grammar.expression_html if _BOLD_RE.search(grammar.expression_html) else grammar.reading
+        blanked = build_blanked_sentence_html(source_html)
+        if blanked is None:
+            skipped_no_bold_span += 1
+            continue
+
+        rng = random.Random(grammar.source_note_id)  # deterministic per-item, order-independent
+        try:
+            distractor_texts = pick_distractors(
+                grammar.id, grammar.target_construction, candidates, count=3, rng=rng
+            )
+        except ValueError:
+            skipped_insufficient_distractors.append(grammar.source_note_id)
+            continue
+
+        texts = [grammar.target_construction, *distractor_texts]
+        rng.shuffle(texts)
+        options = [{"key": key, "text": text} for key, text in zip(_OPTION_KEYS, texts, strict=True)]
+        correct_option = next(opt["key"] for opt in options if opt["text"] == grammar.target_construction)
+
+        question = Question(
+            grammar_id=grammar.id,
+            sentence_with_blank_html=blanked,
+            sentence_full_html=source_html,
+            options=options,
+            correct_option=correct_option,
+            explanation_ru=None,
+            source=QuestionSource.SEED,
+            generation_model=None,
+            generation_prompt_version=None,
+            validation_status=ValidationStatus.VALID,
+            dedup_hash=compute_dedup_hash(source_html),
+        )
+        db.add(question)
+        inserted += 1
+
+    db.commit()
+    return SeedQuestionReport(
+        inserted=inserted,
+        skipped_existing=skipped_existing,
+        skipped_no_target=skipped_no_target,
+        skipped_no_bold_span=skipped_no_bold_span,
+        skipped_insufficient_distractors=skipped_insufficient_distractors,
+    )
+
+
+@beartype
 def default_seed_path() -> Path:
     # backend/app/scripts/seed_import.py -> repo root is 3 parents up.
     repo_root = Path(__file__).resolve().parents[3]
@@ -123,6 +238,7 @@ class ImportReport(TypedDict):
     inserted: int
     updated: int
     anomalies: list[dict[str, object]]
+    seed_questions: SeedQuestionReport
 
 
 @beartype
@@ -179,11 +295,14 @@ def run_import(seed_path: Path) -> ImportReport:
 
         db.commit()
 
+        seed_questions_report = import_seed_questions(db)
+
     return ImportReport(
         total=len(raw_items),
         inserted=inserted_count,
         updated=updated_count,
         anomalies=anomalies,
+        seed_questions=seed_questions_report,
     )
 
 
@@ -197,8 +316,13 @@ def main() -> None:
     report_path = Path(__file__).with_name("seed_import_report.json")
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
+    sq = report["seed_questions"]
     print(f"Seed import done: {report['inserted']} inserted, {report['updated']} updated, "
           f"{len(report['anomalies'])} anomalies flagged (see {report_path.name}).")
+    print(f"Seed questions: {sq['inserted']} inserted, {sq['skipped_existing']} already existed, "
+          f"{sq['skipped_no_target']} skipped (no target construction), "
+          f"{sq['skipped_no_bold_span']} skipped (no <b> span), "
+          f"{len(sq['skipped_insufficient_distractors'])} skipped (insufficient distractor pool).")
 
 
 if __name__ == "__main__":

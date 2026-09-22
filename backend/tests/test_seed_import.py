@@ -4,14 +4,19 @@ import json
 from pathlib import Path
 
 import pytest
+from sqlalchemy import select
 
+from app.models.question import Question, QuestionSource, ValidationStatus
 from app.scripts.seed_import import (
+    build_blanked_sentence_html,
     check_rt_payloads_are_kana,
     default_seed_path,
     extract_target_construction,
+    import_seed_questions,
     parse_formation_rules,
     parse_tags,
 )
+from tests.conftest import make_grammar, requires_db
 
 
 def _load_seed() -> list[dict[str, object]]:
@@ -128,3 +133,104 @@ def test_all_205_real_rows_parse_without_exception() -> None:
     assert set(no_target_note_ids) == KNOWN_NO_TARGET_NOTE_IDS, (
         "no-target-construction row set changed — re-check ARCHITECTURE.md §4 addendum"
     )
+
+
+# --- Seed Question generation (reviewer finding #3 fix) -------------------------------------
+
+
+def test_build_blanked_sentence_html_replaces_target_preserves_ruby() -> None:
+    html = "<ruby>日本<rt>にほん</rt></ruby>にいる<b>うちに</b><ruby>一度<rt>いちど</rt></ruby>行きたい。"
+    blanked = build_blanked_sentence_html(html)
+    assert blanked == "<ruby>日本<rt>にほん</rt></ruby>にいる___<ruby>一度<rt>いちど</rt></ruby>行きたい。"
+
+
+def test_build_blanked_sentence_html_no_bold_span_returns_none() -> None:
+    assert build_blanked_sentence_html("<ruby>日本<rt>にほん</rt></ruby>にいる。") is None
+
+
+@requires_db
+def test_import_seed_questions_happy_path(db_session) -> None:  # type: ignore[no-untyped-def]
+    """For grammar rows with a usable <b> target span, exactly one SEED Question is created
+    per row, with the grammar's own target_construction as the correct answer and 3
+    distractors drawn from other rows via pick_distractors.
+    """
+    grammars = [
+        make_grammar(db_session, target_construction="うちに", source_note_id=1),
+        make_grammar(db_session, target_construction="につれて", source_note_id=2),
+        make_grammar(db_session, target_construction="かのように", source_note_id=3),
+        make_grammar(db_session, target_construction="ものの", source_note_id=4),
+    ]
+    db_session.commit()
+
+    report = import_seed_questions(db_session)
+
+    assert report["inserted"] == 4
+    assert report["skipped_no_target"] == 0
+    assert report["skipped_no_bold_span"] == 0
+    assert report["skipped_insufficient_distractors"] == []
+
+    questions = db_session.scalars(select(Question).where(Question.source == QuestionSource.SEED)).all()
+    assert len(questions) == 4
+
+    by_grammar = {q.grammar_id: q for q in questions}
+    for grammar in grammars:
+        q = by_grammar[grammar.id]
+        assert q.validation_status == ValidationStatus.VALID
+        assert q.source == QuestionSource.SEED
+        assert "___" in q.sentence_with_blank_html
+        assert grammar.target_construction not in q.sentence_with_blank_html
+        option_texts = {opt["text"] for opt in q.options}
+        assert len(q.options) == 4
+        assert grammar.target_construction in option_texts
+        correct = next(opt for opt in q.options if opt["key"] == q.correct_option)
+        assert correct["text"] == grammar.target_construction
+
+
+@requires_db
+def test_import_seed_questions_skips_row_with_no_bold_span(db_session) -> None:  # type: ignore[no-untyped-def]
+    """A grammar row whose expression_html/target_construction carries no <b> span at all
+    (ADR-6b: 3/205 real rows) is skipped gracefully, not a crash — matches the
+    no-target-construction / no-<b>-span edge case from ARCHITECTURE.md §4 addendum.
+    """
+    good = [
+        make_grammar(db_session, target_construction="うちに", source_note_id=10),
+        make_grammar(db_session, target_construction="につれて", source_note_id=11),
+        make_grammar(db_session, target_construction="かのように", source_note_id=12),
+        make_grammar(db_session, target_construction="ものの", source_note_id=14),
+    ]
+    no_target = make_grammar(db_session, target_construction="", source_note_id=13)
+    no_target.expression_html = "<ruby>文<rt>ぶん</rt></ruby>の組み立て、マーカーなし。"
+    db_session.commit()
+
+    report = import_seed_questions(db_session)
+
+    assert report["inserted"] == 4
+    assert report["skipped_no_target"] == 1
+
+    questions = db_session.scalars(select(Question).where(Question.source == QuestionSource.SEED)).all()
+    assert len(questions) == 4
+    grammar_ids_with_questions = {q.grammar_id for q in questions}
+    assert no_target.id not in grammar_ids_with_questions
+    assert all(g.id in grammar_ids_with_questions for g in good)
+
+
+@requires_db
+def test_import_seed_questions_is_idempotent(db_session) -> None:  # type: ignore[no-untyped-def]
+    """Re-running import_seed_questions against a DB that already has SEED questions must
+    not create duplicates — same idempotency guarantee as the Grammar/GrammarProgress upsert.
+    """
+    make_grammar(db_session, target_construction="うちに", source_note_id=20)
+    make_grammar(db_session, target_construction="につれて", source_note_id=21)
+    make_grammar(db_session, target_construction="かのように", source_note_id=22)
+    make_grammar(db_session, target_construction="ものの", source_note_id=23)
+    db_session.commit()
+
+    first = import_seed_questions(db_session)
+    assert first["inserted"] == 4
+
+    second = import_seed_questions(db_session)
+    assert second["inserted"] == 0
+    assert second["skipped_existing"] == 4
+
+    questions = db_session.scalars(select(Question).where(Question.source == QuestionSource.SEED)).all()
+    assert len(questions) == 4
