@@ -10,3 +10,5 @@ class StatsOut(BaseModel):
     review_count: int
     mastered_count: int
     recall_pct: float
+    application_avg: float
+    discrimination_avg: float
