@@ -24,13 +24,21 @@ depends_on: Sequence[str] | str | None = None
 def upgrade() -> None:
     op.execute('CREATE EXTENSION IF NOT EXISTS pgcrypto')  # for gen_random_uuid()
 
-    grammar_status = postgresql.ENUM("new", "learning", "review", "mastered", name="grammar_status")
+    # create_type=False: the type is created explicitly below (checkfirst=True, idempotent);
+    # without this, op.create_table() re-emits CREATE TYPE for the same ENUM object and fails
+    # with DuplicateObject the type already exists (discovered running this migration for the
+    # first time against a real Postgres — see backend-dev Phase 2 notes).
+    grammar_status = postgresql.ENUM(
+        "new", "learning", "review", "mastered", name="grammar_status", create_type=False
+    )
     grammar_status.create(op.get_bind(), checkfirst=True)
 
-    question_source = postgresql.ENUM("seed", "ai_generated", name="question_source")
+    question_source = postgresql.ENUM("seed", "ai_generated", name="question_source", create_type=False)
     question_source.create(op.get_bind(), checkfirst=True)
 
-    validation_status = postgresql.ENUM("pending", "valid", "rejected", name="validation_status")
+    validation_status = postgresql.ENUM(
+        "pending", "valid", "rejected", name="validation_status", create_type=False
+    )
     validation_status.create(op.get_bind(), checkfirst=True)
 
     op.create_table(

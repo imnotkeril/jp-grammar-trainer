@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+import random
 import uuid
 
 from beartype import beartype
@@ -7,12 +9,18 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import settings
+from app.db import SessionLocal
 from app.models.grammar import Grammar
 from app.models.question import Question, QuestionSource, ValidationStatus
+from app.services.distractors import pick_distractors
 from app.services.generation.factory import get_provider
 from app.services.generation.prompts import PROMPT_VERSION
-from app.services.generation.provider import build_prompt
+from app.services.generation.provider import GenerationPrompt, RawGeneratedSentence, build_prompt
 from app.services.generation.validate import dedup_hash, validate_generated_sentence
+
+logger = logging.getLogger(__name__)
+
+_OPTION_KEYS = ("A", "B", "C", "D")
 
 
 @beartype
@@ -32,6 +40,44 @@ def needs_generation(db: Session, grammar_id: uuid.UUID) -> bool:
 
 
 @beartype
+def _fetch_distractor_candidates(db: Session, exclude_grammar_id: uuid.UUID) -> list[tuple[uuid.UUID, str]]:
+    """Other grammar items' target_construction, usable as distractor text (§7.5).
+
+    Excludes rows with an empty target_construction (ADR-6b: 3/205 seed rows have none) —
+    pick_distractors already excludes the correct grammar item and literal-duplicate text.
+    """
+    stmt = select(Grammar.id, Grammar.target_construction).where(
+        Grammar.id != exclude_grammar_id,
+        Grammar.target_construction != "",
+    )
+    return [(gid, text) for gid, text in db.execute(stmt).all()]
+
+
+@beartype
+def _build_options(
+    grammar_id: uuid.UUID,
+    correct_answer_text: str,
+    candidates: list[tuple[uuid.UUID, str]],
+    rng: random.Random,
+) -> tuple[list[dict[str, str]], str] | None:
+    """Build shuffled A-D options for a generated sentence, per ARCHITECTURE.md §7.5.
+
+    Returns None when there aren't enough distractor candidates to build a real 4-choice
+    question (too few grammar items seeded) — caller should treat that as invalid.
+    """
+    try:
+        distractor_texts = pick_distractors(grammar_id, correct_answer_text, candidates, count=3, rng=rng)
+    except ValueError:
+        return None
+
+    texts = [correct_answer_text, *distractor_texts]
+    rng.shuffle(texts)
+    options = [{"key": key, "text": text} for key, text in zip(_OPTION_KEYS, texts, strict=True)]
+    correct_option = next(opt["key"] for opt in options if opt["text"] == correct_answer_text)
+    return options, correct_option
+
+
+@beartype
 async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
     """Generate + validate + persist a batch of new questions for one grammar item.
 
@@ -47,7 +93,7 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
     ]
     formation_rules = [rule.get("example_html", "") for rule in grammar.formation_rules]
 
-    prompt = build_prompt(
+    prompt: GenerationPrompt = build_prompt(
         pattern_text=grammar.pattern_text,
         target_construction=grammar.target_construction,
         formation_rules=formation_rules,
@@ -57,17 +103,31 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
     )
 
     provider = get_provider()
-    raw_sentences = await provider.generate_sentences(prompt)
+    raw_sentences: list[RawGeneratedSentence] = await provider.generate_sentences(prompt)
+
+    candidates = _fetch_distractor_candidates(db, grammar_id)
+    rng = random.Random()
 
     inserted = 0
     for raw in raw_sentences:
         is_valid = validate_generated_sentence(raw, grammar.target_construction)
+        options: list[dict[str, str]] = []
+        correct_option = "A"
+        if is_valid:
+            built = _build_options(grammar_id, raw.correct_answer_text, candidates, rng)
+            if built is None:
+                # Not enough distractor candidates to serve a real 4-choice question —
+                # reject rather than serve a broken question with < 4 options.
+                is_valid = False
+            else:
+                options, correct_option = built
+
         question = Question(
             grammar_id=grammar_id,
             sentence_with_blank_html=raw.sentence_with_blank_html,
             sentence_full_html=raw.sentence_full_html,
-            options=[],  # populated by distractors.py at serve time (§7.5), left empty here
-            correct_option="A",
+            options=options,
+            correct_option=correct_option,
             explanation_ru=raw.explanation_ru,
             source=QuestionSource.AI_GENERATED,
             generation_model=provider.model_name,
@@ -85,3 +145,20 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
 
     db.commit()
     return inserted
+
+
+@beartype
+async def generate_batch_for_grammar_background(grammar_id: uuid.UUID) -> None:
+    """BackgroundTasks-safe entrypoint: opens its own DB session.
+
+    The request-scoped session (`app.db.get_db`) is closed as soon as the response is sent,
+    so a task scheduled via `BackgroundTasks.add_task` must not reuse it — see ARCHITECTURE.md
+    ADR-2. Failures are logged and swallowed: per ADR-2, the next review-session start that
+    still finds a shortage simply retries the trigger, no dedicated retry/backoff infra on MVP.
+    """
+    with SessionLocal() as db:
+        try:
+            inserted = await generate_batch_for_grammar(db, grammar_id)
+            logger.info("Generated %d question(s) for grammar %s", inserted, grammar_id)
+        except Exception:  # noqa: BLE001 — background task must never raise into the caller
+            logger.exception("Shortage-triggered generation failed for grammar %s", grammar_id)
