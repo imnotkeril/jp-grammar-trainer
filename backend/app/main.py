@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 
 from app.config import settings
+from app.llms_txt import LLMS_TXT
 from app.routers import grammar, review, stats
 
 app = FastAPI(
@@ -28,3 +30,9 @@ app.include_router(stats.router)
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/llms.txt", response_class=PlainTextResponse)
+def llms_txt() -> str:
+    """Full, current Markdown description of this API's endpoints, per org convention."""
+    return LLMS_TXT

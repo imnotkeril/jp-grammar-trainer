@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: jp_grammar_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: devpass
+      POSTGRES_DB: jp_grammar_dev
+    ports:
+      # Matches backend/.env DATABASE_URL (postgresql+psycopg://postgres:devpass@localhost:5545/jp_grammar_dev).
+      # Non-default host port so this doesn't collide with a system-wide Postgres on 5432.
+      - "5545:5432"
+    volumes:
+      # Named volume, not a bind mount or --rm container: this holds the owner's real SRS
+      # progress (grammar_progress, question_attempt) and must survive `docker compose down`
+      # and machine restarts. Only `docker compose down -v` destroys it.
+      - jp_grammar_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d jp_grammar_dev"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  jp_grammar_pgdata:
+    name: jp_grammar_pgdata

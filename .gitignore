@@ -1,0 +1,19 @@
+# Root-level ignores. backend/ and frontend/ each carry their own .gitignore for
+# language-specific artifacts (.venv/, node_modules/, __pycache__/, .next/, etc).
+
+# Env files (secrets) — never commit, anywhere in the repo.
+.env
+.env.local
+*.env.local
+
+# Internal working docs (plans/specs generated mid-pipeline) — not shipped to users.
+docs/
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Local scratch
+*.log
