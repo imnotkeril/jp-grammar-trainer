@@ -9,6 +9,40 @@ FuriganaMode = Literal["always", "never", "by_level"]
 
 _RT_TAG_RE = re.compile(r"<rt>.*?</rt>", re.DOTALL)
 _BOLD_BLOCK_RE = re.compile(r"<b>.*?</b>", re.DOTALL)
+# The seed/AI sentence markup wraps the tested target as <ruby><b>目</b><rt>め</rt></ruby> —
+# the <rt> is a SIBLING of <b>, not nested inside it. `strip_furigana_inside_bold` below must
+# also catch this sibling form or it silently never strips anything on real data (the <b> span
+# alone never contains an <rt>).
+_BOLD_THEN_SIBLING_RT_RE = re.compile(r"(<b>.*?</b>)<rt>.*?</rt>", re.DOTALL)
+
+# A handful of rows in the Anki-sourced seed data have a malformed <rt> span whose payload
+# is the rest of the sentence (or another bled-in fragment) rather than a short kana reading
+# for the immediately preceding base text — see ARCHITECTURE.md ADR-6/ADR-6b; the seed import
+# intentionally leaves these un-hand-fixed in the source JSON. A real reading is never more
+# than a few kana per base character, so any <rt> payload far longer than that relative to
+# its base text is dropped rather than rendered, mirroring frontend/.../FuriganaText.tsx.
+_RUBY_PAIR_RE = re.compile(r"<ruby>((?:(?!</ruby>)[\s\S])*?)<rt>(.*?)</rt></ruby>", re.DOTALL)
+_STRIP_TAGS_RE = re.compile(r"<[^>]+>")
+_MAX_RT_RATIO = 4
+_MAX_RT_SLACK = 2
+
+
+@beartype
+def strip_malformed_furigana(html: str) -> str:
+    """Drop <rt> payloads that are implausibly long for the base text they annotate,
+    keeping the base text visible. Applied unconditionally, before any mode-specific
+    stripping — a bad reading should never render regardless of furigana mode.
+    """
+
+    def _drop_if_malformed(match: re.Match[str]) -> str:
+        base, rt = match.group(1), match.group(2)
+        base_length = len(_STRIP_TAGS_RE.sub("", base)) or 1
+        threshold = base_length * _MAX_RT_RATIO + _MAX_RT_SLACK
+        if len(rt) > threshold:
+            return base
+        return match.group(0)
+
+    return _RUBY_PAIR_RE.sub(_drop_if_malformed, html)
 
 
 @beartype
@@ -29,7 +63,8 @@ def strip_furigana_inside_bold(html: str) -> str:
     def _strip_within_bold(match: re.Match[str]) -> str:
         return _RT_TAG_RE.sub("", match.group(0))
 
-    return _BOLD_BLOCK_RE.sub(_strip_within_bold, html)
+    without_nested = _BOLD_BLOCK_RE.sub(_strip_within_bold, html)
+    return _BOLD_THEN_SIBLING_RT_RE.sub(r"\1", without_nested)
 
 
 @beartype
@@ -41,10 +76,11 @@ def render_furigana(html: str, mode: FuriganaMode) -> str:
     - "by_level": strip <rt> only inside the <b> (tested target) span (MVP heuristic,
       ARCHITECTURE.md ADR-7 — true adaptive per-word furigana is V2).
     """
+    sanitized = strip_malformed_furigana(html)
     if mode == "always":
-        return html
+        return sanitized
     if mode == "never":
-        return strip_all_furigana(html)
+        return strip_all_furigana(sanitized)
     if mode == "by_level":
-        return strip_furigana_inside_bold(html)
+        return strip_furigana_inside_bold(sanitized)
     raise ValueError(f"Unknown furigana mode: {mode!r}")

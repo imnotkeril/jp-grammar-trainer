@@ -12,13 +12,43 @@ import type { FuriganaMode } from "@/lib/types";
 // [\s\S] instead of the /s (dotAll) flag for broader TS target compatibility.
 const RT_SPAN_RE = /<rt>[\s\S]*?<\/rt>/g;
 const BOLD_BLOCK_RE = /<b>[\s\S]*?<\/b>/g;
+// The seed/AI sentence markup wraps the tested target as <ruby><b>目</b><rt>め</rt></ruby> —
+// the <rt> is a SIBLING of <b>, not nested inside it. `stripFuriganaInsideBold` below must
+// also catch this sibling form or it silently never strips anything on real data (the <b>
+// span alone never contains an <rt>).
+const BOLD_THEN_SIBLING_RT_RE = /(<b>[\s\S]*?<\/b>)<rt>[\s\S]*?<\/rt>/g;
+
+// A handful of rows in the Anki-sourced seed data have a malformed <rt> span whose payload
+// is the rest of the sentence (or another bled-in fragment) instead of a short kana reading
+// for the immediately preceding base text — see ARCHITECTURE.md ADR-6/ADR-6b; the seed
+// import intentionally leaves these un-hand-fixed in the source JSON. Rendered as-is this
+// produces a giant, sentence-length furigana annotation over one or two kanji, which reads
+// as broken UI. A real reading is never more than a few kana per base character, so any
+// <rt> payload far longer than that — relative to the base text it annotates — is dropped
+// here rather than rendered, regardless of furigana mode.
+const RUBY_PAIR_RE = /<ruby>((?:(?!<\/ruby>)[\s\S])*?)<rt>([\s\S]*?)<\/rt><\/ruby>/g;
+const MAX_RT_RATIO = 4;
+const MAX_RT_SLACK = 2;
+
+function stripMalformedFurigana(html: string): string {
+  return html.replace(RUBY_PAIR_RE, (match, base: string, rt: string) => {
+    const baseLength = base.replace(/<[^>]+>/g, "").length || 1;
+    const threshold = baseLength * MAX_RT_RATIO + MAX_RT_SLACK;
+    if (rt.length > threshold) {
+      // Drop the bogus reading but keep the base text visible.
+      return base;
+    }
+    return match;
+  });
+}
 
 function stripAllFurigana(html: string): string {
   return html.replace(RT_SPAN_RE, "");
 }
 
 function stripFuriganaInsideBold(html: string): string {
-  return html.replace(BOLD_BLOCK_RE, (match) => match.replace(RT_SPAN_RE, ""));
+  const withoutNested = html.replace(BOLD_BLOCK_RE, (match) => match.replace(RT_SPAN_RE, ""));
+  return withoutNested.replace(BOLD_THEN_SIBLING_RT_RE, "$1");
 }
 
 /**
@@ -30,13 +60,14 @@ function stripFuriganaInsideBold(html: string): string {
  *   ARCHITECTURE.md ADR-7. True per-word adaptive furigana is V2.
  */
 export function renderFuriganaHtml(html: string, mode: FuriganaMode): string {
+  const sanitized = stripMalformedFurigana(html);
   switch (mode) {
     case "always":
-      return html;
+      return sanitized;
     case "never":
-      return stripAllFurigana(html);
+      return stripAllFurigana(sanitized);
     case "by_level":
-      return stripFuriganaInsideBold(html);
+      return stripFuriganaInsideBold(sanitized);
   }
 }
 
