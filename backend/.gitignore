@@ -1,0 +1,8 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+app/scripts/seed_import_report.json
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/

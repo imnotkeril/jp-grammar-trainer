@@ -273,17 +273,41 @@ Import script splits on `\n`, then on the first `→`, producing:
 Lines that don't contain `→` are skipped and logged (defensive — don't hard-fail import on
 one malformed row out of 205).
 
-**[ADR-6] Known data-quality issue found during read.** Row `note_id=1775898451281`
-(`間` / あいだ item) has malformed `expression_html`: the `<rt>` tag content bleeds into
-following text — `<ruby><b>間</b><rt>あいだ、こ</rt></ruby>、<ruby>子<rt>どもたちはテレビをみていた。</rt></ruby>` —
-a mis-scoped ruby span, almost certainly an Anki HTML editor artifact, not systematic across
-the deck (spot-checked neighboring rows, clean). Decision: **do not hand-fix in the JSON.**
-The seed-import script runs a defensive pass — validate every `<rt>...</rt>` payload is pure
-kana (regex `^[\p{Hiragana}\p{Katakana}ー]+$`) and short (≤ ~12 chars); rows that fail are
-still imported (nothing on MVP blocks on perfect furigana) but flagged with a printed
-warning + collected into an import report (`backend/app/scripts/seed_import_report.json`)
-for the owner to spot-check later. This is a one-row (of 205) cosmetic issue, not worth
-blocking import or writing a bespoke fixer for.
+**[ADR-6] Known data-quality issue, confirmed during scaffolding (broader than first
+suspected).** Row `note_id=1775898451281` (`間` / あいだ item) has malformed
+`expression_html`: the `<rt>` tag content bleeds into following text —
+`<ruby><b>間</b><rt>あいだ、こ</rt></ruby>、<ruby>子<rt>どもたちはテレビをみていた。</rt></ruby>` — a
+mis-scoped ruby span. Building the seed-import script and running it against the real 205-row
+file surfaced that this is **not** an isolated one-off: **9 of 205 rows** have a `<rt>` span
+whose payload contains stray Latin text or a nested tag (e.g. `'ものvs<b>こと</b>の違い'`,
+`'よなかゆきがふったんですね。それで、きのうのよるあんな'`) — an automated heuristic
+(nested-tag/Latin-text/length>25) catches these reliably. Row 1775898451281 (the one that
+first surfaced the issue) bleeds *pure-kana* text into its `<rt>` (`'あいだ、こ'`), which is
+visually wrong but indistinguishable from a legitimate multi-morpheme kana reading by the
+heuristic, so it isn't auto-flagged — noted here for completeness, not worth a bespoke
+detector for one extra row. Almost certainly the same class of Anki
+rich-text-editor artifact (a `<b>` or comparison text typed *inside* an open ruby-reading
+field instead of after it), not systematic corruption of the whole deck (spot-checked: the
+other 194 rows are clean; plain kana readings containing `、`/`。` as morpheme separators are
+common and *not* flagged as errors — only Latin letters, nested tags, or implausibly long
+(>25 char) payloads count as broken). Decision: **do not hand-fix in the JSON.** The
+seed-import script runs a defensive pass (`check_rt_payloads_are_kana`) and collects every
+flagged row into an import report (`backend/app/scripts/seed_import_report.json`,
+`type: "malformed_rt_payload"`) for the owner to spot-check later; import proceeds
+regardless — nothing on MVP blocks on perfect furigana, and `expression_clean` (used for
+question-generation prompts, §7.3) is unaffected since it carries no markup at all. Frontend
+rendering (§5) is robust to this: `<rt>` with stray text just renders slightly odd ruby
+text on 11 of 205 items, not a crash or data-loss.
+
+**[ADR-6b] Addendum, found while scaffolding.** 3 of 205 rows (`note_id` 1775898451577,
+1775898451579, 1775898451653 — all "〜と・〜たら" and "文の組み立て" pattern variants) have **no**
+`<b>...</b>` span at all in either `expression_html` or `reading`, so `target_construction`
+extraction yields `""` for them. Same treatment as ADR-6: import proceeds, `seed_import.py`
+flags these note_ids in its report (`type: "no_target_construction_found"`) rather than
+failing the batch or guessing at a fix. Downstream effect: these 3 items' distractor
+generation (§7.5) and AI-generation grammar-fit validation (§7.4) can't rely on
+`target_construction` and should treat an empty value as "skip the deterministic grammar-fit
+check, don't block". Covered by `tests/test_seed_import.py::test_all_205_real_rows_parse_without_exception`.
 
 ---
 
