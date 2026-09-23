@@ -1,0 +1,1356 @@
+{
+  "level": "N4",
+  "items": [
+    {
+      "key": "n4_001_aida",
+      "expression_html": "母が晩ご飯を作っている<b>間</b>、私は宿題をした。",
+      "reading": "ははが ばんごはんを つくっている<b>あいだ</b>、わたしは しゅくだいをした。",
+      "meaning_ru": "Пока мама готовила ужин, я делал домашнее задание.",
+      "pattern_text": "Паттерн: [動詞ている／状態] + 間 (N4)\nЗначение: Всё время, пока длится действие/состояние, непрерывно происходит другое действие.",
+      "formation_rules": [
+        {
+          "pos": "動詞ている",
+          "form_label": "動詞ている＋間",
+          "example_html": "<ruby>作<rt>つく</rt></ruby>っている<b>間</b>"
+        },
+        {
+          "pos": "名詞の",
+          "form_label": "名詞＋の＋間",
+          "example_html": "<ruby>休<rt>やす</rt></ruby>みの<b>間</b>"
+        },
+        {
+          "pos": "い形容詞",
+          "form_label": "い形容詞＋間",
+          "example_html": "<ruby>若<rt>わか</rt></ruby>い<b>間</b>"
+        }
+      ],
+      "target_construction": "間",
+      "tags": [
+        "N4",
+        "time",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_002_ageru",
+      "expression_html": "誕生日に友達に花を<b>あげました</b>。",
+      "reading": "たんじょうびに ともだちに はなを<b>あげました</b>。",
+      "meaning_ru": "Я подарил другу цветы на день рождения.",
+      "pattern_text": "Паттерн: [人]に[物]をあげる\nЗначение: Говорящий (или третье лицо) дарит/даёт что-то равному или младшему по статусу.",
+      "formation_rules": [
+        {
+          "pos": "名詞+を",
+          "form_label": "物をあげる",
+          "example_html": "<ruby>花<rt>はな</rt></ruby>を<b>あげました</b>"
+        }
+      ],
+      "target_construction": "あげました",
+      "tags": [
+        "N4",
+        "giving-receiving",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_003_atode",
+      "expression_html": "宿題をした<b>あとで</b>、テレビを見ます。",
+      "reading": "しゅくだいを した<b>あとで</b>、テレビを みます。",
+      "meaning_ru": "После того как сделаю домашнее задание, посмотрю телевизор.",
+      "pattern_text": "Паттерн: [動詞た形] + あとで\nЗначение: После того как сделал А, делают Б — подчёркнутый порядок действий.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形＋あとで",
+          "example_html": "した<b>あとで</b>"
+        },
+        {
+          "pos": "名詞の",
+          "form_label": "名詞＋の＋あとで",
+          "example_html": "<ruby>食事<rt>しょくじ</rt></ruby>の<b>あとで</b>"
+        }
+      ],
+      "target_construction": "あとで",
+      "tags": [
+        "N4",
+        "time",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_004_itadaku",
+      "expression_html": "先生にすばらしい本を<b>いただきました</b>。",
+      "reading": "せんせいに すばらしい ほんを<b>いただきました</b>。",
+      "meaning_ru": "Я получил замечательную книгу от учителя (скромно).",
+      "pattern_text": "Паттерн: [人]に[物]をいただく／動詞て形＋いただく\nЗначение: Скромно получаю что-то от вышестоящего — смиренная форма もらう.",
+      "formation_rules": [
+        {
+          "pos": "名詞+を",
+          "form_label": "物をいただく",
+          "example_html": "<ruby>本<rt>ほん</rt></ruby>を<b>いただきました</b>"
+        },
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋いただく",
+          "example_html": "<ruby>教<rt>おし</rt></ruby>えて<b>いただきました</b>"
+        }
+      ],
+      "target_construction": "いただきました",
+      "tags": [
+        "N4",
+        "honorifics",
+        "giving-receiving",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_005_o_kudasai",
+      "expression_html": "こちらにお名前を<b>お書きください</b>。",
+      "reading": "こちらに おなまえを<b>お書きください</b>。",
+      "meaning_ru": "Пожалуйста, напишите здесь своё имя.",
+      "pattern_text": "Паттерн: お＋動詞ます形＋ください／ご＋漢語動詞＋ください\nЗначение: Вежливая просьба сделать что-то, обращённая к вышестоящему или клиенту.",
+      "formation_rules": [
+        {
+          "pos": "お+動詞ます形",
+          "form_label": "お＋ます形＋ください",
+          "example_html": "お<ruby>書<rt>か</rt></ruby>き<b>ください</b>"
+        },
+        {
+          "pos": "ご+漢語動詞",
+          "form_label": "ご＋名詞＋ください",
+          "example_html": "ご<ruby>利用<rt>りよう</rt></ruby><b>ください</b>"
+        }
+      ],
+      "target_construction": "お書きください",
+      "tags": [
+        "N4",
+        "honorifics",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_006_o_suru",
+      "expression_html": "お荷物を<b>お持ちします</b>。",
+      "reading": "おにもつを<b>お持ちします</b>。",
+      "meaning_ru": "Я понесу ваш багаж.",
+      "pattern_text": "Паттерн: お＋動詞ます形＋する／ご＋漢語動詞＋する\nЗначение: Скромная форма — говорящий понижает себя, выполняя действие для вышестоящего.",
+      "formation_rules": [
+        {
+          "pos": "お+動詞ます形",
+          "form_label": "お＋ます形＋する",
+          "example_html": "お<ruby>持<rt>も</rt></ruby>ち<b>します</b>"
+        },
+        {
+          "pos": "ご+漢語動詞",
+          "form_label": "ご＋名詞＋する",
+          "example_html": "ご<ruby>説明<rt>せつめい</rt></ruby><b>します</b>"
+        }
+      ],
+      "target_construction": "お持ちします",
+      "tags": [
+        "N4",
+        "honorifics",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_007_o_ni_naru",
+      "expression_html": "社長はもう<b>お帰りになりました</b>。",
+      "reading": "しゃちょうは もう<b>お帰りになりました</b>。",
+      "meaning_ru": "Президент компании уже уехал домой.",
+      "pattern_text": "Паттерн: お＋動詞ます形＋になる／ご＋漢語動詞＋になる\nЗначение: Уважительная форма — описывает действие вышестоящего лица.",
+      "formation_rules": [
+        {
+          "pos": "お+動詞ます形",
+          "form_label": "お＋ます形＋になる",
+          "example_html": "お<ruby>帰<rt>かえ</rt></ruby>りに<b>なりました</b>"
+        },
+        {
+          "pos": "ご+漢語動詞",
+          "form_label": "ご＋名詞＋になる",
+          "example_html": "ご<ruby>利用<rt>りよう</rt></ruby>に<b>なる</b>"
+        }
+      ],
+      "target_construction": "お帰りになりました",
+      "tags": [
+        "N4",
+        "honorifics",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_008_owaru",
+      "expression_html": "この本を<b>読み終わった</b>ら、貸してあげます。",
+      "reading": "この ほんを<b>よみおわった</b>ら、かして あげます。",
+      "meaning_ru": "Когда дочитаю эту книгу, дам тебе почитать.",
+      "pattern_text": "Паттерн: [動詞ます形] + 終わる\nЗначение: Закончить делать что-то полностью.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形＋終わる",
+          "example_html": "<ruby>読<rt>よ</rt></ruby>み<b>終わった</b>"
+        }
+      ],
+      "target_construction": "読み終わった",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_009_sa",
+      "expression_html": "この山の<b>高さ</b>はどのくらいですか。",
+      "reading": "この やまの<b>たかさ</b>は どのくらい ですか。",
+      "meaning_ru": "Какова высота этой горы?",
+      "pattern_text": "Паттерн: [い形容詞語幹／な形容詞語幹] + さ\nЗначение: Превращает прилагательное в существительное, обозначающее степень/меру качества.",
+      "formation_rules": [
+        {
+          "pos": "い形容詞",
+          "form_label": "語幹＋さ",
+          "example_html": "<ruby>高<rt>たか</rt></ruby>い→<b>高さ</b>"
+        },
+        {
+          "pos": "な形容詞",
+          "form_label": "語幹＋さ",
+          "example_html": "<ruby>便利<rt>べんり</rt></ruby>→<b>便利さ</b>"
+        }
+      ],
+      "target_construction": "高さ",
+      "tags": [
+        "N4",
+        "nominalizer",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_010_sashiageru",
+      "expression_html": "先生に花を<b>さしあげました</b>。",
+      "reading": "せんせいに はなを<b>さしあげました</b>。",
+      "meaning_ru": "Я подарил учителю цветы (смиренно).",
+      "pattern_text": "Паттерн: [人]に[物]をさしあげる\nЗначение: Самая скромная форма あげる — дарю/делаю что-то для явно вышестоящего лица.",
+      "formation_rules": [
+        {
+          "pos": "名詞+を",
+          "form_label": "物をさしあげる",
+          "example_html": "<ruby>花<rt>はな</rt></ruby>を<b>さしあげました</b>"
+        }
+      ],
+      "target_construction": "さしあげました",
+      "tags": [
+        "N4",
+        "honorifics",
+        "giving-receiving",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_011_sasete_ageru",
+      "expression_html": "子供に好きなだけ<b>遊ばせてあげました</b>。",
+      "reading": "こどもに すきなだけ<b>あそばせてあげました</b>。",
+      "meaning_ru": "Я разрешил ребёнку играть сколько он хочет.",
+      "pattern_text": "Паттерн: [動詞使役形て形] + あげる\nЗначение: Разрешить/дать кому-то возможность сделать что-то в его интересах.",
+      "formation_rules": [
+        {
+          "pos": "動詞使役形て",
+          "form_label": "使役形て＋あげる",
+          "example_html": "<ruby>遊<rt>あそ</rt></ruby>ばせて<b>あげました</b>"
+        }
+      ],
+      "target_construction": "遊ばせてあげました",
+      "tags": [
+        "N4",
+        "causative",
+        "giving-receiving",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_012_sasete_kudasai",
+      "expression_html": "すみませんが、ここで少し<b>休ませてください</b>。",
+      "reading": "すみませんが、ここで すこし<b>やすませてください</b>。",
+      "meaning_ru": "Извините, позвольте мне немного отдохнуть здесь.",
+      "pattern_text": "Паттерン: [動詞使役形て形] + ください\nЗначение: Просьба разрешить говорящему сделать что-то.",
+      "formation_rules": [
+        {
+          "pos": "動詞使役形て",
+          "form_label": "使役形て＋ください",
+          "example_html": "<ruby>休<rt>やす</rt></ruby>ませて<b>ください</b>"
+        }
+      ],
+      "target_construction": "休ませてください",
+      "tags": [
+        "N4",
+        "causative",
+        "request",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_013_sasete_morau",
+      "expression_html": "明日、会社を<b>休ませてもらいます</b>。",
+      "reading": "あした、かいしゃを<b>やすませてもらいます</b>。",
+      "meaning_ru": "Мне разрешили завтра не выходить на работу.",
+      "pattern_text": "Паттерン: [動詞使役形て形] + もらう\nЗначение: Получить разрешение сделать что-то в своих интересах.",
+      "formation_rules": [
+        {
+          "pos": "動詞使役形て",
+          "form_label": "使役形て＋もらう",
+          "example_html": "<ruby>休<rt>やす</rt></ruby>ませて<b>もらいます</b>"
+        }
+      ],
+      "target_construction": "休ませてもらいます",
+      "tags": [
+        "N4",
+        "causative",
+        "giving-receiving",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_014_saserareru",
+      "expression_html": "子供のころ、嫌いな野菜を<b>食べさせられました</b>。",
+      "reading": "こどもの ころ、きらいな やさいを<b>たべさせられました</b>。",
+      "meaning_ru": "В детстве меня заставляли есть нелюбимые овощи.",
+      "pattern_text": "Паттерン: [動詞使役受身形]\nЗначение: Кто-то заставил говорящего сделать что-то (обычно неприятное) против его воли.",
+      "formation_rules": [
+        {
+          "pos": "動詞使役受身形",
+          "form_label": "食べる→食べさせられる",
+          "example_html": "<ruby>食<rt>た</rt></ruby>べ<b>させられました</b>"
+        }
+      ],
+      "target_construction": "食べさせられました",
+      "tags": [
+        "N4",
+        "causative",
+        "passive",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_015_saseru",
+      "expression_html": "母は毎日弟に部屋を<b>掃除させます</b>。",
+      "reading": "ははは まいにち おとうとに へやを<b>そうじさせます</b>。",
+      "meaning_ru": "Мама каждый день заставляет/просит брата убираться в комнате.",
+      "pattern_text": "Паттерン: [動詞使役形]\nЗначение: Заставить или разрешить кому-то сделать что-то.",
+      "formation_rules": [
+        {
+          "pos": "動詞使役形(五段)",
+          "form_label": "書く→書かせる",
+          "example_html": "<ruby>掃除<rt>そうじ</rt></ruby><b>させます</b>"
+        },
+        {
+          "pos": "動詞使役形(一段)",
+          "form_label": "食べる→食べさせる",
+          "example_html": "<ruby>食<rt>た</rt></ruby>べ<b>させる</b>"
+        }
+      ],
+      "target_construction": "掃除させます",
+      "tags": [
+        "N4",
+        "causative",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_016_shi_shi",
+      "expression_html": "このレストランは安い<b>し</b>、おいしい<b>し</b>、いつも人気だ。",
+      "reading": "この レストランは やすい<b>し</b>、おいしい<b>し</b>、いつも にんきだ。",
+      "meaning_ru": "Этот ресторан и дешёвый, и вкусный, поэтому всегда популярен.",
+      "pattern_text": "Паттерン: [普通形] + し、[普通形] + し\nЗначение: Перечисление нескольких причин/фактов, подкрепляющих один вывод.",
+      "formation_rules": [
+        {
+          "pos": "動詞普通形",
+          "form_label": "動詞普通形＋し",
+          "example_html": "<ruby>人気<rt>にんき</rt></ruby>があるし"
+        },
+        {
+          "pos": "い形容詞",
+          "form_label": "い形容詞＋し",
+          "example_html": "<b>安いし</b>"
+        },
+        {
+          "pos": "な形容詞/名詞",
+          "form_label": "だ＋し",
+          "example_html": "<ruby>静<rt>しず</rt></ruby>かだし"
+        }
+      ],
+      "target_construction": "し",
+      "tags": [
+        "N4",
+        "causality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_017_shika_nai",
+      "expression_html": "財布には千円<b>しか</b>ありません。",
+      "reading": "さいふには せんえん<b>しか</b>ありません。",
+      "meaning_ru": "В кошельке только тысяча иен, не больше.",
+      "pattern_text": "Паттерン: [名詞] + しか + ない(否定)\nЗначение: Только... — подчёркивает ограниченность/недостаточность, всегда с отрицанием.",
+      "formation_rules": [
+        {
+          "pos": "名詞+しか",
+          "form_label": "名詞＋しか＋ない",
+          "example_html": "<ruby>千円<rt>せんえん</rt></ruby><b>しか</b>ありません"
+        }
+      ],
+      "target_construction": "しか",
+      "tags": [
+        "N4",
+        "quantity",
+        "emphasis",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_018_shikashi",
+      "expression_html": "天気予報は雨だった。<b>しかし</b>、今日は晴れている。",
+      "reading": "てんきよほうは あめだった。<b>しかし</b>、きょうは はれている。",
+      "meaning_ru": "По прогнозу должен был быть дождь. Однако сегодня ясно.",
+      "pattern_text": "Паттерン: 文1。しかし、文2。\nЗначение: Союз «однако / но» — противопоставление между двумя предложениями (более книжный, чем でも).",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋しかし、",
+          "example_html": "<b>しかし</b>、"
+        }
+      ],
+      "target_construction": "しかし",
+      "tags": [
+        "N4",
+        "contrast",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_019_sugiru",
+      "expression_html": "このコーヒーは<b>熱すぎて</b>飲めません。",
+      "reading": "この コーヒーは<b>あつすぎて</b>のめません。",
+      "meaning_ru": "Этот кофе слишком горячий, чтобы его пить.",
+      "pattern_text": "Паттерン: [動詞ます形／い形容詞語幹／な形容詞語幹] + すぎる\nЗначение: Слишком... — избыточная степень чего-либо.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形＋すぎる",
+          "example_html": "<ruby>食<rt>た</rt></ruby>べ<b>すぎる</b>"
+        },
+        {
+          "pos": "い形容詞語幹",
+          "form_label": "語幹＋すぎる",
+          "example_html": "<b>熱すぎて</b>"
+        },
+        {
+          "pos": "な形容詞語幹",
+          "form_label": "語幹＋すぎる",
+          "example_html": "<ruby>静<rt>しず</rt></ruby>か<b>すぎる</b>"
+        }
+      ],
+      "target_construction": "熱すぎて",
+      "tags": [
+        "N4",
+        "degree",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_020_zuni",
+      "expression_html": "朝ご飯を<b>食べずに</b>学校に行きました。",
+      "reading": "あさごはんを<b>たべずに</b>がっこうに いきました。",
+      "meaning_ru": "Я пошёл в школу, не позавтракав.",
+      "pattern_text": "Паттерン: [動詞ない形（ない語幹）] + ずに\nЗначение: Не делая А, сделать Б — более письменный/формальный синоним ないで. Искл.: する→せずに。",
+      "formation_rules": [
+        {
+          "pos": "動詞ない語幹",
+          "form_label": "ない語幹＋ずに",
+          "example_html": "<ruby>食<rt>た</rt></ruby>べ<b>ずに</b>"
+        },
+        {
+          "pos": "する（例外）",
+          "form_label": "する→せずに",
+          "example_html": "<ruby>連絡<rt>れんらく</rt></ruby><b>せずに</b>"
+        }
+      ],
+      "target_construction": "食べずに",
+      "tags": [
+        "N4",
+        "manner",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_021_suruto",
+      "expression_html": "ボタンを押した。<b>すると</b>、ドアが開いた。",
+      "reading": "ボタンを おした。<b>すると</b>、ドアが ひらいた。",
+      "meaning_ru": "Я нажал кнопку. И тогда дверь открылась.",
+      "pattern_text": "Паттерン: 文1。すると、文2。\nЗначение: «И вот, тогда...» — естественное/неожиданное следствие сразу после первого действия.",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋すると、",
+          "example_html": "<b>すると</b>、"
+        }
+      ],
+      "target_construction": "すると",
+      "tags": [
+        "N4",
+        "connective",
+        "causality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_022_sou_youtai",
+      "expression_html": "この料理は<b>おいしそう</b>ですね。",
+      "reading": "この りょうりは<b>おいしそう</b>ですね。",
+      "meaning_ru": "Эта еда выглядит вкусной.",
+      "pattern_text": "Паттерン: [動詞ます形／い形容詞語幹／な形容詞語幹] + そう（様態）\nЗначение: Судя по внешнему виду, похоже, что... Искл.: いい→よさそう, ない→なさそう。",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形＋そう",
+          "example_html": "<ruby>降<rt>ふ</rt></ruby>りそう"
+        },
+        {
+          "pos": "い形容詞語幹",
+          "form_label": "語幹＋そう",
+          "example_html": "<b>おいしそう</b>"
+        },
+        {
+          "pos": "な形容詞語幹",
+          "form_label": "語幹＋そう",
+          "example_html": "<ruby>元気<rt>げんき</rt></ruby>そう"
+        }
+      ],
+      "target_construction": "おいしそう",
+      "tags": [
+        "N4",
+        "modality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_023_souda_denbun",
+      "expression_html": "天気予報によると、明日は雨が<b>降るそうです</b>。",
+      "reading": "てんきよほうに よると、あしたは あめが<b>ふるそうです</b>。",
+      "meaning_ru": "Судя по прогнозу погоды, завтра, говорят, будет дождь.",
+      "pattern_text": "Паттерン: [普通形] + そうだ（伝聞）\nЗначение: Передаю услышанную/прочитанную информацию — «говорят, что...».",
+      "formation_rules": [
+        {
+          "pos": "動詞普通形",
+          "form_label": "普通形＋そうだ",
+          "example_html": "<b>降るそうです</b>"
+        },
+        {
+          "pos": "い形容詞普通形",
+          "form_label": "普通形＋そうだ",
+          "example_html": "<ruby>高<rt>たか</rt></ruby>いそうだ"
+        }
+      ],
+      "target_construction": "降るそうです",
+      "tags": [
+        "N4",
+        "hearsay",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_024_soshite",
+      "expression_html": "朝は勉強をしました。<b>そして</b>、午後は友達と遊びました。",
+      "reading": "あさは べんきょうを しました。<b>そして</b>、ごごは ともだちと あそびました。",
+      "meaning_ru": "Утром я занимался. А потом, днём, играл с друзьями.",
+      "pattern_text": "Паттерン: 文1。そして、文2。\nЗначение: «И, затем» — соединяет два действия/факта в естественной последовательности.",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋そして、",
+          "example_html": "<b>そして</b>、"
+        }
+      ],
+      "target_construction": "そして",
+      "tags": [
+        "N4",
+        "connective",
+        "time",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_025_sonoue",
+      "expression_html": "彼は頭がいい。<b>その上</b>、性格もいい。",
+      "reading": "かれは あたまが いい。<b>そのうえ</b>、せいかくも いい。",
+      "meaning_ru": "Он умный. Более того, у него ещё и хороший характер.",
+      "pattern_text": "Паттерン: 文1。その上、文2。\nЗначение: «Более того, вдобавок» — добавляет ещё один плюс/факт того же направления.",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋その上、",
+          "example_html": "<b>その上</b>、"
+        }
+      ],
+      "target_construction": "その上",
+      "tags": [
+        "N4",
+        "connective",
+        "emphasis",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_026_sorekara",
+      "expression_html": "宿題をしました。<b>それから</b>、お風呂に入りました。",
+      "reading": "しゅくだいを しました。<b>それから</b>、おふろに はいりました。",
+      "meaning_ru": "Я сделал домашнее задание. Потом принял ванну.",
+      "pattern_text": "Паттерン: 文1。それから、文2。\nЗначение: «А потом, затем» — простая временная последовательность двух действий.",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋それから、",
+          "example_html": "<b>それから</b>、"
+        }
+      ],
+      "target_construction": "それから",
+      "tags": [
+        "N4",
+        "connective",
+        "time",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_027_sorede",
+      "expression_html": "電車が止まった。<b>それで</b>、遅刻してしまった。",
+      "reading": "でんしゃが とまった。<b>それで</b>、ちこくして しまった。",
+      "meaning_ru": "Поезд остановился. Поэтому я опоздал.",
+      "pattern_text": "Паттерン: 文1。それで、文2。\nЗначение: «Поэтому, из-за этого» — вводит следствие/результат предыдущего факта.",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋それで、",
+          "example_html": "<b>それで</b>、"
+        }
+      ],
+      "target_construction": "それで",
+      "tags": [
+        "N4",
+        "connective",
+        "causality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_028_soredewa",
+      "expression_html": "<b>それでは</b>、そろそろ始めましょう。",
+      "reading": "<b>それでは</b>、そろそろ はじめましょう。",
+      "meaning_ru": "Ну что ж, давайте начинать.",
+      "pattern_text": "Паттерン: それでは／では／じゃあ／じゃ + 文\nЗначение: «Ну что ж, в таком случае» — переход к новой теме/действию, じゃあ/じゃ разговорнее.",
+      "formation_rules": [
+        {
+          "pos": "接続詞（丁寧）",
+          "form_label": "それでは／では",
+          "example_html": "<b>それでは</b>、"
+        },
+        {
+          "pos": "接続詞（会話体）",
+          "form_label": "じゃあ／じゃ",
+          "example_html": "じゃあ、はじめよう。"
+        }
+      ],
+      "target_construction": "それでは",
+      "tags": [
+        "N4",
+        "connective",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_029_soreni",
+      "expression_html": "このアパートは駅から近い。<b>それに</b>、家賃も安い。",
+      "reading": "この アパートは えきから ちかい。<b>それに</b>、やちんも やすい。",
+      "meaning_ru": "Эта квартира близко от станции. К тому же, аренда дешёвая.",
+      "pattern_text": "Паттерン: 文1。それに、文2。\nЗначение: «К тому же, вдобавок» — добавляет ещё одну причину/факт того же направления.",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋それに、",
+          "example_html": "<b>それに</b>、"
+        }
+      ],
+      "target_construction": "それに",
+      "tags": [
+        "N4",
+        "connective",
+        "emphasis",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_030_tai",
+      "expression_html": "将来、医者に<b>なりたい</b>です。",
+      "reading": "しょうらい、いしゃに<b>なりたい</b>です。",
+      "meaning_ru": "В будущем я хочу стать врачом.",
+      "pattern_text": "Паттерン: [動詞ます形] + たい\nЗначение: Желание говорящего (или прямой вопрос собеседнику) сделать что-то.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形＋たい",
+          "example_html": "<b>なりたい</b>"
+        }
+      ],
+      "target_construction": "なりたい",
+      "tags": [
+        "N4",
+        "modality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_031_dakara",
+      "expression_html": "明日は試験です。<b>だから</b>、今日は早く寝ます。",
+      "reading": "あしたは しけんです。<b>だから</b>、きょうは はやく ねます。",
+      "meaning_ru": "Завтра экзамен. Поэтому сегодня я лягу спать пораньше.",
+      "pattern_text": "Паттерン: 文1。だから、文2。\nЗначение: «Поэтому» — разговорный причинно-следственный союз, менее формальный, чем それで／ので。",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋だから、",
+          "example_html": "<b>だから</b>、"
+        }
+      ],
+      "target_construction": "だから",
+      "tags": [
+        "N4",
+        "connective",
+        "causality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_032_tagaru",
+      "expression_html": "弟はいつも新しいゲームを<b>欲しがります</b>。",
+      "reading": "おとうとは いつも あたらしい ゲームを<b>ほしがります</b>。",
+      "meaning_ru": "Младший брат всегда явно хочет новую игру.",
+      "pattern_text": "Паттерン: [動詞ます形／い形容詞語幹] + たがる\nЗначение: Третье лицо внешне/явно показывает желание что-то сделать или иметь (наблюдаемое со стороны).",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形＋たがる",
+          "example_html": "<ruby>食<rt>た</rt></ruby>べたがる"
+        },
+        {
+          "pos": "い形容詞（ほしい）",
+          "form_label": "ほしい→ほしがる",
+          "example_html": "<b>欲しがります</b>"
+        }
+      ],
+      "target_construction": "欲しがります",
+      "tags": [
+        "N4",
+        "modality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_033_takunai",
+      "expression_html": "今日は誰にも<b>会いたくありません</b>。",
+      "reading": "きょうは だれにも<b>あいたくありません</b>。",
+      "meaning_ru": "Сегодня я не хочу никого видеть.",
+      "pattern_text": "Паттерン: [動詞ます形] + たくない／たくありません\nЗначение: Отрицание желания сделать что-то.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形＋たくない",
+          "example_html": "<b>会いたくありません</b>"
+        }
+      ],
+      "target_construction": "会いたくありません",
+      "tags": [
+        "N4",
+        "modality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_034_ta_koto_ga_aru",
+      "expression_html": "私は一度富士山に<b>登ったことがあります</b>。",
+      "reading": "わたしは いちど ふじさんに<b>のぼったことがあります</b>。",
+      "meaning_ru": "Я один раз поднимался на Фудзи.",
+      "pattern_text": "Паттерン: [動詞た形] + ことがある／ない\nЗначение: Выражает наличие или отсутствие опыта в прошлом.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形＋ことがある",
+          "example_html": "<b>登ったことがあります</b>"
+        }
+      ],
+      "target_construction": "登ったことがあります",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_035_dasu",
+      "expression_html": "空が急に曇って、雨が<b>降り出した</b>。",
+      "reading": "そらが きゅうに くもって、あめが<b>ふりだした</b>。",
+      "meaning_ru": "Небо вдруг затянуло тучами, и пошёл дождь.",
+      "pattern_text": "Паттерン: [動詞ます形] + 出す\nЗначение: Внезапное начало действия или явления.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形＋出す",
+          "example_html": "<b>降り出した</b>"
+        }
+      ],
+      "target_construction": "降り出した",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_036_tatoeba",
+      "expression_html": "日本には四季がある。<b>たとえば</b>、春は桜が咲く。",
+      "reading": "にほんには しきが ある。<b>たとえば</b>、はるは さくらが さく。",
+      "meaning_ru": "В Японии есть четыре сезона. Например, весной цветёт сакура.",
+      "pattern_text": "Паттерン: 文1。たとえば、文2。\nЗначение: «Например» — вводит конкретный пример к сказанному ранее.",
+      "formation_rules": [
+        {
+          "pos": "接続詞",
+          "form_label": "文頭＋たとえば、",
+          "example_html": "<b>たとえば</b>、"
+        }
+      ],
+      "target_construction": "たとえば",
+      "tags": [
+        "N4",
+        "connective",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_037_tamama",
+      "expression_html": "電気を<b>つけたまま</b>寝てしまいました。",
+      "reading": "でんきを<b>つけたまま</b>ねてしまいました。",
+      "meaning_ru": "Я заснул, оставив свет включённым.",
+      "pattern_text": "Паттерン: [動詞た形／い形容詞／名詞の] + まま\nЗначение: Действие/состояние происходит, пока сохраняется прежнее состояние без изменений.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形＋まま",
+          "example_html": "<b>つけたまま</b>"
+        },
+        {
+          "pos": "い形容詞",
+          "form_label": "い形容詞＋まま",
+          "example_html": "<ruby>暗<rt>くら</rt></ruby>いまま"
+        },
+        {
+          "pos": "名詞の",
+          "form_label": "名詞＋の＋まま",
+          "example_html": "<ruby>靴<rt>くつ</rt></ruby>のまま"
+        }
+      ],
+      "target_construction": "つけたまま",
+      "tags": [
+        "N4",
+        "manner",
+        "time",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_038_tameni",
+      "expression_html": "家族の<b>ために</b>一生懸命働いています。",
+      "reading": "かぞくの<b>ために</b>いっしょうけんめい はたらいています。",
+      "meaning_ru": "Я усердно работаю ради семьи.",
+      "pattern_text": "Паттерン: [名詞の／動詞辞書形] + ために\nЗначение: Ради/для (польза кого-то) или «для того, чтобы» (цель действия).",
+      "formation_rules": [
+        {
+          "pos": "名詞の",
+          "form_label": "名詞＋の＋ために",
+          "example_html": "<ruby>家族<rt>かぞく</rt></ruby>の<b>ために</b>"
+        },
+        {
+          "pos": "動詞辞書形",
+          "form_label": "動詞辞書形＋ために",
+          "example_html": "<ruby>合格<rt>ごうかく</rt></ruby>するために"
+        }
+      ],
+      "target_construction": "ために",
+      "tags": [
+        "N4",
+        "causality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_039_tara_if",
+      "expression_html": "雨が<b>降ったら</b>、試合は中止です。",
+      "reading": "あめが<b>ふったら</b>、しあいは ちゅうしです。",
+      "meaning_ru": "Если пойдёт дождь, матч отменяется.",
+      "pattern_text": "Паттерン: [動詞た形] + ら\nЗначение: Условное «если...то» — реальное или гипотетическое условие.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形＋ら",
+          "example_html": "<b>降ったら</b>"
+        },
+        {
+          "pos": "い形容詞かった",
+          "form_label": "かった＋ら",
+          "example_html": "<ruby>安<rt>やす</rt></ruby>かったら"
+        }
+      ],
+      "target_construction": "降ったら",
+      "tags": [
+        "N4",
+        "conditionals",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_040_tara_discovery",
+      "expression_html": "家に<b>帰ったら</b>、誰もいませんでした。",
+      "reading": "いえに<b>かえったら</b>、だれも いませんでした。",
+      "meaning_ru": "Когда я вернулся домой, никого не оказалось.",
+      "pattern_text": "Паттерン: [動詞た形] + ら、〜た\nЗначение: Когда сделал А, неожиданно обнаружил/оказалось Б — открытие в прошлом.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形＋ら",
+          "example_html": "<b>帰ったら</b>"
+        }
+      ],
+      "target_construction": "帰ったら",
+      "tags": [
+        "N4",
+        "time",
+        "conditionals",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_041_tara_dou_desuka",
+      "expression_html": "疲れているなら、少し<b>休んだらどうですか</b>。",
+      "reading": "つかれているなら、すこし<b>やすんだらどうですか</b>。",
+      "meaning_ru": "Если ты устал, может, немного отдохнёшь?",
+      "pattern_text": "Паттерン: [動詞た形] + らどうですか\nЗначение: Мягкий совет собеседнику — «а что, если тебе сделать...?».",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形＋らどうですか",
+          "example_html": "<b>休んだらどうですか</b>"
+        }
+      ],
+      "target_construction": "休んだらどうですか",
+      "tags": [
+        "N4",
+        "modality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_042_tari_tari",
+      "expression_html": "週末は本を<b>読んだり</b>、映画を<b>見たりします</b>。",
+      "reading": "しゅうまつは ほんを<b>よんだり</b>、えいがを<b>みたりします</b>。",
+      "meaning_ru": "На выходных я то читаю книги, то смотрю фильмы.",
+      "pattern_text": "Паттерン: [動詞た形]+り、[動詞た形]+りする\nЗначение: Перечисление нескольких действий как показательных примеров (без строгого порядка).",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形＋り〜たりする",
+          "example_html": "<b>読んだり</b>、<b>見たりします</b>"
+        }
+      ],
+      "target_construction": "読んだり",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_043_darou",
+      "expression_html": "明日はたぶん<b>晴れるだろう</b>。",
+      "reading": "あしたは たぶん<b>はれるだろう</b>。",
+      "meaning_ru": "Завтра, наверное, будет ясно.",
+      "pattern_text": "Паттерン: [普通形] + だろう（丁寧形：でしょう）\nЗначение: Предположение говорящего — «наверное, вероятно».",
+      "formation_rules": [
+        {
+          "pos": "動詞普通形",
+          "form_label": "普通形＋だろう",
+          "example_html": "<b>晴れるだろう</b>"
+        }
+      ],
+      "target_construction": "晴れるだろう",
+      "tags": [
+        "N4",
+        "modality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_044_tsuzukeru",
+      "expression_html": "彼は10年間、日本語を<b>勉強し続けています</b>。",
+      "reading": "かれは じゅうねんかん、にほんごを<b>べんきょうしつづけています</b>。",
+      "meaning_ru": "Он уже 10 лет продолжает учить японский.",
+      "pattern_text": "Паттерン: [動詞ます形] + 続ける\nЗначение: Продолжать делать что-то в течение времени.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形＋続ける",
+          "example_html": "<b>勉強し続けています</b>"
+        }
+      ],
+      "target_construction": "勉強し続けています",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_045_tsumorida",
+      "expression_html": "来年、大学院に<b>進学するつもりです</b>。",
+      "reading": "らいねん、だいがくいんに<b>しんがくするつもりです</b>。",
+      "meaning_ru": "В следующем году я собираюсь поступать в аспирантуру.",
+      "pattern_text": "Паттерン: [動詞辞書形／ない形] + つもりだ\nЗначение: Намерение говорящего сделать (или не делать) что-то в будущем.",
+      "formation_rules": [
+        {
+          "pos": "動詞辞書形",
+          "form_label": "動詞辞書形＋つもりだ",
+          "example_html": "<b>進学するつもりです</b>"
+        }
+      ],
+      "target_construction": "進学するつもりです",
+      "tags": [
+        "N4",
+        "modality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_046_tsumori_wa_nai",
+      "expression_html": "彼と<b>結婚するつもりはありません</b>。",
+      "reading": "かれと<b>けっこんするつもりはありません</b>。",
+      "meaning_ru": "У меня нет намерения выходить за него замуж.",
+      "pattern_text": "Паттерン: [動詞辞書形] + つもりはない\nЗначение: Решительное отрицание намерения что-то делать.",
+      "formation_rules": [
+        {
+          "pos": "動詞辞書形",
+          "form_label": "動詞辞書形＋つもりはない",
+          "example_html": "<b>結婚するつもりはありません</b>"
+        }
+      ],
+      "target_construction": "結婚するつもりはありません",
+      "tags": [
+        "N4",
+        "modality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_047_te_causal",
+      "expression_html": "風邪を<b>ひいて</b>、学校を休みました。",
+      "reading": "かぜを<b>ひいて</b>、がっこうを やすみました。",
+      "meaning_ru": "Я простудился и (поэтому) пропустил школу.",
+      "pattern_text": "Паттерン: [動詞て形]、〜\nЗначение: Причина/следствие через соединительную て形 — более мягкая, естественная связь, чем から／ので。",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形、〜",
+          "example_html": "<b>ひいて</b>、"
+        }
+      ],
+      "target_construction": "ひいて",
+      "tags": [
+        "N4",
+        "causality",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_048_noun_de",
+      "expression_html": "バス<b>で</b>学校に行きます。",
+      "reading": "バス<b>で</b>がっこうに いきます。",
+      "meaning_ru": "Я езжу в школу на автобусе.",
+      "pattern_text": "Паттерン: [名詞] + で\nЗначение: Указывает средство/способ, место действия, причину или сумму — одна частица, несколько ролей.",
+      "formation_rules": [
+        {
+          "pos": "名詞（手段）",
+          "form_label": "名詞＋で（手段）",
+          "example_html": "バス<b>で</b>"
+        },
+        {
+          "pos": "名詞（場所）",
+          "form_label": "名詞＋で（場所）",
+          "example_html": "<ruby>教室<rt>きょうしつ</rt></ruby>で"
+        },
+        {
+          "pos": "名詞（原因）",
+          "form_label": "名詞＋で（原因）",
+          "example_html": "<ruby>病気<rt>びょうき</rt></ruby>で"
+        }
+      ],
+      "target_construction": "バスで",
+      "tags": [
+        "N4",
+        "manner",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_049_te_ageru",
+      "expression_html": "友達に日本語を<b>教えてあげました</b>。",
+      "reading": "ともだちに にほんごを<b>おしえてあげました</b>。",
+      "meaning_ru": "Я научил друга японскому.",
+      "pattern_text": "Паттерン: [動詞て形] + あげる\nЗначение: Делать что-то в пользу другого человека (равного/младшего) — благодеяние от говорящего.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋あげる",
+          "example_html": "<b>教えてあげました</b>"
+        }
+      ],
+      "target_construction": "教えてあげました",
+      "tags": [
+        "N4",
+        "giving-receiving",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_050_te_aru",
+      "expression_html": "テーブルの上に花が<b>飾ってあります</b>。",
+      "reading": "テーブルの うえに はなが<b>かざってあります</b>。",
+      "meaning_ru": "На столе стоят (заранее поставленные) цветы.",
+      "pattern_text": "Паттерン: [他動詞て形] + ある\nЗначение: Результат чьего-то намеренного действия сохраняется как состояние (не процесс).",
+      "formation_rules": [
+        {
+          "pos": "他動詞て形",
+          "form_label": "他動詞て形＋ある",
+          "example_html": "<b>飾ってあります</b>"
+        }
+      ],
+      "target_construction": "飾ってあります",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_051_te_iku",
+      "expression_html": "これからも日本語を<b>勉強していきます</b>。",
+      "reading": "これからも にほんごを<b>べんきょうしていきます</b>。",
+      "meaning_ru": "Я буду и дальше продолжать учить японский.",
+      "pattern_text": "Паттерン: [動詞て形] + いく\nЗначение: Действие/изменение продолжается от настоящего момента в будущее, либо движение прочь от говорящего.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋いく",
+          "example_html": "<b>勉強していきます</b>"
+        }
+      ],
+      "target_construction": "勉強していきます",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_052_teiru",
+      "expression_html": "今、雨が<b>降っています</b>。",
+      "reading": "いま、あめが<b>ふっています</b>。",
+      "meaning_ru": "Сейчас идёт дождь.",
+      "pattern_text": "Паттерン: [動詞て形] + いる（会話：てる）\nЗначение: Продолженное действие, результат-состояние или привычка — зависит от типа глагола.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋いる",
+          "example_html": "<b>降っています</b>"
+        }
+      ],
+      "target_construction": "降っています",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_053_teoku",
+      "expression_html": "パーティーの前に部屋を<b>掃除しておきます</b>。",
+      "reading": "パーティーの まえに へやを<b>そうじしておきます</b>。",
+      "meaning_ru": "Перед вечеринкой я заранее уберу комнату.",
+      "pattern_text": "Паттерン: [動詞て形] + おく（会話：とく）\nЗначение: Сделать что-то заранее, на будущее.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋おく",
+          "example_html": "<b>掃除しておきます</b>"
+        }
+      ],
+      "target_construction": "掃除しておきます",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_054_tekara",
+      "expression_html": "手を<b>洗ってから</b>、ご飯を食べます。",
+      "reading": "てを<b>あらってから</b>、ごはんを たべます。",
+      "meaning_ru": "Помыв руки, я ем.",
+      "pattern_text": "Паттерン: [動詞て形] + から\nЗначение: После того как сделал А, делают Б — подчёркивает завершённость первого действия.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋から",
+          "example_html": "<b>洗ってから</b>"
+        }
+      ],
+      "target_construction": "洗ってから",
+      "tags": [
+        "N4",
+        "time",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_055_tekudasai",
+      "expression_html": "ここに名前を<b>書いてください</b>。",
+      "reading": "ここに なまえを<b>かいてください</b>。",
+      "meaning_ru": "Пожалуйста, напишите здесь имя.",
+      "pattern_text": "Паттерン: [動詞て形] + ください\nЗначение: Нейтрально-вежливая просьба сделать что-то.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋ください",
+          "example_html": "<b>書いてください</b>"
+        }
+      ],
+      "target_construction": "書いてください",
+      "tags": [
+        "N4",
+        "request",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_056_tekuru",
+      "expression_html": "空が<b>暗くなってきた</b>。",
+      "reading": "そらが<b>くらくなってきた</b>。",
+      "meaning_ru": "Небо начало темнеть.",
+      "pattern_text": "Паттерン: [動詞て形] + くる\nЗначение: Действие/изменение движется к настоящему моменту (или к говорящему), либо началось и продолжается до сих пор.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋くる",
+          "example_html": "<b>暗くなってきた</b>"
+        }
+      ],
+      "target_construction": "暗くなってきた",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_057_tekureru",
+      "expression_html": "友達が引っ越しを<b>手伝ってくれました</b>。",
+      "reading": "ともだちが ひっこしを<b>てつだってくれました</b>。",
+      "meaning_ru": "Друг помог мне с переездом.",
+      "pattern_text": "Паттерン: [動詞て形] + くれる\nЗначение: Кто-то делает что-то в пользу говорящего (или его группы).",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋くれる",
+          "example_html": "<b>手伝ってくれました</b>"
+        }
+      ],
+      "target_construction": "手伝ってくれました",
+      "tags": [
+        "N4",
+        "giving-receiving",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_058_degozaimasu",
+      "expression_html": "こちらは会議室<b>でございます</b>。",
+      "reading": "こちらは かいぎしつ<b>でございます</b>。",
+      "meaning_ru": "Это конференц-зал (очень вежливо).",
+      "pattern_text": "Паттерン: [名詞] + でございます\nЗначение: Максимально вежливая/формальная связка «быть» (です→でございます, часто в сфере обслуживания).",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞＋でございます",
+          "example_html": "<ruby>会議室<rt>かいぎしつ</rt></ruby><b>でございます</b>"
+        }
+      ],
+      "target_construction": "でございます",
+      "tags": [
+        "N4",
+        "honorifics",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_059_teshimau",
+      "expression_html": "大切な本を<b>無くしてしまいました</b>。",
+      "reading": "たいせつな ほんを<b>なくしてしまいました</b>。",
+      "meaning_ru": "Я (к сожалению) потерял важную книгу.",
+      "pattern_text": "Паттерン: [動詞て形] + しまう（会話：ちゃう）\nЗначение: Действие завершено полностью, часто с оттенком сожаления или неожиданности.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形＋しまう",
+          "example_html": "<b>無くしてしまいました</b>"
+        },
+        {
+          "pos": "会話体",
+          "form_label": "動詞て形＋ちゃう",
+          "example_html": "<ruby>忘<rt>わす</rt></ruby>れちゃった"
+        }
+      ],
+      "target_construction": "無くしてしまいました",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    },
+    {
+      "key": "n4_060_deshimau",
+      "expression_html": "ビールを全部<b>飲んでしまいました</b>。",
+      "reading": "ビールを ぜんぶ<b>のんでしまいました</b>。",
+      "meaning_ru": "Я (незаметно для себя) выпил всё пиво целиком.",
+      "pattern_text": "Паттерン: [動詞で形（む・ぶ・ぬ動詞）] + しまう（会話：じゃう）\nЗначение: То же значение, что てしまう, но для глаголов, чья て形 звучит как で形 (飲む・遊ぶ・死ぬ等).",
+      "formation_rules": [
+        {
+          "pos": "動詞で形",
+          "form_label": "動詞で形＋しまう",
+          "example_html": "<b>飲んでしまいました</b>"
+        },
+        {
+          "pos": "会話体",
+          "form_label": "動詞で形＋じゃう",
+          "example_html": "<ruby>飲<rt>の</rt></ruby>んじゃった"
+        }
+      ],
+      "target_construction": "飲んでしまいました",
+      "tags": [
+        "N4",
+        "aspect",
+        "lesson:na"
+      ]
+    }
+  ]
+}
