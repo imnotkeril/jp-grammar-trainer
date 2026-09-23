@@ -910,3 +910,431 @@ contract" note.
 - Embedding-based candidate generation (mentioned as a fallback in SPEC §6/§9's dedup
   discussion) is explicitly not used here either (ADR-9's reasoning extends to this slice) —
   revisit only if the heuristic step's candidate quality proves too weak in practice.
+
+---
+
+## V3 Slice: Adaptive Practice & Vocabulary
+
+Status: draft v1 · Basis: idea doc §15/§21-23/§28/§36/§37, SPEC.md's explicitly-deferred V2
+list · Author: architect agent · Date: 2026-09-23
+
+MVP + the Grammar Graph/Browse V2 slice are both shipped and QA-verified. This slice covers
+everything left in SPEC.md's V2 tier the owner asked for in one pass: Confusion Practice,
+Weak Points, adaptive furigana via a new `Vocabulary`/`UserVocabulary` pair, and a modest
+confusion-bias wire-through into the existing distractor/generation pipeline. **Additive
+only** — no MVP/V2 table, endpoint, or algorithm is redesigned; `review.py`'s existing
+`select_due_progress`/`serve_question_for_grammar`/`apply_answer` and `distractors.py`'s
+`pick_distractors` are extended in place, not forked. ADR numbering continues from ADR-13.
+
+Scope calls made up front, per the task's own "simplify aggressively" steer:
+- No morphological tokenizer. Word-boundary detection is sidestepped entirely (not
+  approximated) by reusing the sentence markup's existing `<ruby>base<rt>reading</rt></ruby>`
+  spans, which are already segmented at word/compound granularity by whoever authored the
+  Anki deck and by the AI generation prompt (§7.3, which explicitly asks for the same ruby
+  convention). See **[ADR-15]** below — this is the single design choice that makes the rest
+  of this slice tractable at personal-tool effort level.
+- No new stats dashboard, no vocabulary browse UI, no per-word quiz mode. Vocabulary tracking
+  is purely an SRS-adjacent signal (drives furigana hiding), not a feature surface of its own.
+- No session-composition config UI. Mix ratios/thresholds below are hardcoded constants in
+  `config.py`, changeable by editing `.env` — not worth a settings screen for a single user.
+
+### V3.1 Schema: `Vocabulary` + `UserVocabulary`
+
+**Migration scaffolded** at `backend/alembic/versions/0003_vocabulary.py` (mirrors 0002's
+structure) — model/router/service left for backend-dev.
+
+```sql
+CREATE TYPE vocabulary_entry_type AS ENUM ('word', 'kanji');
+
+CREATE TABLE vocabulary (
+    id                        UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    surface_form              TEXT NOT NULL,        -- exact string matched against <ruby> base spans
+    entry_type                vocabulary_entry_type NOT NULL DEFAULT 'word',
+    reading                   TEXT NOT NULL,
+    meaning_ru                TEXT NOT NULL,
+    example_sentence_jp       TEXT,
+    example_sentence_reading  TEXT,
+    example_sentence_ru       TEXT,
+    jlpt_level                VARCHAR(8) NOT NULL DEFAULT 'N3',
+    source_tag                TEXT,                  -- CSV category (words) or on/kun readings (kanji)
+    created_at                TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ix_vocabulary_surface_form ON vocabulary (surface_form);
+CREATE UNIQUE INDEX uq_vocabulary_surface_entry_type ON vocabulary (surface_form, entry_type);
+
+CREATE TABLE user_vocabulary (
+    vocabulary_id       UUID PRIMARY KEY REFERENCES vocabulary(id) ON DELETE CASCADE,
+    correct_exposures   INTEGER NOT NULL DEFAULT 0,   -- lifetime counter, for stats only
+    incorrect_exposures INTEGER NOT NULL DEFAULT 0,   -- lifetime counter, for stats only
+    correct_streak      INTEGER NOT NULL DEFAULT 0,   -- drives known_since, reset on any miss
+    known_since         TIMESTAMPTZ,                  -- non-null => furigana hidden (adaptive mode)
+    last_exposed_at     TIMESTAMPTZ,
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+```
+
+No `owner_id` (ADR-3 still holds). A row is created lazily in `user_vocabulary` the first
+time a word is matched in a served sentence (not pre-populated for all ~2,600 vocabulary
+rows — most will never be exposed at N3-only review volume, no reason to pre-seed dead rows).
+
+**[ADR-14] Seed source is a repo-local JSON snapshot, not a live read of the external CSV
+directory.** `E:\Main\Main\Папки\Japanese\Анки\{кандзи н3,слова н3}\*.csv` is outside this
+repo (a separate personal working directory, explicitly read-only reference per the task).
+Mirrors the exact precedent SPEC §3 already set for `Grammar` (Anki export copied into
+`data/seed/n3_grammar_anki_export.json` rather than read live from the `.apkg`): the seed
+script reads the external CSVs **once**, writes `data/seed/vocabulary_n3.json` into the repo,
+and the actual DB-populating script reads that snapshot. This means the backend never depends
+on the external drive/folder being present at deploy time, in CI, or on any machine but the
+owner's dev box where the one-off conversion is run.
+
+**[ADR-15] Exact-match against `<ruby>` base spans, not substring/tokenization.** Extracting
+word boundaries from unsegmented Japanese text is a known-hard problem the task explicitly
+says to sidestep. The insight that avoids it: every sentence this app ever serves
+(`sentence_full_html`, both seed and AI-generated per the §7.3 prompt contract) already
+carries `<ruby>base<rt>reading</rt></ruby>` spans, and `base` is already segmented at
+word/compound granularity — because that's the only granularity furigana annotation makes
+sense at. So vocabulary matching is: parse every `<ruby>` pair out of `sentence_full_html`
+(reusing the existing `_RUBY_PAIR_RE` regex already defined in
+`backend/app/services/furigana.py` and mirrored in `frontend/src/components/FuriganaText.tsx`
+— exported/shared rather than re-implemented a third time, see V3.4), strip any inner tags
+from `base`, and look up that exact string against `vocabulary.surface_form`. No substring
+scan over the full sentence text against ~2,600 candidate strings, no ambiguity about
+whether a matched kanji is part of a larger word — the markup already answered that
+question. This only works because kanji-only vocabulary rows (`entry_type='kanji'`) are
+matched **exactly** too: a single-kanji `<ruby>` base like `<ruby>実<rt>み</rt></ruby>` will
+exact-match a kanji-deck row, but will never spuriously match against a *different* compound
+like `現実` (whose ruby base is the two-character string `現実`, not `実` alone) — exact-match
+naturally respects the segmentation the source markup already committed to.
+
+Sentences whose target construction has no kanji, or with a stray un-ruby'd kanji, simply
+contribute no vocabulary signal for that word — acceptable gap, not a data-quality bug to
+chase (mirrors ADR-6/ADR-6b's general stance on this deck's markup quality).
+
+**[ADR-16] "Known" rule.** Per idea doc §22 verbatim intent ("known after N correct
+exposures"): `known_since` is set the first time `correct_streak >= KNOWN_STREAK_THRESHOLD`
+(config, default `5`). Any single incorrect exposure resets `correct_streak` to 0 **and**
+clears `known_since` back to `NULL` if it was set — a word can un-become "known" if the owner
+starts missing it again, mirroring `grammar_progress`'s own lapse philosophy (ADR-8: partial
+regression on error, not amnesia, but also not silently ignoring a real miss). Streak-based
+rather than raw-total-based specifically so a word that was correct 5 times long ago but has
+been missed every time since doesn't stay marked "known" forever.
+
+### V3.2 Vocabulary seeding — CSV structure (confirmed by reading actual files)
+
+Both CSV families are **headerless**, comma-separated, UTF-8 with a BOM on the first field of
+row 1. Confirmed columns (no column ever contains an embedded comma in the sampled data —
+plain `csv.reader` with default dialect is sufficient, no quoting edge cases hit):
+
+- **`слова н3/*.csv`** (22 files, 2,312 data rows total) — one word per row:
+  `surface_form, reading, meaning_ru, example_sentence_jp, example_sentence_reading,
+  example_sentence_ru, category_tag` (e.g. `教育,きょういく,образование,日本の教育制度について...,
+  にっぽんの...,Изучаю систему...,N3::Education`). → `entry_type='word'`, `source_tag` =
+  column 7 verbatim.
+- **`кандзи н3/*.csv`** (15 files, 373 data rows total) — one kanji per row: `kanji_char,
+  primary_kun_reading, on_readings, all_kun_readings, meaning_ru, compound_examples,
+  example_sentence_jp, example_sentence_ru` (e.g. `合,あう,ゴウ・ガッ,あう・あわす・あわせる,
+  соединение/подходящий,合う（あう）—...,この色は君に合います。,Этот цвет тебе подходит.`).
+  → `entry_type='kanji'`, `surface_form` = column 1, `reading` = column 2 (the reading that
+  actually appears standalone in running text; on/kun full lists packed into `source_tag` as
+  `f"on={col3} kun={col4}"` for audit purposes only, not used for matching).
+
+`seed_vocabulary.py` (`backend/app/scripts/seed_vocabulary.py`, one-off/re-runnable like
+`generate_relations.py`, **not** wired into any request path):
+1. Read both directories (path from `settings.vocabulary_csv_source_dir`, default pointing at
+   the path above — overridable since it's a personal path on the owner's machine, not
+   portable, mirrors how `.env` already isn't committed).
+2. Parse rows per the column mapping above; dedupe within each family by `surface_form`
+   (a handful of words plausibly repeat across category files — first occurrence wins, note
+   the collision count in the report rather than silently dropping data).
+3. Write `data/seed/vocabulary_n3.json` (both families in one file, tagged by `entry_type`) —
+   the repo-committed snapshot per ADR-14.
+4. Upsert into `vocabulary` on `(surface_form, entry_type)` conflict — updates
+   `reading`/`meaning_ru`/examples/`source_tag`, never touches `user_vocabulary` (re-running
+   this script must never reset the owner's retention progress).
+5. Print/write `seed_vocabulary_report.json` (rows read per family, rows written, dedup
+   collisions) — same reporting convention as `seed_import.py`/`generate_relations.py`.
+
+Expected result: ~2,300-2,600 `vocabulary` rows total (word + kanji, minus dedup collisions).
+
+### V3.3 Confusion Practice & Weak Points review modes
+
+**API change**: `SessionRequest` (`backend/app/schemas/review.py`) gets one new field:
+
+```python
+class SessionRequest(BaseModel):
+    size: Literal[5, 10, 20] = 10
+    mode: Literal["due", "confusion", "weak_points"] = "due"
+```
+
+`POST /review/session` dispatches on `mode`, all three branches reusing the existing
+`serve_question_for_grammar` / shortage-triggered generation / response assembly loop in
+`routers/review.py` untouched — only the **selection** step (`select_due_progress` today)
+changes per mode. Three new pure-selection functions added to `services/review.py`:
+
+**`select_confusion_progress(db, size)`** — Confusion Practice (idea doc §15). Queries
+`grammar_relation WHERE relation_type IN ('commonly_confused', 'similar_form')` (both types,
+per the task's own steer: "design this mode to work with whatever `commonly_confused`/
+`similar_form` edges exist now" — the no-API-key heuristic fallback in `generate_relations.py`
+*never* emits `commonly_confused`, only `similar_form`/`similar_meaning`/`related`, so
+restricting to `commonly_confused` alone would make this mode return nothing at all on the
+owner's current DB state). Flattens both edge endpoints into a `grammar_id -> max(strength)`
+map, orders descending, takes the top `size` distinct grammar items, loads their
+`GrammarProgress` rows (every `Grammar` row has one, ADR-5). **Ignores due-ness entirely** —
+per the task spec, this mode is "10-20 questions drawn only from grammar items connected by
+confusion edges," not a due-review queue. If fewer than `size` grammar items participate in
+any qualifying edge (possible before the owner ever runs `generate_relations.py`, or if it's
+never run with a real LLM key), the session is simply shorter than requested — surfaced to
+the frontend as `SessionResponse.questions` having fewer items than `size` asked for (already
+a valid, handled state today: MVP's own due-selection can already under-fill a session when
+few items are due). No error, no fake padding.
+
+**`select_weak_progress(db, size, exclude_ids=frozenset())`** — Weak Points (idea doc §28/§37,
+SPEC §4 note). Queries `grammar_progress WHERE repetitions > 0` (excludes never-attempted
+`NEW` items — their `application_score`/`discrimination_score` are default `0.0`, which would
+otherwise make every unseen item look maximally "weak" and dominate the list; weakness must be
+*demonstrated*, not assumed), `ORDER BY (application_score + discrimination_score) ASC,
+next_review ASC LIMIT size`, excluding any id already in `exclude_ids` (used by the due-mode
+mix-in below to avoid duplicate items in one session).
+
+**Default `due` mode gets a weak-point mix-in**, not just a pure switch — per the task's
+explicit ask ("weight session composition... even outside 'due' review"):
+
+```python
+def select_due_progress_mixed(db, size, now, weak_ratio=settings.weak_point_mix_ratio):
+    weak_slots = round(size * weak_ratio) if size >= 5 else 0   # e.g. size=10 -> 2 slots
+    due_items = select_due_progress(db, size - weak_slots, now)
+    weak_items = select_weak_progress(db, weak_slots, exclude_ids={p.grammar_id for p in due_items})
+    combined = due_items + weak_items
+    if len(combined) < size:   # not enough weak-eligible items existed — top up from due
+        combined += [p for p in select_due_progress(db, size, now)
+                     if p.grammar_id not in {x.grammar_id for x in combined}][: size - len(combined)]
+    return combined[:size]
+```
+
+**[ADR-17] `weak_point_mix_ratio` default `0.2`, hardcoded config, not exposed in the UI.**
+20% of a default 10-question session = 2 weak-point questions mixed into ordinary due review,
+without displacing the SRS due-queue's own priority ordering for the rest. `size < 5`
+(i.e. only the `5`-question option) skips the mix-in entirely — reserving even one slot out
+of 5 would over-weight it relative to the ratio's intent. This is the same "modest, wire
+existing signals in, no new subsystem" instruction applied to session composition as it was
+applied to generation/distractors below.
+
+Router change in `routers/review.py`'s `start_session`: replace the current unconditional
+`select_due_progress(db, request.size, now)` call with a 3-way dispatch on `request.mode`
+(`due` → `select_due_progress_mixed`, `confusion` → `select_confusion_progress`,
+`weak_points` → `select_weak_progress`); everything downstream is unchanged.
+
+### V3.4 Adaptive furigana
+
+Furigana rendering is **entirely client-side today** (confirmed: `services/furigana.py`
+exists but is called by no router — `FuriganaText.tsx`/`useFuriganaMode.ts` do the actual
+work, over the raw `sentence_full_html` the backend already sends, per a local
+`localStorage`-persisted mode toggle). Adaptive mode extends that existing pure-function
+pattern rather than moving rendering server-side.
+
+**New `FuriganaMode` value: `"adaptive"`** (both
+`backend/app/services/furigana.py:FuriganaMode` and `frontend/src/lib/types.ts`'s mirrored
+type go from 3 to 4 literal values). Semantics: start from the existing `"by_level"` baseline
+(target-construction furigana hidden), **then additionally strip `<rt>` for any `<ruby>` span
+whose base text exact-matches a currently-known word** (ADR-15/16's mechanism, applied at
+render time instead of exposure-recording time):
+
+```python
+# furigana.py
+@beartype
+def strip_known_words(html: str, known_surface_forms: frozenset[str]) -> str:
+    """Additionally strip <rt> for <ruby> spans whose base is in known_surface_forms.
+    Applied on top of by_level baseline for mode='adaptive'. Exact-match only (ADR-15)."""
+    def _drop_if_known(match: re.Match[str]) -> str:
+        base = _STRIP_TAGS_RE.sub("", match.group(1))
+        return match.group(1) if base in known_surface_forms else match.group(0)
+    return _RUBY_PAIR_RE.sub(_drop_if_known, html)
+
+# render_furigana() gains a `known_surface_forms: frozenset[str] = frozenset()` parameter;
+# mode == "adaptive" -> strip_known_words(strip_furigana_inside_bold(sanitized), known_surface_forms)
+```
+
+`frontend/src/components/FuriganaText.tsx`'s `renderFuriganaHtml` gets the mirrored TS
+implementation (same file already documents that it deliberately mirrors the Python — this
+slice keeps that pairing, adds a 4th case + a `knownSurfaceForms: Set<string>` parameter
+threaded through `FuriganaTextProps`).
+
+**Where the known set comes from**: `SessionResponse` (`schemas/review.py`) gains one field,
+computed once per session start (not per-question — the known set is a global snapshot, not
+per-item):
+
+```python
+class SessionResponse(BaseModel):
+    questions: list[QuestionOut]
+    known_words: list[str]   # surface_form of every vocabulary row with known_since IS NOT NULL
+```
+
+`services/vocabulary.py` (new) provides `known_surface_forms(db) -> frozenset[str]` — a single
+`SELECT surface_form FROM vocabulary JOIN user_vocabulary ON ... WHERE known_since IS NOT
+NULL`, expected to stay in the low hundreds of rows at most even at full N3 mastery, trivial
+payload size added to the session response. `routers/review.py`'s `start_session` calls it
+once and includes it in `SessionResponse`. The frontend threads `known_words` (as a `Set`)
+from the session response down to every `FuriganaText` render for that session — **[ADR-18]**
+deliberately not re-fetched mid-session on every answer: knowledge state changes slowly
+(streak-based, ADR-16) and a session-stale known-set is a fine trade for avoiding an extra
+round-trip per answer, refreshed naturally at the next session start.
+
+**Exposure recording** happens in `POST /review/answer` (`routers/review.py`'s
+`submit_answer`), alongside the existing `QuestionAttempt` write and `apply_answer` SRS call:
+
+```python
+# services/vocabulary.py
+@beartype
+def extract_ruby_bases(html: str) -> list[str]: ...   # reuses furigana._RUBY_PAIR_RE, strips inner tags
+
+@beartype
+def record_exposures(db: Session, sentence_full_html: str, is_correct: bool, now: datetime) -> None:
+    bases = set(extract_ruby_bases(sentence_full_html))
+    if not bases:
+        return
+    vocab_rows = db.scalars(select(Vocabulary).where(Vocabulary.surface_form.in_(bases))).all()
+    for vocab in vocab_rows:
+        uv = db.get(UserVocabulary, vocab.id) or UserVocabulary(vocabulary_id=vocab.id)
+        db.add(uv)
+        if is_correct:
+            uv.correct_exposures += 1
+            uv.correct_streak += 1
+            if uv.correct_streak >= settings.known_streak_threshold and uv.known_since is None:
+                uv.known_since = now
+        else:
+            uv.incorrect_exposures += 1
+            uv.correct_streak = 0
+            uv.known_since = None   # relapse — see ADR-16
+        uv.last_exposed_at = now
+```
+
+Called once per answer with `question.sentence_full_html` and the already-computed
+`is_correct`. **[ADR-19] Whole-sentence correctness is credited to every word in that
+sentence, not per-word comprehension** — this is the explicit approximation the task calls
+for ("this is an approximation, not a dedicated vocab quiz"): getting the grammar blank right
+doesn't prove the learner understood every content word, and getting it wrong doesn't mean
+every word was unknown. Accepted as pragmatically good-enough signal for a personal tool;
+revisit only if it visibly misbehaves in practice (e.g. words getting marked "known" too
+easily because most answers skew correct at high recall_pct).
+
+### V3.5 Confusion-biased distractors + generation prompt
+
+Two minimal, additive changes — no new subsystem, per the task's own steer.
+
+**Distractor selection** (`services/distractors.py`): `pick_distractors` gains an optional
+`preferred: list[str] | None = None` parameter, tried before the uniform-random pool:
+
+```python
+@beartype
+def pick_distractors(correct_grammar_id, correct_answer_text, candidates, count=3,
+                      rng=None, preferred=None) -> list[str]:
+    rng = rng or random.Random()
+    preferred_pool = [t for t in (preferred or []) if t.strip() != correct_answer_text.strip()]
+    rng.shuffle(preferred_pool)
+    chosen = preferred_pool[:count]
+    remaining = count - len(chosen)
+    if remaining > 0:
+        pool = [text for gid, text in candidates
+                if gid != correct_grammar_id and text.strip() != correct_answer_text.strip()
+                and text not in chosen]
+        if len(pool) < remaining:
+            raise ValueError(...)
+        chosen += rng.sample(pool, remaining)
+    return chosen
+```
+
+`services/generation/trigger.py`'s `_build_options` passes `preferred` = the
+`target_construction` of every grammar item connected to this one via a
+`commonly_confused`/`similar_form` `GrammarRelation` edge (a new
+`_fetch_confused_texts(db, grammar_id) -> list[str]` helper, one indexed query on
+`grammar_relation`, same pattern as `_fetch_distractor_candidates`). Net effect: once
+`generate_relations.py` has populated real confusion edges for an item, freshly-generated
+questions for it get distractors drawn from its *actual* confusable partners first — directly
+improving discrimination quality (SPEC §9's flagged MVP risk) without touching validation,
+storage, or serving logic. Falls back to today's uniform-random behavior automatically when
+no edges exist yet (empty `preferred` list) — zero behavior change for any grammar item
+without confusion data.
+
+**Generation prompt bias** (`services/generation/prompts.py` + `trigger.py`): when a grammar
+item has ≥1 `commonly_confused`/`similar_form` partner, `build_prompt` receives an additional
+optional `confusable_with: list[dict[str, str]]` (each partner's `target_construction` +
+`meaning_ru`, top 2 by relation `strength`) and appends one line to the existing prompt
+template (§7.3): *"This construction is sometimes confused with: {list}. Where natural, favor
+sentence contexts that would also work as a contrastive example against these."* This both
+(a) improves the `explanation_ru` the LLM already returns per sentence (more likely to
+reference the real confusable partner instead of a generic contrast), and (b) is the "confusion
+edge gets more questions" intent from idea doc §36 realized as a quality nudge on generation
+that already happens, rather than a separate quantity-bias mechanism — **[ADR-20]** a true
+"generate more for confusion-linked items" would mean a per-item shortage threshold override;
+rejected as unnecessary complexity for a personal tool where `GENERATION_BATCH_SIZE=15` per
+trigger already comfortably covers `size<=20` Confusion Practice sessions without a boosted
+threshold. If real usage shows confusion-linked items running dry faster in practice, the
+override is a one-line change to `needs_generation`'s threshold argument — not designed in
+now, per the task's explicit permission to cut this corner.
+
+### V3.6 API surface changes (summary)
+
+```
+POST /review/session
+    body: {"size": 5|10|20, "mode": "due"|"confusion"|"weak_points" = "due"}   # NEW: mode
+    -> {"questions": [...], "known_words": ["教育", "実", ...]}                # NEW: known_words
+
+POST /review/answer                      # request/response shape UNCHANGED
+    (side effect only: now also calls record_exposures — no new fields either direction)
+```
+
+No changes to `GET /grammar*` (V2 slice) or `GET /stats`. `GrammarWithProgressOut` schema
+elsewhere is untouched.
+
+### V3.7 Task breakdown (dependency-ordered, layer-tagged)
+
+Continues the MVP (§9) / V2 (§V2.5) task-numbering convention.
+
+| # | Layer | Task | Output | Test |
+|---|---|---|---|---|
+| V3.1 | DB | Migration `0003_vocabulary` — **scaffolded already**, verify against a live DB | `backend/alembic/versions/0003_vocabulary.py` | `alembic upgrade head` succeeds on Supabase branch |
+| V3.2 | Backend | `app/models/vocabulary.py` (`Vocabulary`, `UserVocabulary` SQLAlchemy models mirroring the DDL) | models | `mypy` clean, round-trip unit test |
+| V3.3 | Backend | `app/scripts/seed_vocabulary.py` — read external CSVs (§V3.2 column mapping), write `data/seed/vocabulary_n3.json`, upsert into `vocabulary` | script + `data/seed/vocabulary_n3.json` + report | unit tests on the CSV row parser against a few real sample rows (fixture copies, not the live external dir); manual one-time run against the owner's actual CSV directory before declaring done |
+| V3.4 | Backend | `app/services/vocabulary.py` — `extract_ruby_bases`, `known_surface_forms`, `record_exposures` (ADR-15/16/19) | service | unit tests: streak increments/resets correctly, known_since sets/clears per ADR-16, exact-match doesn't false-positive on substrings |
+| V3.5 | Backend | Extend `services/review.py`: `select_confusion_progress`, `select_weak_progress`, `select_due_progress_mixed` | service additions | unit tests per mode: confusion mode only returns edge-connected items, weak mode excludes `repetitions=0`, mixed mode reserves the right slot count and never duplicates an id |
+| V3.6 | Backend | Wire V3.4/V3.5 into `routers/review.py`: `mode` dispatch on `POST /review/session`, `known_words` in `SessionResponse`, `record_exposures` call in `POST /review/answer`; update `schemas/review.py` | router + schema changes | integration test per mode; integration test that answering updates `user_vocabulary` rows |
+| V3.7 | Backend | Extend `distractors.py` (`preferred` param) + `trigger.py` (`_fetch_confused_texts`, wire into `_build_options`) + `prompts.py`/`provider.py` (`confusable_with` prompt param) | service changes | unit test: `pick_distractors` prefers `preferred` pool before falling back; unit test `_fetch_confused_texts` returns the right partner set for a known relation fixture |
+| V3.8 | Frontend | `lib/types.ts` + `lib/api.ts`: `mode` on session request, `known_words` on session response | typed client | type-checks against updated backend schema |
+| V3.9 | Frontend | `services/furigana.py`-mirrored `"adaptive"` case in `FuriganaText.tsx`/`useFuriganaMode.ts`; thread `known_words` from session response down through `review/page.tsx` to every `FuriganaText` | component + page changes | manual QA: a word crosses the known threshold, next session hides its furigana in adaptive mode even outside the bold target span |
+| V3.10 | Frontend | Review mode picker UI (due / confusion practice / weak points) — e.g. a small segmented control on the dashboard before "Start Review", per idea doc §15/§28's framing as distinct practice entry points | page/component | manual QA: each mode starts a session with the expected item mix |
+| V3.11 | Test | QA pass across V3.6-V3.10 end to end (`qa-tester`) | bug list or sign-off | confusion mode session → weak points session → adaptive furigana over several answers → words visibly stop showing furigana loop works |
+| V3.12 | Docs | Update `/llms.txt` + README for the changed `POST /review/session` contract and the new modes | docs | tech-writer sign-off |
+
+**Parallelization:** V3.1→V3.2 (DB/model) blocks V3.3/V3.4 (need the table). V3.2 is
+independent of the V2 graph work entirely — no shared tables. V3.5 (review selection) only
+needs the *existing* `grammar_relation`/`grammar_progress` tables (already live), so it can
+start immediately in parallel with V3.2-V3.4 — it doesn't touch `Vocabulary` at all. V3.7
+(distractor/prompt bias) likewise only needs `grammar_relation`, parallel with V3.2-V3.4. Once
+V3.4+V3.5 land, V3.6 (router wiring) is a short integration task. Frontend V3.8-V3.10 can
+build against the frozen §V3.6 contract as soon as V3.6 is merged, same "frontend doesn't need
+a live backend, just a frozen contract" pattern as MVP/V2. V3.9 (adaptive furigana rendering)
+specifically only needs `known_words` to be *present* in the response (can be an empty array
+until V3.3's real seed run + real usage populates `user_vocabulary` — renders identically to
+`by_level` mode until then, no broken state).
+
+### V3.8 Open items carried forward
+
+- Kanji-CSV rows with identical `surface_form` to a word-CSV row are stored as two distinct
+  `vocabulary` rows (different `entry_type`) rather than merged — both can independently
+  become "known"; a single-kanji `<ruby>` span can only ever match the `entry_type='kanji'`
+  row (exact match, ADR-15), so there's no real ambiguity in practice, just two counters
+  tracking what is conceptually the same visual glyph in two different contexts. Not worth
+  the complexity of merging them for a personal tool.
+- `select_confusion_progress` quality is entirely gated on `generate_relations.py` having been
+  run with a real LLM key (V2.6's open item already flagged this for the graph/browse UI;
+  applies identically here) — until then, Confusion Practice sessions draw from
+  `similar_form`-only heuristic-fallback edges, which is a real but weaker signal than true
+  `commonly_confused` classification. No code change needed when the owner eventually adds a
+  key and reruns the script — this mode automatically gets better, per the task's own framing.
+- No UI surfaces `correct_exposures`/`incorrect_exposures`/vocabulary counts anywhere (no
+  vocab dashboard, per this slice's scope cut) — the data is tracked and drives furigana, but
+  isn't yet visible to the owner as a standalone stat. Cheap to add later (`GET
+  /vocabulary/stats` mirroring `GET /stats`'s shape) if wanted.
+- `weak_point_mix_ratio`/`known_streak_threshold` are hardcoded config with no owner-facing
+  toggle (ADR-17) — revisit only if the owner explicitly asks to tune them, per this slice's
+  "no settings UI" scope cut.

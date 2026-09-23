@@ -22,6 +22,13 @@ class Settings(BaseSettings):
     generation_shortage_threshold: int = 5
     generation_batch_size: int = 15
 
+    # V3 slice (ARCHITECTURE.md "V3 Slice: Adaptive Practice & Vocabulary") — ADR-17/ADR-16.
+    weak_point_mix_ratio: float = 0.2
+    known_streak_threshold: int = 5
+    # Personal path on the owner's machine, not portable — only used by the one-off
+    # `app/scripts/seed_vocabulary.py`, never read at request time. See ARCHITECTURE.md V3.2.
+    vocabulary_csv_source_dir: str = r"E:\Main\Main\Папки\Japanese\Анки"
+
     cors_allowed_origins: str = "http://localhost:3000"
 
     @property
