@@ -602,3 +602,311 @@ CORS_ALLOWED_ORIGINS=http://localhost:3000
 - Tag-based distractor/grouping quality is weak on MVP (empty tags) — first V2 target per
   SPEC §9.
 - Backend hosting target (ADR-1) is deliberately left open for devops to pick at ship time.
+
+---
+
+## V2 Slice: Grammar Graph & Browse
+
+Status: draft v1 · Basis: `SPEC.md` §4 "Явно вне MVP" (Grammar Graph, browsable curriculum) +
+idea doc §10 (relation types) · Author: architect agent · Date: 2026-09-23
+
+MVP shipped Tier 1 (205 items, SRS review loop, QA-verified). This slice adds the two V2
+items the owner asked for next: (1) explicit typed relations between grammar items
+(`GrammarRelation`), and (2) a first-class browsable Grammar List/Detail UI, distinct from
+the review-session-only access pattern of MVP. It does **not** touch SRS, generation
+triggers, or the review flow — additive only. ADR numbering continues from ADR-10.
+
+### V2.1 `GrammarRelation` model + migration
+
+**Schema** (scaffolded in `backend/alembic/versions/0002_grammar_relations.py` — migration
+file only, model/router/script left for backend-dev per task scope):
+
+```sql
+CREATE TYPE grammar_relation_type AS ENUM (
+    'similar_meaning', 'similar_form', 'commonly_confused', 'opposite',
+    'prerequisite', 'advanced_version', 'related'
+);
+CREATE TYPE grammar_relation_source AS ENUM ('heuristic', 'llm_classified', 'manual');
+
+CREATE TABLE grammar_relation (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    grammar_id          UUID NOT NULL REFERENCES grammar(id) ON DELETE CASCADE,
+    related_grammar_id  UUID NOT NULL REFERENCES grammar(id) ON DELETE CASCADE,
+    relation_type       grammar_relation_type NOT NULL,
+    strength            REAL NOT NULL DEFAULT 1.0,   -- LLM confidence 0..1, or 1.0 for manual/heuristic
+    source              grammar_relation_source NOT NULL,
+    prompt_version       TEXT,                        -- classification prompt version, audit trail
+    note                 TEXT,                        -- optional 1-line LLM justification, shown in UI tooltip
+    created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+    CHECK (grammar_id <> related_grammar_id)
+);
+CREATE UNIQUE INDEX uq_grammar_relation_edge ON grammar_relation (grammar_id, related_grammar_id, relation_type);
+CREATE INDEX ix_grammar_relation_grammar_id ON grammar_relation (grammar_id);
+CREATE INDEX ix_grammar_relation_related_grammar_id ON grammar_relation (related_grammar_id);
+```
+
+**[ADR-11] Directionality convention.** Idea doc §10 lists 7 relation types without
+specifying direction. Decision, per type:
+- **Symmetric** (`similar_meaning`, `similar_form`, `commonly_confused`, `opposite`,
+  `related`): meaning is identical regardless of which column is which. Stored as **one row
+  only**, with the population script (V2.2) always writing the lexicographically-smaller
+  `grammar.id` into `grammar_id`. The API expands this into both directions when answering
+  "relations of X" (query `WHERE grammar_id = X OR related_grammar_id = X`, and when X is in
+  `related_grammar_id`, present the *other* side as "related grammar" — the response shape
+  hides which physical column held which id, callers never need to know).
+- **Directional** (`prerequisite`, `advanced_version`): `grammar_id` is the "from"/base item,
+  `related_grammar_id` is the "to"/target item. `(A, B, prerequisite)` reads "A is a
+  prerequisite of B" (learn A first). `(A, B, advanced_version)` reads "B is the advanced
+  version of A" (equivalently: A is the simpler/base form of B). These two directional types
+  are usually a matched pair for the same underlying relationship (if A→B is `prerequisite`,
+  the population script may also emit A→B `advanced_version` is *not* required — pick
+  whichever single type best fits per the classification prompt in V2.2; don't force both).
+  The API surface for a directional edge includes an explicit `"direction": "outgoing" |
+  "incoming"` field relative to the grammar item being viewed, so the frontend can render
+  "Prerequisite for this" vs. "Requires this first" correctly without the client re-deriving
+  direction semantics.
+
+No `owner_id`/user scoping needed (ADR-3 still holds — personal tool).
+
+### V2.2 Relation population strategy — heuristic candidates + one LLM classification pass
+
+**Decision: option (b), heuristic candidate generation → single batched LLM classification
+pass.** All-pairs O(205²) ≈ 21,000 pairs run through an LLM is wasteful (most pairs have no
+meaningful relation) and expensive even at cheap per-call pricing; it also produces a huge
+majority of "none" responses the classifier has to actively reject, which is where LLM
+classification quality degrades. Cheap heuristics narrow the field to the pairs actually
+worth asking about, and the existing dual-provider abstraction (`app/services/generation/`)
+is reused for the single classification pass rather than building a second one from scratch.
+
+**Step 1 — heuristic candidate generation (`backend/app/scripts/generate_relations.py`,
+pure Python, no LLM calls, runs in milliseconds over 205 rows):**
+
+For every unordered pair `(A, B)` of grammar items, compute a candidate score from cheap
+signals available directly on the `grammar` row (no new data needed):
+1. **Shared tail/function-word match** on `expression_clean` / `target_construction` — many
+   N3 confusable sets share a suffix or particle cluster (e.g. `わけだ`/`わけではない`/`わけがない`/
+   `わけにはいかない` per idea doc §10's own example). Strip the common grammatical root
+   (`わけ`, `ば`, `たら`, `のに`, `ながら`, etc. — a small hardcoded list of ~30 N3 function-word
+   stems is enough, extracted once from scanning the 205 `target_construction` values) and
+   flag pairs sharing a stem — strong signal for `similar_form`/`commonly_confused`.
+2. **Keyword overlap in `meaning_ru`** — tokenize (lowercase, strip punctuation, drop Russian
+   stopwords), Jaccard similarity over token sets. High overlap → `similar_meaning` candidate.
+   Antonym-flagging (`opposite`) is a fixed keyword-pair list (не/не-/наоборот cues,
+   "хотя"/"поэтому" opposite-logic markers) checked against both items' `pattern_text` —
+   weak signal, kept as a *candidate* trigger only, real classification is the LLM's job.
+3. **Shared kanji in `expression_clean`** (excluding function-word-only items with no kanji)
+   — set overlap on individual kanji characters, weighted by rarity (a shared common kanji
+   like 見 is weak evidence; a shared rare kanji is stronger). Cheap proxy for topical/lexical
+   relation.
+4. Combine 1-3 into a single score; take **top 6 candidate partners per item** (symmetric
+   dedup: pair `(A,B)` kept once). This caps the candidate set at ≤ `205 × 6 / 2 ≈ 615` pairs
+   in the worst case, typically fewer once dedup and score thresholds apply — roughly
+   **30x fewer LLM-evaluated pairs than all-pairs**, while heuristic step 1 (the strongest
+   signal, since it's this deck's actual construction-family clusters) directly targets the
+   `commonly_confused`/`similar_form` pairs the review loop's distractor quality (SPEC §9's
+   flagged risk) most needs.
+5. **Sparse-item fallback**: items with < 3 candidates after step 4 (isolated grammar points
+   with no obvious lexical/semantic neighbor) are left sparse — acceptable for a personal
+   tool; noted as an open item (§V2.5) rather than solved with embeddings on this pass.
+
+**Step 2 — single batched LLM classification pass, reusing the provider abstraction:**
+
+Extend `LLMProvider` (protocol in `app/services/generation/provider.py`) with one additional
+method, implemented by both `openai_adapter.py` and `anthropic_adapter.py` alongside the
+existing `generate_sentences`:
+
+```python
+@dataclass(frozen=True, slots=True)
+class RelationCandidate:
+    grammar_a_id: str
+    grammar_a_text: str      # target_construction + short pattern_text summary
+    grammar_a_meaning: str
+    grammar_b_id: str
+    grammar_b_text: str
+    grammar_b_meaning: str
+
+@dataclass(frozen=True, slots=True)
+class RelationClassification:
+    grammar_a_id: str
+    grammar_b_id: str
+    relation_type: str | None   # one of the 7 enum values, or None = "no meaningful relation"
+    direction: str | None       # "a_to_b" | "b_to_a", only meaningful for prerequisite/advanced_version
+    strength: float             # 0..1 confidence
+    note: str                   # 1-sentence justification, stored verbatim in grammar_relation.note
+
+class LLMProvider(Protocol):
+    async def generate_sentences(self, prompt: GenerationPrompt) -> list[RawGeneratedSentence]: ...
+    async def classify_relations(self, candidates: list[RelationCandidate]) -> list[RelationClassification]: ...
+```
+
+Same structured-output pattern as §7.2 (OpenAI `json_schema` / Anthropic forced tool-use),
+batched **~40 candidate pairs per call** (stays well inside both providers' context/output
+limits and keeps a single malformed response from invalidating the whole run) — for ~600
+candidates that's **~15 LLM calls total** for the entire relation graph, a one-time cost, not
+a per-review-session cost. Prompt gives both items' `target_construction`, `pattern_text`,
+`meaning_ru`, and formation info, asks the model to pick the best-fitting relation type (or
+"none"), a direction when directional, and a confidence + one-line reasoning. `None`
+responses are simply discarded (no row written).
+
+**Step 3 — persist**: upsert into `grammar_relation` with `source='llm_classified'`,
+`prompt_version` set (same pattern as `Question.generation_prompt_version`), applying the
+ADR-11 canonicalization (symmetric types: smaller id → `grammar_id`; directional types: use
+the model's stated direction to pick which id is `grammar_id`). Re-running the script is
+idempotent via `ON CONFLICT (grammar_id, related_grammar_id, relation_type) DO UPDATE` (a
+rerun with better heuristics/prompt refreshes `strength`/`note` without duplicating edges).
+
+**[ADR-12] Where this runs.** One-time/occasional manual script
+(`uv run python -m app.scripts.generate_relations`), **not** a background job and **not**
+wired into any request path — unlike `trigger.py`'s per-session generation, relations don't
+need to exist before the owner's next click, and re-running it costs real API tokens the
+owner should trigger deliberately. Owner runs it once after this slice ships, and can re-run
+later if the deck grows or classification quality needs a prompt-version bump. Script prints
+a summary report (`generate_relations_report.json`: candidate count, classified count, count
+by relation_type, count of "none" responses, list of items still with zero relations after
+the pass) mirroring the `seed_import.py` report pattern already established.
+
+### V2.3 API surface (extends, does not redesign, the existing `grammar.py` router)
+
+Current `GET /grammar` returns the full unpaginated list (fine at 205 rows, but §4's "first-class
+browsable" ask plus this section's search/filter needs a small, backward-compatible extension.
+`GET /grammar/{id}` currently returns bare `GrammarOut` (no progress, no relations) — extend it.
+
+```
+GET /grammar?q=&status=&tag=&limit=&offset=
+    q       - optional, case-insensitive substring match across expression_clean,
+              reading, meaning_ru, pattern_text (Postgres ILIKE across the four columns
+              OR'd together — no need for full-text search infra at 205 rows)
+    status  - optional, filter by grammar_progress.status (new|learning|review|mastered)
+    tag     - optional, filter by tags array containment (kept for forward-compat; currently
+              a no-op filter since all tags are empty per ADR-4 — do not remove, tags may get
+              populated later)
+    limit, offset - optional pagination, default limit=205 offset=0 (i.e. "return everything"
+              stays the default behavior, existing frontend callers are unaffected)
+    -> {"items": [GrammarWithProgressOut, ...], "total": <int>}   # wrapper is the one
+       breaking change vs MVP's bare list[GrammarOut] — bump frontend's lib/api.ts accordingly
+
+GET /grammar/{id}
+    -> GrammarDetailOut = GrammarWithProgressOut + {
+         "relations": [
+           {
+             "relation_type": "commonly_confused",
+             "direction": "symmetric" | "outgoing" | "incoming",
+             "strength": 0.86,
+             "note": "both mean 'while X, Y' but わけではない negates the outcome, not the cause",
+             "related_grammar": {"id": "...", "expression_clean": "...", "reading": "...",
+                                  "meaning_ru": "...", "target_construction": "..."}
+           }, ...
+         ]
+       }
+    Relations embedded directly (no separate round-trip) since counts per item are small
+    (heuristic caps candidates at 6, most items end up with 0-6 relation rows).
+
+GET /grammar/{id}/relations
+    -> same array as the "relations" field above, standalone endpoint for cases that don't
+       need the full grammar payload (e.g. a relations-only refresh after editing).
+
+GET /grammar/relations
+    -> ALL edges in one call: [{"grammar_id", "related_grammar_id", "relation_type",
+       "direction", "strength"}, ...]. Purpose-built for the graph view (V2.4) so it can
+       render the whole ~205-node graph from two calls total (this + GET /grammar for node
+       labels) instead of N+1 per-node relation fetches.
+```
+
+Schemas: extend `backend/app/schemas/grammar.py` with `GrammarRelationOut`,
+`GrammarDetailOut`, `GrammarListOut` (the `{items, total}` wrapper) alongside the existing
+`GrammarOut`/`GrammarWithProgressOut` — additive, don't rename or remove the current models
+(other MVP endpoints/tests reference them).
+
+### V2.4 Frontend — Grammar List, Detail, and Graph views
+
+**No new dependencies.** `frontend/package.json` currently has zero UI/graph/state libs
+beyond Next.js + React + Tailwind — per the task's own steer, this stays true. All three new
+views below are built with what's already installed.
+
+**`app/grammar/page.tsx` (list/browse):**
+- Fetch `GET /grammar` once on mount (205 rows is trivial payload size, ~50-100KB of JSON at
+  most); search/filter/sort happen **client-side** over the already-fetched array — no need
+  to round-trip to the backend's `?q=` param for a personal single-user 205-item list (the
+  backend param exists per V2.3 for completeness/future-proofing, e.g. if the deck grows to
+  N5-N1 combined per SPEC's V2 list, but the MVP-era frontend doesn't need it yet).
+- Controls: text search input (matches `expression_clean`/`reading`/`meaning_ru`), status
+  filter chips (new/learning/review/mastered, reusing `GrammarProgress.status` already
+  returned), a link/toggle to the graph view.
+- List rendered as a simple card/row list (reuse Tailwind patterns from the existing
+  dashboard), each row links to `/grammar/[id]`.
+
+**`app/grammar/[id]/page.tsx` (detail):**
+Structured per idea doc §35's intent (full info block, not just the review-session sentence
+fragment): meaning, formation table (reuse `formation_rules` jsonb, same data
+`FuriganaText.tsx` already knows how to render from MVP), the original Anki example sentence
+(`expression_html`), usage/nuance text (`pattern_text` — already carries both the rule and
+nuance per SPEC §3's field description, no new field needed), and a **"Compare with…"**
+block driven by `relations`: grouped by `relation_type` (e.g. a "Commonly confused with"
+section, a "Similar meaning" section, a "Prerequisite / builds on" section using
+`direction`), each entry linking to that related item's own detail page. This is the payoff
+of V2.1/V2.2 — distractor quality and study-flow are no longer blind.
+
+**`app/grammar/graph/page.tsx` (graph visualization):**
+Fetch `GET /grammar` (node labels) + `GET /grammar/relations` (edges) once, render with a
+**hand-rolled force-directed layout, computed once client-side, no d3 or react-force-graph
+dependency**:
+- Layout: simple iterative repulsion/spring relaxation (Fruchterman-Reingold-style) run for
+  ~150-300 iterations in a `useEffect` on load — O(n²) repulsion over 205 nodes is a few
+  hundred thousand operations, trivially fast in a single JS tick, no per-frame animation
+  loop needed (compute layout once, then it's a static positioned graph you pan/zoom, not a
+  live physics sim). ~20-30 lines of vector math, no library.
+- Render: `<canvas>` (not SVG) for the ~205 nodes / up to ~600 edges — canvas draw calls at
+  that count are cheap and avoid SVG DOM-node overhead; label text drawn only for
+  hovered/selected node plus optionally always-on for high-degree "hub" nodes (commonly the
+  most useful ones to see labeled).
+- Interaction: hover highlights a node's direct edges + dims the rest; click navigates to
+  `/grammar/[id]`; a relation-type legend with toggleable visibility per type (color-coded:
+  e.g. red=commonly_confused, blue=similar_meaning, gray=related, arrow-style edges for the
+  two directional types vs. plain lines for symmetric ones); basic pan (drag) and zoom
+  (wheel) on the canvas transform.
+- **[ADR-13]** If this hand-rolled approach turns out visually janky in practice (uneven
+  clustering, overlap) frontend-dev's fallback is `d3-force` alone (not `d3` in full, not
+  `react-force-graph` which pulls in three.js/WebGL for a 205-node 2D graph — massive
+  overkill) — a single, narrowly-scoped, well-maintained physics-only package. Try the
+  zero-dependency version first; this is a nice-to-have visualization for a personal tool,
+  not worth over-engineering per the task's own steer.
+
+### V2.5 Task breakdown (dependency-ordered, layer-tagged)
+
+Continues the MVP task-numbering convention (§9); phases here are additive, run after MVP
+Phase 5 shipped.
+
+| # | Layer | Task | Output | Test |
+|---|---|---|---|---|
+| V2.1 | DB | Migration `0002_grammar_relations` — **scaffolded already**, verify against a live DB | `backend/alembic/versions/0002_grammar_relations.py` | `alembic upgrade head` succeeds on Supabase branch |
+| V2.2 | Backend | `app/models/grammar_relation.py` SQLAlchemy model mirroring the DDL, add relationship on `Grammar` (both `grammar_id`/`related_grammar_id` sides — two `relationship()`s or a helper property that merges them per ADR-11) | model | `mypy` clean, model round-trips a row in a unit test |
+| V2.3 | AI | Extend `LLMProvider` protocol + both adapters with `classify_relations` (§V2.2 step 2) | `provider.py`, `openai_adapter.py`, `anthropic_adapter.py` changes | mocked-API unit test against the `RelationClassification` schema |
+| V2.4 | AI | `backend/app/scripts/generate_relations.py` — heuristic candidate generation (pure Python, §V2.2 step 1) + batched classification calls + upsert + report | script + `generate_relations_report.json` | unit tests for the heuristic scorer against known N3 confusable sets (e.g. the わけ family from idea doc §10) score high; manual one-time run against real 205-row DB before declaring this task done (costs tokens — owner-gated like MVP Phase 3.6) |
+| V2.5 | Backend | Extend `grammar.py` router + `schemas/grammar.py`: `?q=/status=/tag=/limit=/offset=` on list, `GrammarDetailOut` with embedded relations on detail, new `GET /grammar/{id}/relations` and `GET /grammar/relations` | router + schema changes | integration tests: search matches expected rows, detail embeds correct relation count/direction, `/grammar/relations` returns full edge set |
+| V2.6 | Frontend | `lib/api.ts` additions for the 2 new/changed endpoints; update any MVP caller of bare `GET /grammar` for the new `{items, total}` wrapper | typed client | type-checks against updated backend schema |
+| V2.7 | Frontend | `app/grammar/page.tsx` list/search/filter | page | manual QA: search narrows correctly, status chips filter, 205 items all reachable |
+| V2.8 | Frontend | `app/grammar/[id]/page.tsx` detail + "Compare with…" relations block | page | manual QA against a few known relation-rich items post V2.4 run |
+| V2.9 | Frontend | `app/grammar/graph/page.tsx` hand-rolled force-directed canvas view | page + `components/GrammarGraph.tsx` | manual QA: layout is legible (no total-overlap collapse), hover/click/pan/zoom work, relation-type legend toggles visibility |
+| V2.10 | Test | QA pass across V2.5-V2.9 end to end (`qa-tester`) | bug list or sign-off | browse → detail → compare-with-link → graph → click-back-to-detail loop works |
+| V2.11 | Docs | Update `/llms.txt` + README for the 4 new/changed endpoints | docs | tech-writer sign-off |
+
+**Parallelization:** V2.2 (DB model) blocks V2.3/V2.4 (need the table to write into) and
+V2.5 (need the model to query). V2.3+V2.4 (AI) and V2.5 (Backend API) can run in parallel
+once V2.2 lands, since V2.5's new endpoints can be built/tested against manually-inserted
+rows before V2.4's real classification run completes. V2.6-V2.9 (Frontend) can start against
+the frozen contract in §V2.3 as soon as V2.5 is merged, independent of whether V2.4's actual
+LLM run has happened yet (empty relations arrays render fine, just an empty "Compare with…"
+section) — mirrors the MVP task plan's "frontend doesn't need a live backend, just a frozen
+contract" note.
+
+### V2.6 Open items carried forward
+
+- Sparse-relation items (§V2.2 step 5, heuristic candidates < 3) may end up with zero edges
+  after classification too — acceptable for personal tool, revisit if it turns out to be a
+  large fraction of the 205 after the first real run (the `generate_relations_report.json`
+  makes this visible).
+- `tag`-based filtering (§V2.3) is a no-op until tags are populated (ADR-4 still holds) —
+  kept in the API for forward-compat, not for this slice to solve.
+- Embedding-based candidate generation (mentioned as a fallback in SPEC §6/§9's dedup
+  discussion) is explicitly not used here either (ADR-9's reasoning extends to this slice) —
+  revisit only if the heuristic step's candidate quality proves too weak in practice.
