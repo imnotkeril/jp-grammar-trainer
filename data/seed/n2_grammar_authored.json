@@ -1940,6 +1940,506 @@
         "Causality",
         "lesson:17"
       ]
+    },
+    {
+      "key": "n2_094_gatai",
+      "expression_html": "彼の<ruby>言<rt>い</rt></ruby>い<ruby>分<rt>ぶん</rt></ruby>は<ruby>信<rt>しん</rt></ruby>じ<b>がたい</b>。",
+      "reading": "かれのいいぶんはしんじ<b>がたい</b>。",
+      "meaning_ru": "В его оправдания трудно поверить.",
+      "pattern_text": "Паттерн: 動詞ます形 + がたい\nЗначение: «трудно (эмоционально/морально) сделать» — книжное, о вещах, которые сложно принять/сделать по внутренним причинам.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形+がたい",
+          "example_html": "<ruby>信<rt>しん</rt></ruby>じ<b>がたい</b>"
+        }
+      ],
+      "target_construction": "がたい",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:18"
+      ]
+    },
+    {
+      "key": "n2_095_wakeniha_ikanai",
+      "expression_html": "<ruby>約束<rt>やくそく</rt></ruby>したのだから、<ruby>行<rt>い</rt></ruby>かない<b>わけにはいかない</b>。",
+      "reading": "やくそくしたのだから、いかない<b>わけにはいかない</b>。",
+      "meaning_ru": "Раз уж я пообещал, я не могу не пойти.",
+      "pattern_text": "Паттерн: 動詞辨書形 + わけにはいかない\nЗначение: «нельзя (по социальным/моральным причинам)» — невозможность из-за обстоятельств, а не физической неспособности.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞ない形+わけにはいかない",
+          "example_html": "<ruby>行<rt>い</rt></ruby>かない<b>わけにはいかない</b>"
+        }
+      ],
+      "target_construction": "わけにはいかない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:18"
+      ]
+    },
+    {
+      "key": "n2_096_kaneru",
+      "expression_html": "申し訳ございませんが、その<ruby>質問<rt>しつもん</rt></ruby>にはお<ruby>答<rt>こた</rt></ruby>えし<b>かねます</b>。",
+      "reading": "もうしわけございませんが、そのしつもんにはおこたえし<b>かねます</b>。",
+      "meaning_ru": "Прошу прощения, но я не могу ответить на этот вопрос.",
+      "pattern_text": "Паттерн: 動詞ます形 + かねる\nЗначение: «не могу (сделать), учитывая обстоятельства» — вежливый отказ, часто в деловой речи.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形+かねる",
+          "example_html": "お<ruby>答<rt>こた</rt></ruby>えし<b>かねます</b>"
+        }
+      ],
+      "target_construction": "かねる",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:18"
+      ]
+    },
+    {
+      "key": "n2_097_you_ga_nai",
+      "expression_html": "<ruby>連絡先<rt>れんらくさき</rt></ruby>を<ruby>知<rt>し</rt></ruby>らないので、彼に<ruby>連絡<rt>れんらく</rt></ruby>の<b>しようがない</b>。",
+      "reading": "れんらくさきをしらないので、かれにれんらくの<b>しようがない</b>。",
+      "meaning_ru": "Раз я не знаю контактов, у меня нет способа с ним связаться.",
+      "pattern_text": "Паттерн: 動詞ます形 + ようがない\nЗначение: «нет способа сделать» — физическая/практическая невозможность из-за отсутствия средств/способа.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形+ようがない",
+          "example_html": "<ruby>連絡<rt>れんらく</rt></ruby>の<b>しようがない</b>"
+        }
+      ],
+      "target_construction": "ようがない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:18"
+      ]
+    },
+    {
+      "key": "n2_098_dokorodewanai_18",
+      "expression_html": "<ruby>地震<rt>じしん</rt></ruby>の<ruby>後<rt>あと</rt></ruby>は、<ruby>仕事<rt>しごと</rt></ruby><b>どころではなかった</b>。",
+      "reading": "じしんのあとは、しごと<b>どころではなかった</b>。",
+      "meaning_ru": "После землетрясения было совсем не до работы.",
+      "pattern_text": "Паттерн: 名詞／動詞辨書形 + どころではない\nЗначение: «совсем не время/не в состоянии» — ситуация настолько серьёзна/трудна, что о чём-то другом не может быть и речи (сильнее, чем просто «занят»).",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+どころではない",
+          "example_html": "<ruby>仕事<rt>しごと</rt></ruby><b>どころではなかった</b>"
+        }
+      ],
+      "target_construction": "どころではない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:18"
+      ]
+    },
+    {
+      "key": "n2_099_uru_enai",
+      "expression_html": "そのようなミスは<ruby>誰<rt>だれ</rt></ruby>にでも<ruby>起<rt>お</rt></ruby>こり<b>得る</b>。",
+      "reading": "そのようなミスはだれにでもおこり<b>うる</b>。",
+      "meaning_ru": "Такая ошибка может случиться с кем угодно.",
+      "pattern_text": "Паттерн: 動詞ます形 + 得る（うる）／得ない（えない）\nЗначение: «может/не может произойти (в принципе)» — книжная форма о теоретической возможности.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形+得る",
+          "example_html": "<ruby>起<rt>お</rt></ruby>こり<b>うる</b>"
+        }
+      ],
+      "target_construction": "得る",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:18"
+      ]
+    },
+    {
+      "key": "n2_100_wariniha",
+      "expression_html": "この店は<ruby>値段<rt>ねだん</rt></ruby>が<ruby>安<rt>やす</rt></ruby>い<b>わりに</b>、<ruby>料理<rt>りょうり</rt></ruby>がおいしい。",
+      "reading": "このみせはねだんがやすい<b>わりに</b>、りょうりがおいしい。",
+      "meaning_ru": "Это заведение, несмотря на низкие цены, готовит довольно вкусно.",
+      "pattern_text": "Паттерн: 普通形 + わりに（は）\nЗначение: «по сравнению с ожидаемым, довольно...» — результат не соответствует общей норме, заданной первой частью.",
+      "formation_rules": [
+        {
+          "pos": "形容詞",
+          "form_label": "形容詞+わりに",
+          "example_html": "<ruby>安<rt>やす</rt></ruby>い<b>わりに</b>"
+        }
+      ],
+      "target_construction": "わりに",
+      "tags": [
+        "N2",
+        "Comparison",
+        "lesson:19"
+      ]
+    },
+    {
+      "key": "n2_101_nishiteha",
+      "expression_html": "彼は<ruby>初心者<rt>しょしんしゃ</rt></ruby><b>にしては</b>、なかなか<ruby>上手<rt>じょうず</rt></ruby>だ。",
+      "reading": "かれはしょしんしゃ<b>にしては</b>、なかなかじょうずだ。",
+      "meaning_ru": "Для новичка он играет весьма неплохо.",
+      "pattern_text": "Паттерн: 名詞／動詞普通形 + にしては\nЗначение: «для (данного признака/статуса) удивительно» — несоответствие ожиданиям, связанным с конкретной характеристикой субъекта.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+にしては",
+          "example_html": "<ruby>初心者<rt>しょしんしゃ</rt></ruby><b>にしては</b>"
+        }
+      ],
+      "target_construction": "にしては",
+      "tags": [
+        "N2",
+        "Comparison",
+        "lesson:19"
+      ]
+    },
+    {
+      "key": "n2_102_dake_no_koto_wa_aru",
+      "expression_html": "さすが<ruby>十年<rt>じゅうねん</rt></ruby>も<ruby>続<rt>つづ</rt></ruby>けている<b>だけのことはあって</b>、彼の<ruby>腕前<rt>うでまえ</rt></ruby>はプロ並みだ。",
+      "reading": "さすがじゅうねんもつづけている<b>だけのことはあって</b>、かれのうでまえはプロなみだ。",
+      "meaning_ru": "Не зря он занимается этим уже десять лет — его мастерство почти на уровне профессионала.",
+      "pattern_text": "Паттерн: 普通形 + だけのことはある\nЗначение: «неудивительно, что...; не зря» — подтверждение репутации/усилий соответствующим результатом.",
+      "formation_rules": [
+        {
+          "pos": "動詞ている形",
+          "form_label": "動詞ている形+だけのことはある",
+          "example_html": "<ruby>続<rt>つづ</rt></ruby>けている<b>だけのことはあって</b>"
+        }
+      ],
+      "target_construction": "だけのことはあって",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:19"
+      ]
+    },
+    {
+      "key": "n2_103_toshite",
+      "expression_html": "彼は<ruby>専門家<rt>せんもんか</rt></ruby><b>として</b>、<ruby>意見<rt>いけん</rt></ruby>を<ruby>求<rt>もと</rt></ruby>められた。",
+      "reading": "かれはせんもんか<b>として</b>、いけんをもとめられた。",
+      "meaning_ru": "У него, как у специалиста, попросили мнение.",
+      "pattern_text": "Паттерн: 名詞 + として\nЗначение: «в качестве, как» — обозначение роли/статуса, в котором совершается действие.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+として",
+          "example_html": "<ruby>専門家<rt>せんもんか</rt></ruby><b>として</b>"
+        }
+      ],
+      "target_construction": "として",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:19"
+      ]
+    },
+    {
+      "key": "n2_104_nitotte",
+      "expression_html": "私<b>にとって</b>、<ruby>家族<rt>かぞく</rt></ruby>は<ruby>何<rt>なに</rt></ruby>よりも<ruby>大切<rt>たいせつ</rt></ruby>な<ruby>存在<rt>そんざい</rt></ruby>だ。",
+      "reading": "わたし<b>にとって</b>、かぞくはなによりもたいせつなそんざいだ。",
+      "meaning_ru": "Для меня семья — самое важное, что есть на свете.",
+      "pattern_text": "Паттерн: 名詞 + にとって\nЗначение: «для (кого-то), с точки зрения» — оценка/суждение даётся с позиции указанного лица.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+にとって",
+          "example_html": "<ruby>私<rt>わたし</rt></ruby><b>にとって</b>"
+        }
+      ],
+      "target_construction": "にとって",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:19"
+      ]
+    },
+    {
+      "key": "n2_105_nishitara",
+      "expression_html": "<ruby>子供<rt>こども</rt></ruby><b>にしたら</b>、<ruby>親<rt>おや</rt></ruby>の<ruby>心配<rt>しんぱい</rt></ruby>はうっとうしく<ruby>感<rt>かん</rt></ruby>じられるものだ。",
+      "reading": "こども<b>にしたら</b>、おやのしんぱいはうっとうしくかんじられるものだ。",
+      "meaning_ru": "С точки зрения ребёнка, беспокойство родителей может казаться навязчивым.",
+      "pattern_text": "Паттерн: 名詞（人） + にしたら／にすれば\nЗначение: «с точки зрения (человека), если посмотреть с его позиции» — предположение о чужой точке зрения/чувствах.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+にしたら",
+          "example_html": "<ruby>子供<rt>こども</rt></ruby><b>にしたら</b>"
+        }
+      ],
+      "target_construction": "にしたら",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:19"
+      ]
+    },
+    {
+      "key": "n2_106_tatokoro",
+      "expression_html": "<ruby>病院<rt>びょういん</rt></ruby>で<ruby>検査<rt>けんさ</rt></ruby>を<ruby>受<rt>う</rt></ruby>けた<b>ところ</b>、<ruby>異常<rt>いじょう</rt></ruby>はなかった。",
+      "reading": "びょういんでけんさをうけた<b>ところ</b>、いじょうはなかった。",
+      "meaning_ru": "Когда я прошёл обследование в больнице, оказалось, что отклонений нет.",
+      "pattern_text": "Паттерн: 動詞た形 + ところ\nЗначение: «когда сделал..., оказалось, что» — действие, приведшее к неожиданному обнаружению/результату.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形+ところ",
+          "example_html": "<ruby>受<rt>う</rt></ruby>けた<b>ところ</b>"
+        }
+      ],
+      "target_construction": "ところ",
+      "tags": [
+        "N2",
+        "Time",
+        "lesson:20"
+      ]
+    },
+    {
+      "key": "n2_107_kiri",
+      "expression_html": "彼とは<ruby>去年<rt>きょねん</rt></ruby><ruby>会<rt>あ</rt></ruby>った<b>きり</b>、一度も<ruby>連絡<rt>れんらく</rt></ruby>がない。",
+      "reading": "かれとはきょねんあった<b>きり</b>、いちどもれんらくがない。",
+      "meaning_ru": "С тех пор, как я встретился с ним в прошлом году, ни одной весточки.",
+      "pattern_text": "Паттерн: 動詞た形 + きり\nЗначение: «с тех пор как... (и больше ничего не изменилось)» — действие произошло однократно, ситуация с тех пор не изменилась.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形+きり",
+          "example_html": "<ruby>会<rt>あ</rt></ruby>った<b>きり</b>"
+        }
+      ],
+      "target_construction": "きり",
+      "tags": [
+        "N2",
+        "Time",
+        "lesson:20"
+      ]
+    },
+    {
+      "key": "n2_108_ageku",
+      "expression_html": "<ruby>長<rt>なが</rt></ruby>い<ruby>間<rt>あいだ</rt></ruby><ruby>悩<rt>なや</rt></ruby>んだ<b>あげく</b>、彼は<ruby>会社<rt>かいしゃ</rt></ruby>を<ruby>辞<rt>や</rt></ruby>めることにした。",
+      "reading": "ながいあいだなやんだ<b>あげく</b>、かれはかいしゃをやめることにした。",
+      "meaning_ru": "После долгих мучительных раздумий он всё же решил уволиться.",
+      "pattern_text": "Паттерн: 動詞た形／名詞の + あげく\nЗначение: «в конце концов (после долгих усилий, с плохим результатом)» — завершение длительного процесса неблагоприятным итогом.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形+あげく",
+          "example_html": "<ruby>悩<rt>なや</rt></ruby>んだ<b>あげく</b>"
+        }
+      ],
+      "target_construction": "あげく",
+      "tags": [
+        "N2",
+        "Time",
+        "lesson:20"
+      ]
+    },
+    {
+      "key": "n2_109_sueni",
+      "expression_html": "<ruby>何度<rt>なんど</rt></ruby>も<ruby>話<rt>はな</rt></ruby>し<ruby>合<rt>あ</rt></ruby>った<b>末に</b>、<ruby>結論<rt>けつろん</rt></ruby>が<ruby>出<rt>で</rt></ruby>た。",
+      "reading": "なんどもはなしあった<b>すえに</b>、けつろんがでた。",
+      "meaning_ru": "После многих обсуждений в итоге было принято решение.",
+      "pattern_text": "Паттерн: 動詞た形／名詞の + 末に\nЗначение: «после длительного (процесса), в итоге» — похоже на あげく, но нейтральнее, не обязательно негативный итог.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形+末に",
+          "example_html": "<ruby>話<rt>はな</rt></ruby>し<ruby>合<rt>あ</rt></ruby>った<b>末に</b>"
+        }
+      ],
+      "target_construction": "末に",
+      "tags": [
+        "N2",
+        "Time",
+        "lesson:20"
+      ]
+    },
+    {
+      "key": "n2_110_tokorodatta",
+      "expression_html": "もう<ruby>少<rt>すこ</rt></ruby>しで<ruby>電車<rt>でんしゃ</rt></ruby>に<ruby>乗<rt>の</rt></ruby>り<ruby>遅<rt>おく</rt></ruby>れる<b>ところだった</b>。",
+      "reading": "もうすこしででんしゃにのりおくれる<b>ところだった</b>。",
+      "meaning_ru": "Я чуть было не опоздал на поезд.",
+      "pattern_text": "Паттерн: 動詞辨書形 + ところだった\nЗначение: «чуть не... — действие едва не произошло (обычно нежелательное), но было предотвращено.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+ところだった",
+          "example_html": "<ruby>乗<rt>の</rt></ruby>り<ruby>遅<rt>おく</rt></ruby>れる<b>ところだった</b>"
+        }
+      ],
+      "target_construction": "ところだった",
+      "tags": [
+        "N2",
+        "Time",
+        "lesson:20"
+      ]
+    },
+    {
+      "key": "n2_111_zujimaida",
+      "expression_html": "<ruby>結局<rt>けっきょく</rt></ruby>、彼にお<ruby>礼<rt>れい</rt></ruby>を<ruby>言<rt>い</rt></ruby>え<b>ずじまいだった</b>。",
+      "reading": "けっきょく、かれにおれいをいえ<b>ずじまいだった</b>。",
+      "meaning_ru": "В итоге я так и не успел поблагодарить его.",
+      "pattern_text": "Паттерн: 動詞ない形（ず） + じまいだ\nЗначение: «так и не успел/не сделал (до конца)» — действие, которое так и не было совершено, несмотря на намерение.",
+      "formation_rules": [
+        {
+          "pos": "動詞ない形",
+          "form_label": "動詞ない形（ず）+じまいだ",
+          "example_html": "<ruby>言<rt>い</rt></ruby>えず<b>じまいだった</b>"
+        }
+      ],
+      "target_construction": "ずじまいだ",
+      "tags": [
+        "N2",
+        "Time",
+        "lesson:20"
+      ]
+    },
+    {
+      "key": "n2_112_gurai_kurai",
+      "expression_html": "そんなこと<b>ぐらい</b>、<ruby>子供<rt>こども</rt></ruby>でも分かる。",
+      "reading": "そんなこと<b>ぐらい</b>、こどもでもわかる。",
+      "meaning_ru": "Такое-то поймёт даже ребёнок.",
+      "pattern_text": "Паттерн: 名詞／動詞普通形 + ぐらい\nЗначение: «хотя бы, всего лишь; настолько, что» — минимальная степень чего-либо, часто с оттенком пренебрежения.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+ぐらい",
+          "example_html": "そんなこと<b>ぐらい</b>"
+        }
+      ],
+      "target_construction": "ぐらい",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:21"
+      ]
+    },
+    {
+      "key": "n2_113_nado_nanka_nante",
+      "expression_html": "私にリーダー<b>なんて</b>、<ruby>務<rt>つと</rt></ruby>まるはずがない。",
+      "reading": "わたしにリーダー<b>なんて</b>、つとまるはずがない。",
+      "meaning_ru": "Мне такое, как роль лидера, точно не по силам.",
+      "pattern_text": "Паттерн: 名詞 + など／なんか／なんて\nЗначение: «такое, как...; ничего особенного, вроде» — принижение значимости упомянутого предмета.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+なんて",
+          "example_html": "リーダー<b>なんて</b>"
+        }
+      ],
+      "target_construction": "なんて",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:21"
+      ]
+    },
+    {
+      "key": "n2_114_made_madeshite_temade",
+      "expression_html": "<ruby>候金<rt>しゃっきん</rt></ruby><b>までして</b>、新しい<ruby>車<rt>くるま</rt></ruby>を買った。",
+      "reading": "しゃっきん<b>までして</b>、あたらしいくるまをかった。",
+      "meaning_ru": "Он дошёл до того, что взял кредит, и купил новую машину.",
+      "pattern_text": "Паттерн: 動詞て形 + まで（して）\nЗначение: «вплоть до того, что даже...» — указание на крайнюю, необычную степень действия.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+までして",
+          "example_html": "<ruby>候金<rt>しゃっきん</rt></ruby><b>までして</b>"
+        }
+      ],
+      "target_construction": "までして",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:21"
+      ]
+    },
+    {
+      "key": "n2_115_toshite_nai",
+      "expression_html": "彼が<ruby>嘘<rt>うそ</rt></ruby>をついたことは<ruby>一度<rt>いちど</rt></ruby><b>として</b>無い。",
+      "reading": "かれがうそをついたことはいちど<b>として</b>ない。",
+      "meaning_ru": "Он ни разу в жизни не солгал.",
+      "pattern_text": "Паттерн: 数量詞（一） + として + 【后半】ない\nЗначение: «ни один, ни разу» — полное отрицание, подчёркивающее «ни единого случая».",
+      "formation_rules": [
+        {
+          "pos": "数量詞",
+          "form_label": "数量詞+として+【后半】ない",
+          "example_html": "<ruby>一度<rt>いちど</rt></ruby><b>として</b>無い"
+        }
+      ],
+      "target_construction": "として～ない",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:21"
+      ]
+    },
+    {
+      "key": "n2_116_sae_a",
+      "expression_html": "<ruby>疲<rt>つか</rt></ruby>れすぎて、<ruby>話<rt>はな</rt></ruby>す<ruby>元気<rt>げんき</rt></ruby><b>さえ</b>ない。",
+      "reading": "つかれすぎて、はなすげんき<b>さえ</b>ない。",
+      "meaning_ru": "Я так устал, что нет сил даже разговаривать.",
+      "pattern_text": "Паттерн: 名詞 + さえ\nЗначение: «даже» — экстремальный пример, подразумевающий, что остальное тем более верно.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+さえ",
+          "example_html": "<ruby>元気<rt>げんき</rt></ruby><b>さえ</b>ない"
+        }
+      ],
+      "target_construction": "さえ",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:21"
+      ]
+    },
+    {
+      "key": "n2_117_sae_b",
+      "expression_html": "<ruby>時間<rt>じかん</rt></ruby><b>さえ</b>あれば、もっと<ruby>勉強<rt>べんきょう</rt></ruby>できるのに。",
+      "reading": "じかん<b>さえ</b>あれば、もっとべんきょうできるのに。",
+      "meaning_ru": "Если бы только было время, я мог бы заниматься больше.",
+      "pattern_text": "Паттерн: 名詞／動詞 + さえ + ば形\nЗначение: «если только... (этого одного достаточно)» — выделение единственного необходимого условия.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+さえ+動詞ば形",
+          "example_html": "<ruby>時間<rt>じかん</rt></ruby><b>さえ</b>あれば"
+        }
+      ],
+      "target_construction": "さえ～ば",
+      "tags": [
+        "N2",
+        "Conditionals",
+        "lesson:21"
+      ]
+    },
+    {
+      "key": "n2_118_tedemo",
+      "expression_html": "どんなに<ruby>高<rt>たか</rt></ruby>くても、<ruby>借<rt>か</rt></ruby>り<b>てでも</b>そのチケットを<ruby>手<rt>て</rt></ruby>に<ruby>入<rt>い</rt></ruby>れたい。",
+      "reading": "どんなにたかくても、かり<b>てでも</b>そのチケットをてにいれたい。",
+      "meaning_ru": "Как бы дорого это ни было, я хочу заполучить этот билет, даже если придётся занять денег.",
+      "pattern_text": "Паттерн: 動詞て形 + でも\nЗначение: «даже если придётся..., лишь бы» — готовность пойти на крайние меры ради цели.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形+でも",
+          "example_html": "<ruby>借<rt>か</rt></ruby>り<b>てでも</b>"
+        }
+      ],
+      "target_construction": "てでも",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:21"
+      ]
     }
   ]
 }
