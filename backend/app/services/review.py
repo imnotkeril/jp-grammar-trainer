@@ -8,8 +8,10 @@ from beartype import beartype
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
+from app.config import settings
 from app.models.grammar import Grammar
 from app.models.grammar_progress import GrammarProgress, GrammarStatus
+from app.models.grammar_relation import GrammarRelation, RelationType
 from app.models.question import Question, ValidationStatus
 from app.services.srs import GrammarProgressState, schedule_next
 
@@ -37,6 +39,96 @@ def select_due_progress(db: Session, size: int, now: datetime | None = None) -> 
         .limit(size)
     )
     return list(db.scalars(stmt))
+
+
+# Both types per the architect's ADR: the no-API-key heuristic fallback in
+# generate_relations.py never emits commonly_confused, only similar_form/similar_meaning/
+# related — restricting to commonly_confused alone would make Confusion Practice return
+# nothing at all on a DB that hasn't run real LLM classification yet (ARCHITECTURE.md V3.3).
+CONFUSION_RELATION_TYPES: frozenset[RelationType] = frozenset(
+    {RelationType.COMMONLY_CONFUSED, RelationType.SIMILAR_FORM}
+)
+
+
+@beartype
+def select_confusion_progress(db: Session, size: int) -> list[GrammarProgress]:
+    """Confusion Practice (idea doc §15, ARCHITECTURE.md V3.3): up to `size` grammar items
+    drawn only from items connected by a commonly_confused/similar_form edge, ranked by their
+    strongest qualifying edge. Ignores due-ness entirely — may return fewer than `size` items
+    (or none) if too few/no qualifying edges exist yet.
+    """
+    stmt = select(
+        GrammarRelation.grammar_id, GrammarRelation.related_grammar_id, GrammarRelation.strength
+    ).where(GrammarRelation.relation_type.in_(CONFUSION_RELATION_TYPES))
+
+    best_strength: dict[uuid.UUID, float] = {}
+    for grammar_id, related_grammar_id, strength in db.execute(stmt).all():
+        for gid in (grammar_id, related_grammar_id):
+            if strength > best_strength.get(gid, -1.0):
+                best_strength[gid] = strength
+
+    if not best_strength:
+        return []
+
+    ordered_ids = [
+        gid for gid, _ in sorted(best_strength.items(), key=lambda kv: kv[1], reverse=True)
+    ][:size]
+
+    progress_by_id = {
+        p.grammar_id: p
+        for p in db.scalars(select(GrammarProgress).where(GrammarProgress.grammar_id.in_(ordered_ids)))
+    }
+    return [progress_by_id[gid] for gid in ordered_ids if gid in progress_by_id]
+
+
+@beartype
+def select_weak_progress(
+    db: Session, size: int, exclude_ids: frozenset[uuid.UUID] = frozenset()
+) -> list[GrammarProgress]:
+    """Weak Points (idea doc §28/§37, ARCHITECTURE.md V3.3): the `size` worst-performing
+    already-attempted grammar items, ranked by (application_score + discrimination_score)
+    ascending. Never-attempted (`repetitions == 0`) items are excluded — weakness must be
+    demonstrated, not assumed from a default 0.0 score.
+    """
+    if size <= 0:
+        return []
+    stmt = select(GrammarProgress).where(GrammarProgress.repetitions > 0)
+    if exclude_ids:
+        stmt = stmt.where(GrammarProgress.grammar_id.not_in(exclude_ids))
+    stmt = stmt.order_by(
+        (GrammarProgress.application_score + GrammarProgress.discrimination_score).asc(),
+        GrammarProgress.next_review.asc(),
+    ).limit(size)
+    return list(db.scalars(stmt))
+
+
+@beartype
+def select_due_progress_mixed(
+    db: Session,
+    size: int,
+    now: datetime | None = None,
+    weak_ratio: float = settings.weak_point_mix_ratio,
+) -> list[GrammarProgress]:
+    """Default `due` mode with a weak-point mix-in (ARCHITECTURE.md V3.3, ADR-17): reserves
+    `round(size * weak_ratio)` slots (only when size >= 5) for the weakest already-attempted
+    items, filling the rest from the ordinary due queue. Tops back up from due items if too
+    few weak-eligible items exist to fill the reserved slots.
+    """
+    now = now or datetime.now(timezone.utc)
+    weak_slots = round(size * weak_ratio) if size >= 5 else 0
+
+    due_items = select_due_progress(db, size - weak_slots, now)
+    weak_items = select_weak_progress(
+        db, weak_slots, exclude_ids=frozenset(p.grammar_id for p in due_items)
+    )
+    combined = due_items + weak_items
+
+    if len(combined) < size:
+        seen = {p.grammar_id for p in combined}
+        topped_up = [p for p in select_due_progress(db, size, now) if p.grammar_id not in seen]
+        combined += topped_up[: size - len(combined)]
+
+    return combined[:size]
 
 
 @beartype

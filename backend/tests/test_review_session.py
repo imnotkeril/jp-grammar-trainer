@@ -24,7 +24,7 @@ def test_session_empty_when_nothing_due(client: TestClient, db_session: Session)
 
     resp = client.post("/review/session", json={"size": 10})
     assert resp.status_code == 200
-    assert resp.json() == {"questions": []}
+    assert resp.json() == {"questions": [], "known_words": []}
 
 
 def test_session_serves_due_item_with_valid_question(client: TestClient, db_session: Session) -> None:
@@ -90,7 +90,7 @@ def test_session_skips_due_item_with_no_valid_question(client: TestClient, db_se
 
     resp = client.post("/review/session", json={"size": 10})
     assert resp.status_code == 200
-    assert resp.json() == {"questions": []}
+    assert resp.json() == {"questions": [], "known_words": []}
 
 
 def test_session_marks_served_question_used(client: TestClient, db_session: Session) -> None:
@@ -161,4 +161,4 @@ def test_session_ignores_rejected_questions(client: TestClient, db_session: Sess
 
     resp = client.post("/review/session", json={"size": 10})
     assert resp.status_code == 200
-    assert resp.json() == {"questions": []}
+    assert resp.json() == {"questions": [], "known_words": []}

@@ -24,9 +24,12 @@ from app.services.review import (
     apply_answer,
     build_explanation_ru,
     classify_error_type,
-    select_due_progress,
+    select_confusion_progress,
+    select_due_progress_mixed,
+    select_weak_progress,
     serve_question_for_grammar,
 )
+from app.services.vocabulary import known_surface_forms, record_exposures
 
 router = APIRouter(prefix="/review", tags=["review"])
 
@@ -40,16 +43,23 @@ async def start_session(
 ) -> SessionResponse:
     """POST /review/session — see ARCHITECTURE.md §8/§9 task 2.4.
 
-    Selects up to `size` due grammar items (overdue-first, then new), serves one valid
-    question per item, and — for every selected item below the unused-question shortage
-    threshold — schedules a background batch generation so the *next* session has fresh
-    material (ARCHITECTURE.md §7.1, ADR-2: fire-and-forget BackgroundTasks, no job queue).
+    Selects up to `size` grammar items — via the ordinary due queue (mode="due", with a
+    weak-point mix-in per ADR-17), Confusion Practice (mode="confusion"), or Weak Points
+    (mode="weak_points") — serves one valid question per item, and — for every selected item
+    below the unused-question shortage threshold — schedules a background batch generation
+    so the *next* session has fresh material (ARCHITECTURE.md §7.1, ADR-2: fire-and-forget
+    BackgroundTasks, no job queue). See ARCHITECTURE.md V3.3 for the mode dispatch.
     """
     now = datetime.now(timezone.utc)
-    due_progress = select_due_progress(db, request.size, now)
+    if request.mode == "confusion":
+        selected_progress = select_confusion_progress(db, request.size)
+    elif request.mode == "weak_points":
+        selected_progress = select_weak_progress(db, request.size)
+    else:
+        selected_progress = select_due_progress_mixed(db, request.size, now)
 
     questions_out: list[QuestionOut] = []
-    for progress in due_progress:
+    for progress in selected_progress:
         if needs_generation(db, progress.grammar_id):
             background_tasks.add_task(generate_batch_for_grammar_background, progress.grammar_id)
 
@@ -69,8 +79,10 @@ async def start_session(
             )
         )
 
+    known_words = sorted(known_surface_forms(db))
+
     db.commit()
-    return SessionResponse(questions=questions_out)
+    return SessionResponse(questions=questions_out, known_words=known_words)
 
 
 @router.post("/answer", response_model=AnswerResponse)
@@ -116,6 +128,7 @@ async def submit_answer(
 
     now = datetime.now(timezone.utc)
     apply_answer(db, progress, is_correct, now)
+    record_exposures(db, question.sentence_full_html, is_correct, now)
 
     explanation_ru = build_explanation_ru(question, grammar, request.selected_option)
 

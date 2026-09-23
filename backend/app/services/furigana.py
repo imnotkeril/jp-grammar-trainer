@@ -5,7 +5,7 @@ from typing import Literal
 
 from beartype import beartype
 
-FuriganaMode = Literal["always", "never", "by_level"]
+FuriganaMode = Literal["always", "never", "by_level", "adaptive"]
 
 _RT_TAG_RE = re.compile(r"<rt>.*?</rt>", re.DOTALL)
 _BOLD_BLOCK_RE = re.compile(r"<b>.*?</b>", re.DOTALL)
@@ -68,13 +68,33 @@ def strip_furigana_inside_bold(html: str) -> str:
 
 
 @beartype
-def render_furigana(html: str, mode: FuriganaMode) -> str:
+def strip_known_words(html: str, known_surface_forms: frozenset[str]) -> str:
+    """Additionally strip <rt> for <ruby> spans whose base is in known_surface_forms.
+
+    Applied on top of the by_level baseline for mode="adaptive" (ARCHITECTURE.md V3.4,
+    ADR-15/16). Exact-match only: `base` (with any inner tags like <b> stripped) must equal
+    one of the known surface forms verbatim.
+    """
+
+    def _drop_if_known(match: re.Match[str]) -> str:
+        base = _STRIP_TAGS_RE.sub("", match.group(1))
+        return match.group(1) if base in known_surface_forms else match.group(0)
+
+    return _RUBY_PAIR_RE.sub(_drop_if_known, html)
+
+
+@beartype
+def render_furigana(
+    html: str, mode: FuriganaMode, known_surface_forms: frozenset[str] = frozenset()
+) -> str:
     """Apply the furigana display mode to ruby-marked-up HTML. Pure function, no DB access.
 
     - "always": return as-is, browsers render <ruby><rt> natively.
     - "never": strip every <rt> payload.
     - "by_level": strip <rt> only inside the <b> (tested target) span (MVP heuristic,
-      ARCHITECTURE.md ADR-7 — true adaptive per-word furigana is V2).
+      ARCHITECTURE.md ADR-7).
+    - "adaptive": by_level baseline, plus strip <rt> for any <ruby> span whose base
+      exact-matches a currently-known word (ARCHITECTURE.md V3.4).
     """
     sanitized = strip_malformed_furigana(html)
     if mode == "always":
@@ -83,4 +103,6 @@ def render_furigana(html: str, mode: FuriganaMode) -> str:
         return strip_all_furigana(sanitized)
     if mode == "by_level":
         return strip_furigana_inside_bold(sanitized)
+    if mode == "adaptive":
+        return strip_known_words(strip_furigana_inside_bold(sanitized), known_surface_forms)
     raise ValueError(f"Unknown furigana mode: {mode!r}")

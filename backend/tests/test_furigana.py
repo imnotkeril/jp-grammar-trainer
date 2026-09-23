@@ -6,6 +6,7 @@ from app.services.furigana import (
     render_furigana,
     strip_all_furigana,
     strip_furigana_inside_bold,
+    strip_known_words,
     strip_malformed_furigana,
 )
 
@@ -41,7 +42,7 @@ def test_render_unknown_mode_raises() -> None:
         render_furigana(SIMPLE, "bogus")  # type: ignore[arg-type]
 
 
-@pytest.mark.parametrize("mode", ["always", "never", "by_level"])
+@pytest.mark.parametrize("mode", ["always", "never", "by_level", "adaptive"])
 def test_malformed_rt_is_dropped_in_every_mode(mode: str) -> None:
     """A single-kanji <rt> holding an entire clause must never reach the page, regardless
     of furigana mode — see ARCHITECTURE.md ADR-6/ADR-6b."""
@@ -62,3 +63,33 @@ def test_strip_malformed_furigana_is_noop_on_plain_text() -> None:
 
 def test_strip_malformed_furigana_handles_empty_string() -> None:
     assert strip_malformed_furigana("") == ""
+
+
+def test_strip_known_words_strips_only_exact_match_bases() -> None:
+    html = "<ruby>母<rt>かあ</rt></ruby>と<ruby>昼寝<rt>ひるね</rt></ruby>をした。"
+    rendered = strip_known_words(html, frozenset({"母"}))
+    assert "<rt>かあ</rt>" not in rendered
+    assert "母" in rendered
+    assert "<rt>ひるね</rt>" in rendered  # not in known set, untouched
+
+
+def test_strip_known_words_does_not_false_positive_on_substrings() -> None:
+    # ADR-15: exact-match only. "実" being known must not strip "現実"'s reading.
+    html = "<ruby>現実<rt>げんじつ</rt></ruby>を見る。"
+    rendered = strip_known_words(html, frozenset({"実"}))
+    assert rendered == html
+
+
+def test_render_adaptive_combines_by_level_and_known_word_stripping() -> None:
+    html = (
+        "<ruby>母<rt>かあ</rt></ruby>は<ruby><b>登</b><rt>のぼ</rt></ruby>っている。"
+    )
+    rendered = render_furigana(html, "adaptive", frozenset({"母"}))
+    assert "<rt>かあ</rt>" not in rendered  # known word, stripped
+    assert "<rt>のぼ</rt>" not in rendered  # by_level baseline still strips the bold target
+    assert "母" in rendered and "登" in rendered
+
+
+def test_render_adaptive_defaults_to_by_level_when_no_known_words() -> None:
+    html = "<ruby>母<rt>かあ</rt></ruby>は<ruby><b>登</b><rt>のぼ</rt></ruby>っている。"
+    assert render_furigana(html, "adaptive") == strip_furigana_inside_bold(html)

@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 class SessionRequest(BaseModel):
     size: Literal[5, 10, 20] = 10
+    mode: Literal["due", "confusion", "weak_points"] = "due"
 
 
 class QuestionOption(BaseModel):
@@ -25,6 +26,7 @@ class QuestionOut(BaseModel):
 
 class SessionResponse(BaseModel):
     questions: list[QuestionOut]
+    known_words: list[str] = []
 
 
 class AnswerRequest(BaseModel):

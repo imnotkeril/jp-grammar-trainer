@@ -139,6 +139,17 @@ def build_user_prompt(prompt: GenerationPrompt) -> str:
     formation_bullets = "\n".join(f"- {rule}" for rule in prompt.formation_rules) or "- (none provided)"
     existing = "\n".join(f"- {s}" for s in prompt.existing_sentences) or "- (none yet)"
 
+    confusable_line = ""
+    if prompt.confusable_with:
+        confusable_list = ", ".join(
+            f'"{c["target_construction"]}" ({c["meaning_ru"]})' for c in prompt.confusable_with
+        )
+        confusable_line = (
+            f"\nThis construction is sometimes confused with: {confusable_list}. Where "
+            "natural, favor sentence contexts that would also work as a contrastive example "
+            "against these."
+        )
+
     return f"""Grammar point: {prompt.pattern_text}
 Target construction: {prompt.target_construction}
 Formation rules:
@@ -155,4 +166,4 @@ Generate {prompt.batch_size} NEW natural N3-level Japanese sentences that each c
 - correct_answer_text: the plain text that fills the blank
 - explanation_ru (2-3 sentences, Russian): why this construction fits here, contrasted
   with a commonly confused alternative construction if relevant.
-Vary sentence topic/register. Do not reuse the existing example's scenario."""
+Vary sentence topic/register. Do not reuse the existing example's scenario.{confusable_line}"""

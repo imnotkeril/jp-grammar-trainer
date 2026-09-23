@@ -11,12 +11,14 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.db import SessionLocal
 from app.models.grammar import Grammar
+from app.models.grammar_relation import GrammarRelation
 from app.models.question import Question, QuestionSource, ValidationStatus
 from app.services.distractors import pick_distractors
 from app.services.generation.factory import get_provider
 from app.services.generation.prompts import PROMPT_VERSION
 from app.services.generation.provider import GenerationPrompt, RawGeneratedSentence, build_prompt
 from app.services.generation.validate import dedup_hash, validate_generated_sentence
+from app.services.review import CONFUSION_RELATION_TYPES
 
 logger = logging.getLogger(__name__)
 
@@ -54,11 +56,39 @@ def _fetch_distractor_candidates(db: Session, exclude_grammar_id: uuid.UUID) -> 
 
 
 @beartype
+def _fetch_confused_texts(db: Session, grammar_id: uuid.UUID) -> list[tuple[str, str, float]]:
+    """Every grammar item connected to `grammar_id` via a commonly_confused/similar_form
+    edge, as (target_construction, meaning_ru, strength) — used both to bias distractor
+    selection and (top 2 by strength) to nudge the generation prompt. See ARCHITECTURE.md
+    V3.5. One indexed query each direction, same pattern as _fetch_distractor_candidates.
+    """
+    stmt_from = (
+        select(Grammar.target_construction, Grammar.meaning_ru, GrammarRelation.strength)
+        .join(GrammarRelation, GrammarRelation.related_grammar_id == Grammar.id)
+        .where(
+            GrammarRelation.grammar_id == grammar_id,
+            GrammarRelation.relation_type.in_(CONFUSION_RELATION_TYPES),
+        )
+    )
+    stmt_to = (
+        select(Grammar.target_construction, Grammar.meaning_ru, GrammarRelation.strength)
+        .join(GrammarRelation, GrammarRelation.grammar_id == Grammar.id)
+        .where(
+            GrammarRelation.related_grammar_id == grammar_id,
+            GrammarRelation.relation_type.in_(CONFUSION_RELATION_TYPES),
+        )
+    )
+    rows = [*db.execute(stmt_from).all(), *db.execute(stmt_to).all()]
+    return [(text, meaning, strength) for text, meaning, strength in rows if text]
+
+
+@beartype
 def _build_options(
     grammar_id: uuid.UUID,
     correct_answer_text: str,
     candidates: list[tuple[uuid.UUID, str]],
     rng: random.Random,
+    preferred: list[str] | None = None,
 ) -> tuple[list[dict[str, str]], str] | None:
     """Build shuffled A-D options for a generated sentence, per ARCHITECTURE.md §7.5.
 
@@ -66,7 +96,9 @@ def _build_options(
     question (too few grammar items seeded) — caller should treat that as invalid.
     """
     try:
-        distractor_texts = pick_distractors(grammar_id, correct_answer_text, candidates, count=3, rng=rng)
+        distractor_texts = pick_distractors(
+            grammar_id, correct_answer_text, candidates, count=3, rng=rng, preferred=preferred
+        )
     except ValueError:
         return None
 
@@ -93,6 +125,12 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
     ]
     formation_rules = [rule.get("example_html", "") for rule in grammar.formation_rules]
 
+    confused = _fetch_confused_texts(db, grammar_id)
+    confused_top2 = [
+        {"target_construction": text, "meaning_ru": meaning}
+        for text, meaning, _strength in sorted(confused, key=lambda c: c[2], reverse=True)[:2]
+    ]
+
     prompt: GenerationPrompt = build_prompt(
         pattern_text=grammar.pattern_text,
         target_construction=grammar.target_construction,
@@ -100,12 +138,14 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
         existing_example_clean=grammar.expression_clean,
         existing_sentences=existing_sentences,
         batch_size=settings.generation_batch_size,
+        confusable_with=confused_top2,
     )
 
     provider = get_provider()
     raw_sentences: list[RawGeneratedSentence] = await provider.generate_sentences(prompt)
 
     candidates = _fetch_distractor_candidates(db, grammar_id)
+    preferred = [text for text, _meaning, _strength in confused]
     rng = random.Random()
 
     inserted = 0
@@ -114,7 +154,7 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
         options: list[dict[str, str]] = []
         correct_option = "A"
         if is_valid:
-            built = _build_options(grammar_id, raw.correct_answer_text, candidates, rng)
+            built = _build_options(grammar_id, raw.correct_answer_text, candidates, rng, preferred=preferred)
             if built is None:
                 # Not enough distractor candidates to serve a real 4-choice question —
                 # reject rather than serve a broken question with < 4 options.

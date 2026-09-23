@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Protocol
 
 from beartype import beartype
@@ -19,6 +19,9 @@ class GenerationPrompt:
     existing_example_clean: str
     existing_sentences: list[str]
     batch_size: int
+    # ARCHITECTURE.md V3.5: top-2-by-strength commonly_confused/similar_form partners, each
+    # {"target_construction": ..., "meaning_ru": ...}. Empty when the grammar item has none.
+    confusable_with: list[dict[str, str]] = field(default_factory=list)
 
 
 @dataclass(frozen=True, slots=True)
@@ -85,6 +88,7 @@ def build_prompt(
     existing_example_clean: str,
     existing_sentences: list[str],
     batch_size: int,
+    confusable_with: list[dict[str, str]] | None = None,
 ) -> GenerationPrompt:
     return GenerationPrompt(
         pattern_text=pattern_text,
@@ -93,4 +97,5 @@ def build_prompt(
         existing_example_clean=existing_example_clean,
         existing_sentences=existing_sentences[:20],
         batch_size=batch_size,
+        confusable_with=confusable_with or [],
     )
