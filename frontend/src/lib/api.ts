@@ -10,6 +10,7 @@ import type {
   GrammarListParams,
   GrammarRelationEdge,
   GrammarRelationOut,
+  ReviewMode,
   SessionResponse,
   Stats,
 } from "./types";
@@ -57,10 +58,11 @@ export const api = {
 
   getAllGrammarRelations: (): Promise<GrammarRelationEdge[]> => request("/grammar/relations"),
 
-  startSession: (size: 5 | 10 | 20): Promise<SessionResponse> =>
+  // ARCHITECTURE.md V3 §V3.6 — mode defaults to "due" server-side when omitted.
+  startSession: (size: 5 | 10 | 20, mode?: ReviewMode): Promise<SessionResponse> =>
     request("/review/session", {
       method: "POST",
-      body: JSON.stringify({ size }),
+      body: JSON.stringify(mode ? { size, mode } : { size }),
     }),
 
   submitAnswer: (body: AnswerRequest): Promise<AnswerResponse> =>

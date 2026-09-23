@@ -6,6 +6,8 @@ interface ContrastiveExplanationProps {
   sentenceFullHtml: string;
   explanationRu: string | null;
   furiganaMode: FuriganaMode;
+  /** V3 §V3.4 — only consulted when furiganaMode === "adaptive". */
+  knownSurfaceForms?: ReadonlySet<string>;
 }
 
 export default function ContrastiveExplanation({
@@ -13,6 +15,7 @@ export default function ContrastiveExplanation({
   sentenceFullHtml,
   explanationRu,
   furiganaMode,
+  knownSurfaceForms,
 }: ContrastiveExplanationProps) {
   return (
     <div
@@ -32,6 +35,7 @@ export default function ContrastiveExplanation({
       <FuriganaText
         html={sentenceFullHtml}
         mode={furiganaMode}
+        knownSurfaceForms={knownSurfaceForms}
         className="jp-text mt-3 block text-lg leading-loose text-[var(--ink)]"
       />
       {explanationRu && (

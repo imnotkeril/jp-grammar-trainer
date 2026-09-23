@@ -10,6 +10,8 @@ interface QuestionCardProps {
   selectedOption?: string;
   /** Set once the answer has been submitted — locks the options and reveals correctness. */
   correctOption?: string;
+  /** V3 §V3.4 — only consulted when furiganaMode === "adaptive". */
+  knownSurfaceForms?: ReadonlySet<string>;
 }
 
 export default function QuestionCard({
@@ -18,6 +20,7 @@ export default function QuestionCard({
   onSelect,
   selectedOption,
   correctOption,
+  knownSurfaceForms,
 }: QuestionCardProps) {
   const answered = correctOption !== undefined;
 
@@ -26,6 +29,7 @@ export default function QuestionCard({
       <FuriganaText
         html={question.sentence_with_blank_html}
         mode={furiganaMode}
+        knownSurfaceForms={knownSurfaceForms}
         className="jp-text block text-xl leading-loose text-[var(--ink)]"
       />
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">

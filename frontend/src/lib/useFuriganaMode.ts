@@ -7,7 +7,9 @@ const STORAGE_KEY = "jp-grammar:furigana-mode";
 const DEFAULT_MODE: FuriganaMode = "by_level";
 
 function isFuriganaMode(value: string | null): value is FuriganaMode {
-  return value === "always" || value === "never" || value === "by_level";
+  return (
+    value === "always" || value === "never" || value === "by_level" || value === "adaptive"
+  );
 }
 
 function readStoredMode(): FuriganaMode {
@@ -22,8 +24,9 @@ function readStoredMode(): FuriganaMode {
 }
 
 /**
- * Furigana display mode (Always/Never/By-level), persisted per-browser in localStorage —
- * a local UI convenience, not shared/synced app state. ARCHITECTURE.md §5 / Phase 4 task 4.6.
+ * Furigana display mode (Always/Never/By-level/Adaptive), persisted per-browser in
+ * localStorage — a local UI convenience, not shared/synced app state. ARCHITECTURE.md §5 /
+ * Phase 4 task 4.6, adaptive mode added in V3 §V3.4.
  *
  * Hydration-safe: every render starts from DEFAULT_MODE (matches the server-rendered
  * markup), then swaps to the stored value in an effect after mount, so there's no

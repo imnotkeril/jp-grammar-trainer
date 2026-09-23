@@ -51,15 +51,36 @@ function stripFuriganaInsideBold(html: string): string {
   return withoutNested.replace(BOLD_THEN_SIBLING_RT_RE, "$1");
 }
 
+// ARCHITECTURE.md V3 §V3.4 (ADR-15) — mirrors backend/app/services/furigana.py's
+// strip_known_words. Additionally strips <rt> for any <ruby> span whose base text (inner
+// tags stripped) exact-matches a currently-known vocabulary surface form. Exact-match only,
+// same RUBY_PAIR_RE used by stripMalformedFurigana above so both passes agree on what counts
+// as a ruby pair.
+const INNER_TAG_RE = /<[^>]+>/g;
+
+function stripKnownWords(html: string, knownSurfaceForms: ReadonlySet<string>): string {
+  if (knownSurfaceForms.size === 0) return html;
+  return html.replace(RUBY_PAIR_RE, (match, base: string) => {
+    const cleanBase = base.replace(INNER_TAG_RE, "");
+    return knownSurfaceForms.has(cleanBase) ? base : match;
+  });
+}
+
 /**
  * Pure function: apply a furigana display mode to ruby-marked-up HTML.
  *
  * - "always": returned as-is — browsers render <ruby><rt> natively.
  * - "never": every <rt> payload stripped.
  * - "by_level": <rt> stripped only inside the <b> (tested target) span — MVP heuristic,
- *   ARCHITECTURE.md ADR-7. True per-word adaptive furigana is V2.
+ *   ARCHITECTURE.md ADR-7.
+ * - "adaptive": by_level baseline, plus <rt> additionally stripped for any <ruby> span whose
+ *   base is a currently-known vocabulary word (ARCHITECTURE.md V3 §V3.4, ADR-15/16).
  */
-export function renderFuriganaHtml(html: string, mode: FuriganaMode): string {
+export function renderFuriganaHtml(
+  html: string,
+  mode: FuriganaMode,
+  knownSurfaceForms: ReadonlySet<string> = new Set(),
+): string {
   const sanitized = stripMalformedFurigana(html);
   switch (mode) {
     case "always":
@@ -68,6 +89,8 @@ export function renderFuriganaHtml(html: string, mode: FuriganaMode): string {
       return stripAllFurigana(sanitized);
     case "by_level":
       return stripFuriganaInsideBold(sanitized);
+    case "adaptive":
+      return stripKnownWords(stripFuriganaInsideBold(sanitized), knownSurfaceForms);
   }
 }
 
@@ -75,10 +98,12 @@ interface FuriganaTextProps {
   html: string;
   mode: FuriganaMode;
   className?: string;
+  /** Surface forms currently "known" for this session (V3 §V3.4) — only consulted in "adaptive" mode. */
+  knownSurfaceForms?: ReadonlySet<string>;
 }
 
-export default function FuriganaText({ html, mode, className }: FuriganaTextProps) {
-  const rendered = renderFuriganaHtml(html, mode);
+export default function FuriganaText({ html, mode, className, knownSurfaceForms }: FuriganaTextProps) {
+  const rendered = renderFuriganaHtml(html, mode, knownSurfaceForms);
   // eslint-disable-next-line react/no-danger -- source HTML is our own seed/AI content, not user input
   return <span className={className} dangerouslySetInnerHTML={{ __html: rendered }} />;
 }

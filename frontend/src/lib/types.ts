@@ -33,8 +33,20 @@ export interface Question {
   options: QuestionOption[];
 }
 
+// V3 §V3.3 — session composition mode. "due" (default) mixes in a small weak-point ratio
+// server-side; "confusion"/"weak_points" are dedicated practice modes (§15/§28).
+export type ReviewMode = "due" | "confusion" | "weak_points";
+
+export interface SessionRequest {
+  size: 5 | 10 | 20;
+  mode?: ReviewMode;
+}
+
 export interface SessionResponse {
   questions: Question[];
+  // V3 §V3.4 — surface_form of every vocabulary row currently "known" (known_since set).
+  // Threaded down to every FuriganaText render for the session to drive "adaptive" mode.
+  known_words: string[];
 }
 
 export interface AnswerRequest {
@@ -60,8 +72,10 @@ export interface Stats {
   recall_pct: number;
 }
 
-// Furigana display mode toggle — ARCHITECTURE.md §5. Persisted client-side only (MVP).
-export type FuriganaMode = "always" | "never" | "by_level";
+// Furigana display mode toggle — ARCHITECTURE.md §5 (MVP: always/never/by_level) + V3 §V3.4
+// ("adaptive" — by_level baseline plus known-vocabulary spans stripped, ADR-15/16). Persisted
+// client-side only.
+export type FuriganaMode = "always" | "never" | "by_level" | "adaptive";
 
 // --- V2 Grammar Graph & Browse — ARCHITECTURE.md "V2 Slice" §V2.3 ---------------------
 

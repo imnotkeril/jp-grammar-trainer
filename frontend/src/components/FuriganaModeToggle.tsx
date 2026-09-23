@@ -5,6 +5,7 @@ import type { FuriganaMode } from "@/lib/types";
 const OPTIONS: { value: FuriganaMode; label: string }[] = [
   { value: "always", label: "Всегда" },
   { value: "by_level", label: "По уровню" },
+  { value: "adaptive", label: "Адаптивно" },
   { value: "never", label: "Никогда" },
 ];
 
