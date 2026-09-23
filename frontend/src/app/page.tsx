@@ -62,6 +62,20 @@ export default function DashboardPage() {
             Начать повторение
           </Link>
 
+          {/* V3 §27/§28 — quick entry point into the "Слабые места" review mode. */}
+          <Link
+            href="/review?mode=weak_points"
+            className="transition-standard flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-4 hover:border-[var(--accent)]"
+          >
+            <span>
+              <span className="block font-medium text-[var(--ink)]">Слабые места</span>
+              <span className="block text-sm text-[var(--ink-muted)]">
+                Практика по худшим по применению и различению конструкциям
+              </span>
+            </span>
+            <span aria-hidden className="text-[var(--ink-muted)]">→</span>
+          </Link>
+
           <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
             <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-[var(--ink-muted)]">
               Прогресс по конструкциям
