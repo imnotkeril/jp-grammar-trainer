@@ -1338,3 +1338,395 @@ until V3.3's real seed run + real usage populates `user_vocabulary` — renders 
 - `weak_point_mix_ratio`/`known_streak_threshold` are hardcoded config with no owner-facing
   toggle (ADR-17) — revisit only if the owner explicitly asks to tune them, per this slice's
   "no settings UI" scope cut.
+
+---
+
+## V4 Slice: N4/N2 Levels & Relation Quality
+
+Status: draft v1 · Basis: owner request 2026-09-23 (add N4/N2 levels; fix relation quality
+across all levels) · Author: architect agent · Date: 2026-09-23
+
+MVP + V2 (Grammar Graph/Browse) + V3 (Adaptive Practice & Vocabulary) are shipped. This slice
+adds two things: (1) two new JLPT levels of grammar content (N4: 142 items, N2: 130 items
+across Shin Kanzen Master's 26 lessons), and (2) a hand-curated relation-quality pass that
+covers all three levels plus cross-level edges, replacing the existing 733 N3 heuristic edges
+where curation now covers a pair. **Additive only** — no existing table, endpoint, or
+algorithm from MVP/V2/V3 is redesigned. ADR numbering continues from ADR-20.
+
+**Verified up front, per the task's own instruction to only scaffold a migration if actually
+needed: no migration is required for this slice.** `grammar.level` is already `TEXT NOT NULL
+DEFAULT 'N3'` (§3 DDL) — a free-text column, not an enum, already populated per-row by
+`seed_import.py`. `grammar_relation.source` already has `'manual'` in its
+`grammar_relation_source` Postgres enum (§V2.1 DDL, `app/models/grammar_relation.py`), which
+is exactly what curated edges need. Both existing indexes (`ix_grammar_level`, the
+`grammar_relation` FK indexes) already support the new query patterns below with no DDL
+change.
+
+### V4.1 Authored-content JSON schema (N4 / N2 grammar)
+
+The Anki-export intermediate format (`n3_grammar_anki_export.json` → `connection_formation`
+text parsing, per §4) exists only because the N3 deck came out of Anki in that shape. N4/N2
+have no Anki source — they're authored directly from the two JLPT lists in this prompt (N4:
+apieceofsushi.com flat list; N2: Shin Kanzen Master's own 26 lessons) by a content-generation
+agent, so the target format should be the **DB-ready shape itself**, not an intermediate one
+that then needs a second parsing pass.
+
+**Files**: `data/seed/n4_grammar_authored.json`, `data/seed/n2_grammar_authored.json` — one
+file per level, top-level `level` field applies to every item in the file (no per-item
+`level` field, avoids drift).
+
+```json
+{
+  "level": "N4",
+  "items": [
+    {
+      "key": "n4_012_aida",
+      "expression_html": "<ruby>日本<rt>にほん</rt></ruby>にいる<b>間</b>に<ruby>一度富士山<rt>いちどふじさん</rt></ruby>に<ruby>登<rt>のぼ</rt></ruby>ってみたい。",
+      "reading": "にほんにいる<b>あいだ</b>に いちど ふじさんに のぼってみたい。",
+      "meaning_ru": "Пока я в Японии, хочу хоть раз подняться на Фудзи.",
+      "pattern_text": "Паттерн: [期間/状態] + 間（に） (N4)\nЗначение: В течение периода ... / пока состояние не изменилось, сделай ...",
+      "formation_rules": [
+        {"pos": "сущ.の", "form_label": "сущ.の", "example_html": "<ruby>休<rt>やす</rt></ruby>みの<b>間</b>に"},
+        {"pos": "гл.ている", "form_label": "гл.ている", "example_html": "<ruby>寝<rt>ね</rt></ruby>ている<b>間</b>に"}
+      ],
+      "target_construction": "間に",
+      "tags": ["N4", "time", "lesson:na"]
+    }
+  ]
+}
+```
+
+Field-by-field:
+
+| Field | Type | Notes |
+|---|---|---|
+| `key` | string | **Stable slug, unique within the file** (`"n4_012_aida"`, `"n2_007_ni_saishite"`). Never renamed once imported — the import script derives the DB row's `source_note_id` deterministically from `(level, key)`, so renaming a key creates a *new* row instead of updating the old one (documented as ADR-21 below). This is also the identifier the relation-curation file (§V4.3) uses to reference N4/N2 items. |
+| `expression_html` | string | Full example sentence, `<ruby><rt>` furigana + `<b>...</b>` around the target construction — same markup convention as the N3 deck (§3's `expression_html`) and the AI-generation prompt (§7.3), so `FuriganaText.tsx`/`services/furigana.py` need zero changes to render it. |
+| `reading` | string | Kana reading of the sentence, `<b>` around the target — mirrors N3's `reading` field exactly. |
+| `meaning_ru` | string | Russian translation of the pattern's meaning. |
+| `pattern_text` | string | Free-text rule + meaning, same `"Паттерн: ... \nЗначение: ..."` convention as N3 so `GrammarDetailOut`'s rendering needs no branching by level. |
+| `formation_rules` | array of `{pos, form_label, example_html}` | **Authored directly in DB-ready shape** — this is the simplification vs. N3's `connection_formation` text-parsing step; no `→`-delimited line format, no parser needed on the N4/N2 path. |
+| `target_construction` | string | Plain text (no markup) of the construction being tested — must literally appear (after tag-stripping) in `expression_html`; the import script checks this and flags a mismatch in its report rather than failing the batch (mirrors ADR-6b's "don't hard-fail on one bad row" posture). |
+| `tags` | array of strings | **Populated meaningfully this time** (unlike N3's ADR-4 all-empty tags): always includes the level tag (`"N4"`/`"N2"`) plus one semantic category from a small fixed taxonomy (reuse `Conditionals/Causality/Contrast/Time/Quantity/Modality/Honorifics/Comparison/Hearsay/Emphasis/...` per idea doc §46) — cheap forward-compat groundwork for a future category browse view, not required by any endpoint in this slice. For N2 specifically, also include a `lesson:NN` tag (zero-padded lesson number, `"lesson:01"`..`"lesson:26"`) since Shin Kanzen Master's own lesson structure is real curriculum data already given in the source list — free to capture now even though lesson-based curriculum browsing itself stays deferred (SPEC §4 "Явно вне MVP"). N4 items get `"lesson:na"` (the source list is flat, no lesson structure) — kept for schema uniformity, not for filtering. |
+
+`expression_clean` (plain JP, no markup) is **not authored** — the import script derives it
+by stripping tags from `expression_html` (reusing `strip_tags` from `seed_import.py`, §4),
+same as how N3's `expression_clean` and `expression_html` already have to agree; removing the
+redundant authored field removes one way content-agent output could drift from the markup.
+
+**[ADR-21] Synthetic `source_note_id` via deterministic hash, not a manual counter.**
+`grammar.source_note_id` is `BIGINT UNIQUE NOT NULL` and is what both `seed_import.py` and
+this slice's importer use as the idempotency key (upsert-by-`source_note_id`, same pattern,
+zero special-casing). N4/N2 items have no Anki note id to reuse. Decision: derive it as
+```python
+source_note_id = int(hashlib.sha256(f"{level}:{key}".encode()).hexdigest()[:15], 16)
+```
+— a deterministic 60-bit positive integer from `(level, key)`. This needs no central registry
+or manual index bookkeeping (a content agent authoring 142+130 items shouldn't have to track
+a shared counter across two files), is trivially idempotent (same `key` always hashes to the
+same id, so re-running the import on an edited JSON file updates the same row), and collides
+with real Anki `note_id`s (~13-digit timestamps, ~1.7×10¹²) or with each other only at
+cryptographic-hash-collision probability — a non-concern at this scale. The one real failure
+mode is a content agent renaming a `key` after first import (creates an orphan old row + a new
+row) — documented as a authoring-time discipline rule, not solved with extra code for a
+personal tool.
+
+### V4.2 Import path: `seed_import_authored.py`
+
+New script, **not an extension of `seed_import.py`** (kept separate because the two scripts'
+inputs are shaped too differently — Anki-JSON-with-a-text-parser vs. DB-ready-JSON — but it
+**imports and reuses** `seed_import.py`'s helpers rather than duplicating them: `strip_tags`,
+`build_blanked_sentence_html`, `check_rt_payloads_are_kana`, and — critically —
+`import_seed_questions`, which already operates over **every** `Grammar` row lacking a `SEED`
+question, regardless of level, and is already idempotent. No changes to `seed_import.py`
+itself are needed; N4/N2 grammar rows just become additional input to that same
+already-generic function once they exist in the `grammar` table.
+
+```
+uv run python -m app.scripts.seed_import_authored
+    # defaults to data/seed/n4_grammar_authored.json + data/seed/n2_grammar_authored.json
+uv run python -m app.scripts.seed_import_authored path/to/custom.json [more.json ...]
+```
+
+Per file, per item:
+1. Compute `source_note_id` per ADR-21.
+2. Derive `expression_clean = strip_tags(expression_html)`.
+3. Validate `target_construction` (stripped) appears in `expression_clean`; mismatch →
+   append to the report as `{"key": ..., "type": "target_construction_mismatch"}`, import
+   proceeds anyway (same defensive posture as ADR-6/ADR-6b).
+4. Run `check_rt_payloads_are_kana(expression_html)` — same anomaly detector N3 import already
+   uses, reused verbatim (a content agent can make the same ruby-scope mistakes a human Anki
+   editor did).
+5. Upsert `Grammar` by `source_note_id` — insert path also creates the paired
+   `GrammarProgress(status=NEW, next_review=now())` row (same as §4's existing logic); update
+   path touches every content field (idempotent re-import if the content agent revises an
+   item) but **never touches `grammar_progress`** (an edit to wording shouldn't reset SRS
+   state on an item the owner has already been reviewing).
+6. After all items in all files are upserted: call `seed_import.py::import_seed_questions(db)`
+   once — it naturally picks up every new N4/N2 `Grammar` row (no `SEED` question yet) and
+   builds one seed question each via the existing blank-generation + `pick_distractors` logic,
+   completely unmodified.
+
+**Must not touch/duplicate N3 rows**: guaranteed structurally, not by an exclusion check —
+this script never reads `n3_grammar_anki_export.json`, and ADR-21's hash namespace can't
+collide with N3's real Anki `note_id`s (13 digits vs. this script's 15-hex-digit/60-bit
+outputs, astronomically distinct ranges even before considering hash collision odds).
+
+**Idempotent**: re-running on unchanged files no-ops (upsert to identical values, no new
+`SEED` questions since `import_seed_questions` already skips grammar ids with an existing seed
+question); re-running after a content edit updates the `Grammar` row's content fields without
+touching progress or without creating a duplicate `Question`.
+
+Report: `backend/app/scripts/seed_import_authored_report.json`, same shape as
+`seed_import_report.json` (§4) — `{total, inserted, updated, anomalies, seed_questions}` — one
+block per input file plus a combined `seed_questions` summary from the single
+`import_seed_questions` call at the end.
+
+### V4.3 Curated relations: schema + import script
+
+**Problem being solved**: the existing 733 N3 edges are 100% `source='heuristic'` (§V2.2 —
+`generate_relations.py`'s no-API-key fallback path, since `ANTHROPIC_API_KEY`/
+`OPENAI_API_KEY` are both empty in `backend/.env`, confirmed). Heuristic scoring (shared
+function-word stem / meaning-keyword Jaccard / shared-kanji rarity, `relation_heuristics.py`)
+is a *candidate filter*, not a semantic judgement — every one of those 733 rows was written by
+`_fallback_relation_type`'s crude 3-way rule (stem match → `similar_form`; else Jaccard ≥ 0.3 →
+`similar_meaning`; else → `related`), not by anything that actually understood the grammar.
+That's the "noise" the owner is asking to fix.
+
+**Decision: hand-authored curated edges, same content-agent pattern as V4.1's grammar
+content, not a second LLM-classification attempt.** No LLM key is configured in this
+environment either way (`generate_relations.py`'s LLM path literally cannot run here), and the
+owner's own request frames this as something "a content agent that reasons about real semantic
+relationships" should author directly — i.e. treat relation quality as authored content, the
+same posture as V4.1 treats grammar content, not as a second automated-classification pipeline
+problem.
+
+**File(s)**: `data/seed/relations_curated_*.json` (glob pattern — the import script accepts
+multiple files so the curation agent can split its ~1,000+ edges into manageable chunks by
+scope rather than authoring one giant file: suggested split
+`relations_curated_n3.json` / `relations_curated_n4.json` / `relations_curated_n2.json` /
+`relations_curated_cross.json`, but the script doesn't care about filenames, just the glob).
+
+```json
+{
+  "edges": [
+    {
+      "a": {"level": "N4", "key": "n4_012_aida"},
+      "b": {"level": "N3", "target_construction": "うちに"},
+      "relation_type": "advanced_version",
+      "direction": "b_to_a",
+      "strength": 0.85,
+      "note": "N4の「間に」はN3「うちに」の基礎形。「うちに」の方が状態の変化への焦点が強い — N3's うちに is the more nuanced/advanced form of the same 'while the state holds, do X' idea."
+    },
+    {
+      "a": {"level": "N3", "target_construction": "わけだ"},
+      "b": {"level": "N3", "target_construction": "わけではない"},
+      "relation_type": "commonly_confused",
+      "strength": 0.95,
+      "note": "わけだ affirms a logical conclusion; わけではない negates the conclusion, not the premise — classic N3 confusion pair."
+    }
+  ]
+}
+```
+
+**Reference resolution** (`a`/`b`, each an object identifying one grammar item without
+needing a DB UUID at authoring time — the curation agent works purely from the JSON content
+files, same as V4.1):
+- `{"level": "N4"|"N2", "key": "..."}` → resolved by recomputing ADR-21's hash and looking up
+  `Grammar.source_note_id`. Exact, unambiguous, same mechanism the importer itself uses.
+- `{"level": "N3", "target_construction": "..."}` → resolved by
+  `Grammar WHERE level='N3' AND target_construction=<text>`. N3's `target_construction` values
+  are effectively unique per item (extracted from each Anki card's own `<b>` span); the 3 rows
+  with an empty `target_construction` (ADR-6b) can't be referenced this way — an edge citing
+  one of those must instead use `{"level": "N3", "expression_clean": "..."}` as a fallback key
+  (checked second if `target_construction` is absent from the reference object). Either
+  reference type resolving to zero or multiple rows is **not a hard failure** — the edge is
+  skipped and logged in the report (`"type": "unresolved_reference"`), consistent with this
+  slice's whole "flag, don't block" posture (ADR-6/ADR-6b/ADR-21's own mismatch handling).
+
+**Script**: `backend/app/scripts/import_curated_relations.py`
+
+```
+uv run python -m app.scripts.import_curated_relations
+    # defaults to glob data/seed/relations_curated_*.json
+uv run python -m app.scripts.import_curated_relations --purge-remaining-heuristic
+    # see ADR-22
+```
+
+1. Load + merge all matching files' `edges` arrays.
+2. Resolve `a`/`b` → `Grammar` rows (skip + log unresolved, per above).
+3. Reject self-loops (`a` resolves to the same row as `b`) — same guard as the DB's own
+   `CHECK (grammar_id <> related_grammar_id)`, checked in Python first so it lands in the
+   report instead of surfacing as a raw DB `IntegrityError`.
+4. Canonicalize direction per the existing ADR-11 rules (symmetric types → sort by
+   `str(uuid)`; directional types → `direction: "a_to_b"|"b_to_a"` picks which resolved id is
+   `grammar_id` vs. `related_grammar_id"`), reusing `_canonicalize_symmetric` imported from
+   `generate_relations.py` rather than reimplementing it.
+5. **[ADR-22] Precedence: curated (`manual`) always wins over both `heuristic` and
+   `llm_classified` for the exact same unordered pair, but only for pairs the curated file
+   actually addresses** — the owner's own recommendation in the request, taken literally: "a
+   curated edge covering a pair replaces the heuristic edge for that pair"; pairs the curation
+   agent didn't get to keep whatever they had before (still noisy where uncurated, but not
+   silently deleted — losing an edge entirely is worse than a mediocre one for the graph view's
+   connectivity). Mechanism: for every resolved pair, delete any existing `grammar_relation`
+   row for that unordered `(grammar_id, related_grammar_id)` pair **regardless of its
+   `relation_type` or `source`** (a curated edge fully supersedes whatever heuristic/LLM
+   guesses existed for that pair, even if the curated relation_type differs from the old one —
+   e.g. heuristic said `related`, curation says `commonly_confused`: the old `related` row is
+   removed, not left alongside). Extends `generate_relations.py`'s existing
+   `_delete_stale_heuristic_rows` pattern (imported and generalized to also match
+   `llm_classified`-sourced rows, since none exist today but the logic should be correct if the
+   owner ever does configure a key later). Then upsert the curated row with
+   `source='manual'`, `prompt_version=None`.
+   - **Optional full purge** (`--purge-remaining-heuristic` flag, off by default): after the
+     curated pairs are processed, delete every *remaining* `source='heuristic'` row entirely
+     (not just the ones curation touched). This is offered because the owner's ask was "ALL
+     edges genuinely good quality" — if the curation agent's coverage turns out comprehensive
+     enough that the owner would rather have *no* edge than a known-noisy heuristic one for the
+     leftover pairs, this flag gives a clean way to say so without re-running the whole script
+     differently. Default is **off** (matches the owner's own literal recommendation of
+     "remove heuristic only where superseded") so a first run never silently drops graph
+     connectivity the curation agent didn't get around to replacing.
+6. Idempotent: rerun-safe via the same `ON CONFLICT (grammar_id, related_grammar_id,
+   relation_type) DO UPDATE` upsert (`uq_grammar_relation_edge`) as `generate_relations.py`
+   already uses.
+7. Report: `import_curated_relations_report.json` —
+   `{edges_read, resolved, unresolved: [...], self_loops_rejected, heuristic_rows_replaced,
+   llm_rows_replaced, inserted, updated, count_by_relation_type, purge_remaining_heuristic_ran,
+   heuristic_rows_purged}`.
+
+**Cross-level edges** are handled with zero special-casing — a `grammar_relation` row doesn't
+care whether `grammar_id`/`related_grammar_id` point at same-level or different-level `Grammar`
+rows; `direction`/`relation_type` semantics (ADR-11) are level-agnostic. `prerequisite`/
+`advanced_version` are expected to be the most common cross-level types in practice (e.g. N4's
+そうだ(伝聞/様態) as `prerequisite` to N3/N2's more advanced hearsay forms, per the task's own
+example), but nothing in the schema restricts any of the 7 types from spanning levels.
+
+**Scope guidance for the curation task** (not executed here, per instruction #6 — for the
+ai-engineer agent that runs this task): aim for comprehensive coverage of (a) every obvious
+function-word-family cluster within each level (the わけ/ばかり/ながら/... stems already
+enumerated in `relation_heuristics.py::FUNCTION_WORD_STEMS` are a ready-made checklist — for
+each stem-family, curate the *actual* relation type between its members instead of trusting
+the heuristic's guess), (b) well-known cross-level JLPT confusion/progression pairs (N4→N3→N2
+forms of the same underlying meaning, e.g. そうだ/ようだ/らしい's three-level spread), and
+(c) enough coverage that few N4/N2 items are left with zero relations. A precise edge-count
+target isn't prescribed — quality and real coverage over a specific number.
+
+### V4.4 API surface changes
+
+```
+GET /grammar?level=&q=&status=&tag=&limit=&offset=
+    level  - NEW, optional. Exact match against grammar.level ("N3"|"N4"|"N2"). Omitted =
+             all levels (backward-compatible default — existing MVP/V2/V3 callers that never
+             passed `level` keep returning everything, now spanning 3 levels instead of 1
+             once N4/N2 are seeded).
+    (q/status/tag/limit/offset unchanged from §V2.3)
+
+POST /review/session
+    body: {"size": 5|10|20, "mode": "due"|"confusion"|"weak_points" = "due",
+           "level": "N3"|"N4"|"N2"|null = null}          # NEW: level
+    level applies as an additional filter on whichever selection function `mode` dispatches to
+    (`select_due_progress_mixed`/`select_confusion_progress`/`select_weak_progress` in
+    `services/review.py`, all three already query through `grammar_progress` joined to
+    `grammar` — one extra `.where(Grammar.level == level)` clause per function when `level` is
+    not null, same pattern as the existing `mode` dispatch, no new service). `null` (default)
+    = due/weak/confusion selection spans all levels together, matching the task's "don't
+    over-build a full multi-curriculum system" steer — a due N4 item and a due N3 item compete
+    for the same session slots exactly as two due N3 items would today; level is an opt-in
+    narrowing filter for a focused practice session, not a mandatory selector.
+
+GET /stats?level=
+    level  - NEW, optional, same semantics as above. Omitted = combined stats across all
+             levels (unchanged existing behavior — no breaking change for the current
+             Dashboard). `?level=N4` scopes every count (`due_count`, `new_count`, ...,
+             `recall_pct`) to that level's `grammar_progress` rows only.
+    StatsOut gains one field: `total_items: int` — replaces the frontend's hardcoded
+    `TOTAL_GRAMMAR_ITEMS = 205` constant (§stats/page.tsx) with a real count reflecting
+    whichever `level` filter (or all 3 levels combined) was requested. **[ADR-23]** Chosen
+    over adding a separate `/stats/by-level` endpoint: a personal-tool dashboard with 3 levels
+    can afford 3 small parallel `GET /stats?level=X` calls if it wants a per-level breakdown
+    (each one is already a handful of cheap aggregate queries against ≤500 rows total) — not
+    worth a second endpoint/response shape for this data volume, matching this slice's
+    "proportionate, don't over-build" instruction.
+```
+
+Schema changes: `backend/app/schemas/stats.py` — `StatsOut` gains `total_items: int`.
+`backend/app/schemas/review.py` — `SessionRequest` gains `level: Literal["N3", "N4", "N2"]
+| None = None`. `backend/app/routers/grammar.py` — `list_grammar` gains the `level` query
+param, applied as a `Grammar.level == level` where-clause alongside the existing `q`/`status`/
+`tag` filters (same pattern, no new query-building logic). No changes to `GrammarOut`/
+`GrammarWithProgressOut`/`GrammarDetailOut` (`level` field already exists on all of them since
+MVP §3).
+
+### V4.5 Frontend changes
+
+**No new dependencies** — same posture as V2.4/V3's frontend sections. A small reusable
+`components/LevelSelector.tsx` (segmented control: `N3 | N4 | N2 | Все`) is the one new
+component; everywhere else is wiring the existing pages to an optional `level` param.
+
+| File | Change |
+|---|---|
+| `src/lib/types.ts` | Add `export type GrammarLevel = "N3" \| "N4" \| "N2";`. `GrammarListParams` gains `level?: GrammarLevel`. `SessionRequest` gains `level?: GrammarLevel`. `Stats` gains `total_items: number`. |
+| `src/lib/api.ts` | Thread `level` through `fetchGrammarList`, `startReviewSession`, `fetchStats` request builders (append `?level=` when present, same as the existing `q`/`status`/`tag`/`mode` params). |
+| `src/components/LevelSelector.tsx` | **New.** Segmented control, controlled component (`value: GrammarLevel \| "all"`, `onChange`). No new state library — persisted via the same `localStorage` pattern `useFuriganaMode.ts` already established (§V3.4), key e.g. `jp-grammar:selected-level`, default `"all"`. |
+| `src/components/AppHeader.tsx` | Replace the hardcoded `"JP Grammar · N3"` span with `<LevelSelector>` (global level context for the session — Dashboard/Grammar-list/Review-start all read the same persisted value unless a page-local override is used, e.g. the Grammar list page's own filter chips per below). |
+| `src/app/layout.tsx` | Metadata `description: "Personal N3 grammar spaced-retrieval trainer."` → `"Personal JLPT grammar spaced-retrieval trainer (N4–N2)."` — copy fix only, no functional change. |
+| `src/app/page.tsx` (Dashboard) | Heading `"Тренажёр грамматики N3"` → `"Тренажёр грамматики"` (level now shown via the header selector, not baked into the page title). `GET /stats` call passes the currently-selected level (or omits `level` for "Все" = combined). "Start Review" CTA passes the same `level` into `POST /review/session`. |
+| `src/app/stats/page.tsx` | Remove the hardcoded `const TOTAL_GRAMMAR_ITEMS = 205` constant entirely; use the new `Stats.total_items` field from the API response instead. Copy `"N3 grammar (Anki seed)"` → dynamic, e.g. `` `${level} grammar` `` or `"Grammar (all levels)"` when combined. |
+| `src/app/grammar/page.tsx` | Copy `"Все конструкции N3 · просмотр вне сессий повторения"` → `"Все конструкции · просмотр вне сессий повторения"`. Add level filter chips (`N3 / N4 / N2 / Все`) reusing the exact same chip UI pattern already used for the `status` filter on this page, wired to `GrammarListParams.level`. |
+| `src/app/review/page.tsx` | No structural change — already receives whatever `SessionRequest` the Dashboard/mode-picker (§V3.10) constructed; `level` just rides along as one more optional field, same as `mode` did in V3. |
+
+### V4.6 Task breakdown (dependency-ordered, layer-tagged)
+
+Continues the MVP (§9) / V2 (§V2.5) / V3 (§V3.7) task-numbering convention.
+
+| # | Layer | Task | Output | Test | Depends on |
+|---|---|---|---|---|---|
+| V4.1a | AI (content) | Author `data/seed/n4_grammar_authored.json` — 142 items per §V4.1 schema, from the N4 list given in the owner's prompt (do not re-derive from training knowledge — that list is the authoritative inventory). Match N3's depth: formation rules per applicable part of speech, one ruby-marked example sentence, meaningful `tags`. | `data/seed/n4_grammar_authored.json` | JSON validates against the schema (script from V4.2 can `--dry-run` parse without DB write); spot-check 10 random items for markup correctness | — |
+| V4.1b | AI (content) | Author `data/seed/n2_grammar_authored.json` — 130 items across all 26 Shin Kanzen lessons per §V4.1 schema (incl. `lesson:NN` tags), from the N2 list given in the owner's prompt. | `data/seed/n2_grammar_authored.json` | same as V4.1a, plus: every item has a `lesson:01`..`lesson:26` tag matching its source lesson | — (parallel with V4.1a) |
+| V4.2 | Backend | `backend/app/scripts/seed_import_authored.py` per §V4.2 — reuses `seed_import.py` helpers, does not modify it | script | unit tests: `source_note_id` hash determinism, upsert idempotency, mismatch flagging on a deliberately-broken fixture item; integration test importing a small fixture file end-to-end | — (code-only, can be written in parallel with V4.1a/b, integration-tested once they land) |
+| V4.3 | Backend | Run `seed_import_authored.py` against the real N4/N2 files (V4.1a/V4.1b) | populated `grammar`+`grammar_progress`+seed `question` rows for 142+130 items | report shows 0 (or a small, explainable) count of `target_construction_mismatch`/`malformed_rt_payload` anomalies; row counts match 142/130 | V4.1a, V4.1b, V4.2 |
+| V4.4 | AI (content) | Curate `data/seed/relations_curated_*.json` per §V4.3 (within-N4, within-N3, within-N2, cross-level), using `n3_grammar_anki_export.json` + the two new authored files as source material | `data/seed/relations_curated_*.json` | spot-check known confusion families (わけ, ばかり, そうだ) resolve correctly against the reference scheme; unresolved-reference count is near-zero on a dry parse | V4.1a, V4.1b (needs final N4/N2 `key`/`target_construction` values to reference; does not need V4.3's DB import to have run) |
+| V4.5 | Backend | `backend/app/scripts/import_curated_relations.py` per §V4.3 | script | unit tests: reference resolution (both key-based and target_construction-based, incl. the `expression_clean` fallback for ADR-6b's 3 empty-target rows), precedence/deletion logic (ADR-22), idempotent rerun; integration test against a small fixture edge set | — (code-only, parallel with V4.4) |
+| V4.6 | Backend | Run `import_curated_relations.py` against the real curated file(s) (V4.4) against the DB (needs V4.3's N4/N2 rows to exist for cross-level edges to resolve) | live `grammar_relation` rows, `source='manual'` where curated | report: heuristic-rows-replaced count > 0, unresolved-reference count near-zero, spot-check the graph view (once V4.9 frontend lands, or via `GET /grammar/{id}/relations` directly) on a few known items | V4.3, V4.4, V4.5 |
+| V4.7 | Backend | `GET /grammar?level=`, `POST /review/session` `level` field, `GET /stats?level=` + `StatsOut.total_items` per §V4.4 | router/schema changes | integration tests: level filter narrows list/session/stats correctly; omitted `level` preserves exact current (all-levels) behavior for backward compat | — (independent of content tasks, can start immediately) |
+| V4.8 | Test | Unit + integration test pass for V4.2/V4.5/V4.7 | test files | `pytest` green | V4.2, V4.5, V4.7 |
+| V4.9 | Frontend | `LevelSelector.tsx` + `lib/types.ts`/`lib/api.ts` wiring per §V4.5 | component + typed client changes | type-checks against updated backend schema | V4.7 (frozen contract) |
+| V4.10 | Frontend | Wire `LevelSelector` into `AppHeader`, `Dashboard`, `Grammar list` filter chips, `Stats` page (`total_items`), copy fixes across `layout.tsx`/`page.tsx`/`grammar/page.tsx`/`stats/page.tsx` per §V4.5 table | page/component changes | manual QA: switching level filters the grammar list and review-session composition; stats page shows the real item count (307 combined once N4/N2 land, no hardcoded 205) | V4.9 |
+| V4.11 | Test | QA pass: seed N4/N2 → confirm reviewable end-to-end at each level, confirm curated relations render in the graph/detail "Compare with…" view, confirm level filter/selector across Dashboard/Grammar-list/Review/Stats (`qa-tester`) | bug list or sign-off | full flow: pick N4 in header → Dashboard shows N4-only due count → start review → N4 questions only → grammar list filtered to N4 → detail page for an N4 item shows curated relations incl. any cross-level ones | V4.3, V4.6, V4.10 |
+| V4.12 | Docs | Update `/llms.txt` + README for `?level=` params on all 3 endpoints, the two new seed scripts, and the curated-relations script | docs | tech-writer sign-off | V4.7, V4.2, V4.5 |
+
+**Parallelization for the orchestrator**: V4.1a and V4.1b (content) run fully in parallel —
+independent files, independent agents. V4.2 and V4.7 (backend, code-only) can start
+immediately in parallel with V4.1a/b since they don't need the content to exist yet, only to
+be tested against it once it lands (same "frontend/backend don't need live content, just a
+frozen contract" pattern already established in every prior slice). V4.4 (relations curation)
+is the one hard content-after-content dependency the task called out explicitly — it needs
+V4.1a/b's *final* `key`/`target_construction` values to write valid references against, so it
+should not start until those two files are considered done (not merely started). V4.5
+(curated-relations import script) is code-only and parallel with V4.4, same as V4.2 is
+parallel with V4.1a/b. V4.9-V4.10 (frontend) can start as soon as V4.7's contract is frozen
+(already frozen in §V4.4 above), independent of whether the real content/curation runs
+(V4.3/V4.6) have happened — an empty or partially-seeded DB renders correctly, same posture
+as every prior slice's frontend task.
+
+### V4.7 Open items carried forward
+
+- Full elimination of *all* 733 pre-existing N3 heuristic edges isn't guaranteed by this
+  slice — only pairs the curation agent's file actually addresses get their heuristic edge
+  replaced (ADR-22's literal reading of the owner's own recommendation). The
+  `--purge-remaining-heuristic` flag exists for a deliberate follow-up pass if the owner wants
+  a hard guarantee of zero remaining heuristic-sourced edges after reviewing V4.6's report.
+- N3's `tags` stay empty per ADR-4 — this slice populates tags only for newly-authored N4/N2
+  content, doesn't retroactively tag the existing 205 N3 items. Cheap follow-up if wanted
+  later (a small content task, not a schema change).
+- `level`-scoped session composition (V4.4) doesn't add any cross-level-aware weighting (e.g.
+  "prioritize N4 review before allowing N2 due items") — `null`/omitted `level` just pools
+  everything together by due-ness exactly as MVP's single-level due-selection already did.
+  Explicit per-level pacing/gating is out of scope, consistent with SPEC's original deferral
+  of "lesson-based curriculum"/multi-level sequencing to well beyond this personal tool's
+  current scope.
+- `GET /stats?level=` triggering 3 parallel frontend calls for an "all levels, broken down"
+  dashboard view (rather than a dedicated `/stats/by-level` endpoint, ADR-23) should be
+  revisited only if it turns out to feel slow in practice — not expected at this data volume
+  (≤500 total grammar rows across all 3 levels).
