@@ -8,7 +8,7 @@
   "kanji_rows_read": 373,
   "kanji_dedup_collisions": 36,
   "total_rows_written": 2014,
-  "inserted": 2014,
-  "updated": 0,
+  "inserted": 0,
+  "updated": 2014,
   "vocabulary_row_count_after": 2014
 }
