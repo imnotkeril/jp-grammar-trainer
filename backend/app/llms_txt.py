@@ -24,10 +24,27 @@ Liveness check.
 Response 200: `{"status": "ok"}`
 
 ### GET /grammar
-List all seeded N3 grammar items, ordered by original Anki note id.
-Response 200: `GrammarOut[]`
-
+Browsable, filterable list of seeded N3 grammar items, ordered by original Anki note id.
+**V2 breaking change vs MVP**: now returns a `{items, total}` wrapper (was a bare array).
+Query params (all optional):
 ```
+q       - case-insensitive substring match across expression_clean, reading, meaning_ru,
+          pattern_text (Postgres ILIKE, OR'd across the four columns)
+status  - filter by grammar_progress.status: new|learning|review|mastered
+tag     - tag containment filter (currently a no-op: this deck has no tags yet, kept for
+          forward-compat)
+limit   - default 205 (i.e. "return everything" by default, max 1000)
+offset  - default 0
+```
+Response 200:
+```
+GrammarListOut = { items: GrammarWithProgressOut[], total: number }
+GrammarWithProgressOut = GrammarOut + {
+  status: string,            # new|learning|review|mastered
+  next_review: string (ISO datetime),
+  interval_days: number,
+  recall_score: number,
+}
 GrammarOut = {
   id: string (uuid),
   expression_html: string,       # original <ruby>/<rt>/<b> markup, target construction bolded
@@ -43,10 +60,49 @@ GrammarOut = {
 FormationRule = { pos: string, form_label: string, example_html: string }
 ```
 
+### GET /grammar/relations
+Bulk edge list for the graph view — ALL relation edges in one call (V2). Register this route
+is matched before `/grammar/{grammar_id}` (fixed path segment takes priority).
+Response 200:
+```
+GrammarRelationEdgeOut[] = [{
+  grammar_id: string (uuid),
+  related_grammar_id: string (uuid),
+  relation_type: string,     # similar_meaning|similar_form|commonly_confused|opposite|
+                              # prerequisite|advanced_version|related
+  direction: "symmetric" | "outgoing",   # relative to grammar_id (the stored "from" side)
+  strength: number,           # 0..1
+}, ...]
+```
+
 ### GET /grammar/{grammar_id}
-Single grammar item by id.
+Single grammar item by id, with progress and relations embedded (V2: previously bare
+`GrammarOut`, no progress/relations).
 Path param: `grammar_id` (uuid)
-Response 200: `GrammarOut` (see above)
+Response 200:
+```
+GrammarDetailOut = GrammarWithProgressOut + {
+  relations: GrammarRelationOut[]
+}
+GrammarRelationOut = {
+  relation_type: string,
+  direction: "symmetric" | "outgoing" | "incoming",   # relative to THIS grammar item
+  strength: number,
+  source: string,             # heuristic|llm_classified|manual
+  note: string | null,        # 1-line justification, shown as a tooltip
+  related_grammar: {
+    id: string (uuid), expression_clean: string, reading: string,
+    meaning_ru: string, target_construction: string,
+  },
+}
+```
+Response 404: `{"detail": "Grammar item not found"}`
+
+### GET /grammar/{grammar_id}/relations
+Standalone relations-only fetch for one grammar item (V2) — same array as the `relations`
+field above, for callers that don't need the full grammar payload.
+Path param: `grammar_id` (uuid)
+Response 200: `GrammarRelationOut[]` (see above)
 Response 404: `{"detail": "Grammar item not found"}`
 
 ### POST /review/session
@@ -123,4 +179,9 @@ This file.
   repeatedly, but each call may enqueue new AI generation work if a provider key is set.
 - AI-generated example sentences require `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` (selected via
   `LLM_PROVIDER`); without either, only the ~200 seeded questions are ever served.
+- `grammar_relation` edges (V2) are populated by a manual, owner-gated script
+  (`uv run python -m app.scripts.generate_relations`), never on any request path. Without an
+  LLM key configured it still produces useful `source="heuristic"` edges (shared
+  function-word stem / meaning-keyword overlap / shared-kanji scoring); with a key, re-running
+  it upgrades those to `source="llm_classified"` with a real relation_type + confidence.
 """

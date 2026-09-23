@@ -12,6 +12,7 @@ from app.db import Base
 
 if TYPE_CHECKING:
     from app.models.grammar_progress import GrammarProgress
+    from app.models.grammar_relation import GrammarRelation
     from app.models.question import Question
 
 
@@ -44,4 +45,18 @@ class Grammar(Base):
     )
     questions: Mapped[list["Question"]] = relationship(  # noqa: F821
         back_populates="grammar", cascade="all, delete-orphan"
+    )
+    # Two relationships covering both physical columns of grammar_relation (ADR-11:
+    # a symmetric edge is stored once, so "all relations of X" means rows where X is
+    # EITHER side — see app/schemas/grammar.py's assembly logic for how these get merged
+    # into one direction-aware list per the API contract).
+    relations_from: Mapped[list["GrammarRelation"]] = relationship(  # noqa: F821
+        foreign_keys="GrammarRelation.grammar_id",
+        back_populates="grammar",
+        cascade="all, delete-orphan",
+    )
+    relations_to: Mapped[list["GrammarRelation"]] = relationship(  # noqa: F821
+        foreign_keys="GrammarRelation.related_grammar_id",
+        back_populates="related_grammar",
+        cascade="all, delete-orphan",
     )

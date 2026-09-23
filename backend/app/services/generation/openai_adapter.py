@@ -8,10 +8,18 @@ from openai import AsyncOpenAI
 from app.config import settings
 from app.services.generation.prompts import (
     GENERATION_JSON_SCHEMA,
+    RELATION_CLASSIFICATION_JSON_SCHEMA,
+    RELATION_SYSTEM_PROMPT,
     SYSTEM_PROMPT,
+    build_relation_classification_prompt,
     build_user_prompt,
 )
-from app.services.generation.provider import GenerationPrompt, RawGeneratedSentence
+from app.services.generation.provider import (
+    GenerationPrompt,
+    RawGeneratedSentence,
+    RelationCandidate,
+    RelationClassification,
+)
 
 
 class OpenAIAdapter:
@@ -51,3 +59,29 @@ class OpenAIAdapter:
             raise RuntimeError("OpenAI returned an empty structured-output response.")
         payload = json.loads(content)
         return [RawGeneratedSentence(**item) for item in payload["sentences"]]
+
+    @beartype
+    async def classify_relations(
+        self, candidates: list[RelationCandidate]
+    ) -> list[RelationClassification]:
+        """See ARCHITECTURE.md V2.2 step 2 — batched relation classification."""
+        response = await self._client.chat.completions.create(
+            model=self.model_name,
+            messages=[
+                {"role": "system", "content": RELATION_SYSTEM_PROMPT},
+                {"role": "user", "content": build_relation_classification_prompt(candidates)},
+            ],
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "relation_classifications",
+                    "schema": RELATION_CLASSIFICATION_JSON_SCHEMA,
+                    "strict": True,
+                },
+            },
+        )
+        content = response.choices[0].message.content
+        if content is None:
+            raise RuntimeError("OpenAI returned an empty structured-output response.")
+        payload = json.loads(content)
+        return [RelationClassification(**item) for item in payload["classifications"]]

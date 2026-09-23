@@ -1,0 +1,19 @@
+{
+  "mode": "heuristic_fallback",
+  "total_grammar_items": 205,
+  "candidate_count": 733,
+  "stale_heuristic_rows_replaced": 0,
+  "classified_count": 733,
+  "none_count": 0,
+  "count_by_relation_type": {
+    "similar_form": 53,
+    "related": 676,
+    "similar_meaning": 4
+  },
+  "items_with_zero_relations": [
+    "efffabae-fe4c-4bd1-a2c2-064e09ef8c74",
+    "f922ae5a-6705-4eab-9dce-b3a55462886c",
+    "6e3beb00-a2ab-4c9d-832b-0445d62e66fb"
+  ],
+  "items_with_zero_relations_count": 3
+}

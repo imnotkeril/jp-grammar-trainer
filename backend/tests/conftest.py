@@ -14,6 +14,7 @@ from app.db import Base, get_db
 from app.main import app
 from app.models.grammar import Grammar
 from app.models.grammar_progress import GrammarProgress, GrammarStatus
+from app.models.grammar_relation import GrammarRelation, RelationSource, RelationType
 from app.models.question import Question, QuestionSource, ValidationStatus
 
 # Integration tests (routers/*, services/review.py) need a real Postgres — the schema uses
@@ -160,3 +161,26 @@ def make_question(
     db.add(question)
     db.flush()
     return question
+
+
+def make_relation(
+    db: Session,
+    grammar: Grammar,
+    related_grammar: Grammar,
+    *,
+    relation_type: RelationType = RelationType.RELATED,
+    source: RelationSource = RelationSource.HEURISTIC,
+    strength: float = 1.0,
+    note: str | None = None,
+) -> GrammarRelation:
+    relation = GrammarRelation(
+        grammar_id=grammar.id,
+        related_grammar_id=related_grammar.id,
+        relation_type=relation_type,
+        strength=strength,
+        source=source,
+        note=note,
+    )
+    db.add(relation)
+    db.flush()
+    return relation
