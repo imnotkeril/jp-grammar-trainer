@@ -8,10 +8,11 @@
 // keep per-question interaction snappy per SPEC §42 — no forced animations/delays anywhere
 // in this flow.
 
-import { useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
-import type { AnswerResponse, Question } from "@/lib/types";
+import type { AnswerResponse, Question, ReviewMode } from "@/lib/types";
 import { useFuriganaMode } from "@/lib/useFuriganaMode";
 import FuriganaModeToggle from "@/components/FuriganaModeToggle";
 import QuestionCard from "@/components/QuestionCard";
@@ -20,6 +21,18 @@ import { ErrorBlock, LoadingBlock } from "@/components/StatusBlocks";
 
 const SESSION_SIZES = [5, 10, 20] as const;
 type SessionSize = (typeof SESSION_SIZES)[number];
+
+// ARCHITECTURE.md V3 §V3.3/§V3.10 — three practice entry points. "due" mixes in a small
+// weak-point ratio server-side by default; the other two are dedicated modes.
+const REVIEW_MODES: { value: ReviewMode; label: string; hint: string }[] = [
+  { value: "due", label: "Обычное повторение", hint: "По расписанию SRS" },
+  { value: "confusion", label: "Путаница", hint: "Часто путаемые конструкции" },
+  { value: "weak_points", label: "Слабые места", hint: "Худшие по применению и различению" },
+];
+
+function isReviewMode(value: string | null): value is ReviewMode {
+  return value === "due" || value === "confusion" || value === "weak_points";
+}
 
 interface HistoryEntry {
   question: Question;
@@ -30,13 +43,27 @@ interface HistoryEntry {
 type Phase = "setup" | "starting" | "active" | "empty" | "summary";
 
 export default function ReviewPage() {
+  // useSearchParams requires a Suspense boundary around any consumer (Next.js App Router).
+  return (
+    <Suspense fallback={<main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-10" />}>
+      <ReviewPageInner />
+    </Suspense>
+  );
+}
+
+function ReviewPageInner() {
+  const searchParams = useSearchParams();
   const [furiganaMode, setFuriganaMode] = useFuriganaMode();
 
   const [sessionSize, setSessionSize] = useState<SessionSize>(10);
+  // Deep-linkable via ?mode= (e.g. a Dashboard/Stats "Слабые места" link) — ARCHITECTURE.md
+  // V3 §V3.10. Falls back to "due" for a missing/invalid value.
+  const [reviewMode, setReviewMode] = useState<ReviewMode>("due");
   const [phase, setPhase] = useState<Phase>("setup");
   const [startError, setStartError] = useState(false);
 
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [knownWords, setKnownWords] = useState<ReadonlySet<string>>(new Set());
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState<string | undefined>(undefined);
   const [answerResult, setAnswerResult] = useState<AnswerResponse | undefined>(undefined);
@@ -47,18 +74,26 @@ export default function ReviewPage() {
 
   const currentQuestion = questions[currentIndex];
 
-  function startSession(size: SessionSize) {
+  useEffect(() => {
+    const fromQuery = searchParams.get("mode");
+    if (isReviewMode(fromQuery)) {
+      setReviewMode(fromQuery);
+    }
+  }, [searchParams]);
+
+  function startSession(size: SessionSize, mode: ReviewMode) {
     setSessionSize(size);
     setPhase("starting");
     setStartError(false);
     api
-      .startSession(size)
+      .startSession(size, mode)
       .then((res) => {
         if (res.questions.length === 0) {
           setPhase("empty");
           return;
         }
         setQuestions(res.questions);
+        setKnownWords(new Set(res.known_words));
         setCurrentIndex(0);
         setSelectedOption(undefined);
         setAnswerResult(undefined);
@@ -144,10 +179,26 @@ export default function ReviewPage() {
               </button>
             ))}
           </div>
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">Режим</p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {REVIEW_MODES.map((m) => (
+              <button
+                key={m.value}
+                type="button"
+                onClick={() => setReviewMode(m.value)}
+                aria-pressed={reviewMode === m.value}
+                className="transition-standard flex-1 rounded-md border border-[var(--border)] px-4 py-2 text-left aria-pressed:border-[var(--accent)] aria-pressed:bg-[var(--accent-soft)]"
+              >
+                <span className="block font-medium text-[var(--ink)]">{m.label}</span>
+                <span className="block text-xs text-[var(--ink-muted)]">{m.hint}</span>
+              </button>
+            ))}
+          </div>
+
           {startError && <ErrorBlock message="Не удалось начать сессию. Backend недоступен?" />}
           <button
             type="button"
-            onClick={() => startSession(sessionSize)}
+            onClick={() => startSession(sessionSize, reviewMode)}
             className="transition-standard mt-2 rounded-lg bg-[var(--accent)] px-6 py-3 font-medium text-[var(--accent-ink)] hover:bg-[var(--accent-hover)]"
           >
             Начать
@@ -178,6 +229,7 @@ export default function ReviewPage() {
             onSelect={selectOption}
             selectedOption={selectedOption}
             correctOption={answerResult?.correct_option}
+            knownSurfaceForms={knownWords}
           />
 
           {submitting && <LoadingBlock label="Проверяю…" />}
@@ -190,6 +242,7 @@ export default function ReviewPage() {
                 sentenceFullHtml={answerResult.sentence_full_html}
                 explanationRu={answerResult.explanation_ru}
                 furiganaMode={furiganaMode}
+                knownSurfaceForms={knownWords}
               />
               <button
                 type="button"
