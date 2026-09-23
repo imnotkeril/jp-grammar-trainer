@@ -111,11 +111,22 @@ item, and fires background AI-generation for any item running low on unused ques
 (silently skipped if no LLM API key is configured — seed questions still serve).
 Request body:
 ```
-SessionRequest = { size?: 5 | 10 | 20 }   # default 10
+SessionRequest = {
+  size?: 5 | 10 | 20,                          # default 10
+  mode?: "due" | "confusion" | "weak_points",  # default "due"
+}
 ```
+- `due` — overdue items first, then new (MVP behavior). For `size > 5`, ~20% of slots are
+  mixed in from the user's weakest items regardless of due date (ADR-17).
+- `confusion` — only items connected by a `commonly_confused`/`similar_form` edge in
+  `grammar_relation` (V2 graph), ranked by strongest edge. Empty if no such edges exist yet
+  (e.g. `generate_relations` hasn't been run).
+- `weak_points` — items with `repetitions > 0`, ordered by lowest
+  `application_score + discrimination_score` first. Excludes never-reviewed items (no signal
+  yet to call them "weak").
 Response 200:
 ```
-SessionResponse = { questions: QuestionOut[] }
+SessionResponse = { questions: QuestionOut[], known_words: string[] }
 QuestionOut = {
   id: string (uuid),
   grammar_id: string (uuid),
@@ -124,6 +135,10 @@ QuestionOut = {
 }
 QuestionOption = { key: string, text: string }   # key is "A".."D"
 ```
+`known_words` is the surface-form list (V3 vocabulary) the caller should strip furigana from
+when rendering in `"adaptive"` furigana mode — the backend does NOT pre-strip the HTML, the
+client applies this list against `<ruby>base<rt>reading</rt></ruby>` spans itself (see
+`FuriganaText.tsx`'s `stripKnownWords`, which mirrors `furigana.py`'s `strip_known_words`).
 Note: an item with no valid question yet available (generation not landed) is skipped for
 this round and stays due for the next session — the response may contain fewer items than
 `size`.
@@ -184,4 +199,13 @@ This file.
   LLM key configured it still produces useful `source="heuristic"` edges (shared
   function-word stem / meaning-keyword overlap / shared-kanji scoring); with a key, re-running
   it upgrades those to `source="llm_classified"` with a real relation_type + confidence.
+- Vocabulary (V3) is seeded once from a repo-local JSON snapshot of the owner's personal N3
+  word/kanji lists (`uv run python -m app.scripts.seed_vocabulary`), not from any request path.
+  `POST /review/answer` records per-word correct/incorrect exposure (whole-question
+  correctness attributed to every matched word — no per-word signal exists) against
+  `user_vocabulary`; a word counts as "known" after enough consecutive correct exposures
+  (see ARCHITECTURE.md ADR-15/19), at which point it's included in `known_words`.
+- `confusion`/`weak_points` session modes and confusion-biased distractor/generation selection
+  (V3) both read from `grammar_relation` — they degrade gracefully (fewer/no results, uniform
+  random distractors) when that table is empty, they never error.
 """
