@@ -67,6 +67,24 @@ class ItemAnomaly(TypedDict):
 
 
 @beartype
+def _coerce_formation_rules(raw: object) -> list[dict[str, str]]:
+    """`item.get("formation_rules", [])` comes back typed `object` from the `dict[str,
+    object]` item payload — narrow it to the shape `Grammar.formation_rules` (JSONB, `list[dict[str,
+    str]]`) actually expects, per §V4.1's field table."""
+    if not isinstance(raw, list):
+        return []
+    return [{str(k): str(v) for k, v in entry.items()} for entry in raw if isinstance(entry, dict)]
+
+
+@beartype
+def _coerce_tags(raw: object) -> list[str]:
+    """Same narrowing as `_coerce_formation_rules`, for `Grammar.tags` (`list[str]`)."""
+    if not isinstance(raw, list):
+        return []
+    return [str(t) for t in raw]
+
+
+@beartype
 def _validate_target_construction(expression_clean: str, target_construction: str) -> bool:
     """True if `target_construction` (already stripped of markup by the caller) literally
     appears in `expression_clean` — per ARCHITECTURE.md V4.1's field table. A mismatch is
@@ -102,8 +120,8 @@ def _import_one_file(db: Session, path: Path) -> AuthoredFileReport:
         expression_html = _resolve_source_html(item)
         expression_clean = strip_tags(expression_html)
         target_construction = str(item["target_construction"])
-        formation_rules = item.get("formation_rules", [])
-        tags = list(item.get("tags", []))
+        formation_rules = _coerce_formation_rules(item.get("formation_rules", []))
+        tags = _coerce_tags(item.get("tags", []))
 
         if not _validate_target_construction(expression_clean, target_construction):
             anomalies.append(

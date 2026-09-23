@@ -81,6 +81,15 @@ def default_seed_paths() -> list[Path]:
 
 
 @beartype
+def _as_dict(raw: object) -> dict[str, object]:
+    """`edge["a"]`/`edge["b"]` come back typed `object` from the `dict[str, object]` edge
+    payload — narrow to the `dict[str, object]` shape `_resolve_reference` expects."""
+    if not isinstance(raw, dict):
+        raise TypeError(f"expected a reference object, got {type(raw).__name__}")
+    return {str(k): v for k, v in raw.items()}
+
+
+@beartype
 def _resolve_reference(db: Session, ref: dict[str, object]) -> Grammar | None:
     """Resolve one `a`/`b` reference object to a `Grammar` row. Returns None (not a hard
     failure) if it resolves to zero or multiple rows — per ARCHITECTURE.md §V4.3, an
@@ -150,8 +159,8 @@ def run_import(db: Session, paths: list[Path], *, purge_remaining_heuristic: boo
     resolved_edges: list[tuple[str, str, RelationType, float, str | None]] = []
 
     for idx, edge in enumerate(all_edges):
-        a_ref = edge["a"]
-        b_ref = edge["b"]
+        a_ref = _as_dict(edge["a"])
+        b_ref = _as_dict(edge["b"])
         a_row = _resolve_reference(db, a_ref)
         b_row = _resolve_reference(db, b_ref)
 
@@ -167,12 +176,15 @@ def run_import(db: Session, paths: list[Path], *, purge_remaining_heuristic: boo
             continue
 
         relation_type = RelationType(edge["relation_type"])
-        direction = edge.get("direction")
+        raw_direction = edge.get("direction")
+        direction = str(raw_direction) if raw_direction is not None else None
         grammar_id, related_grammar_id = _direction_to_columns(
             relation_type, str(a_row.id), str(b_row.id), direction
         )
-        strength = float(edge.get("strength", 1.0))
-        note = edge.get("note")
+        raw_strength = edge.get("strength", 1.0)
+        strength = float(raw_strength) if isinstance(raw_strength, (int, float, str)) else 1.0
+        raw_note = edge.get("note")
+        note = str(raw_note) if raw_note else None
         resolved_edges.append((grammar_id, related_grammar_id, relation_type, strength, note))
 
     pair_keys: set[PairKey] = {_pair_key(g, r) for g, r, _, _, _ in resolved_edges}

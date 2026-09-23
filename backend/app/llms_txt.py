@@ -10,9 +10,10 @@ in app/routers/* or app/schemas/* changes — it must stay in sync with the real
 LLMS_TXT = """\
 # JP Grammar Trainer API
 
-> Personal, single-user Japanese N3 grammar spaced-retrieval trainer backend. No auth —
-> every row belongs to the single owner. FastAPI + PostgreSQL. See /ARCHITECTURE.md in the
-> project repo for full system design, DB schema, SRS algorithm, and AI generation pipeline.
+> Personal, single-user Japanese JLPT grammar spaced-retrieval trainer backend (N4/N3/N2).
+> No auth — every row belongs to the single owner. FastAPI + PostgreSQL. See
+> /ARCHITECTURE.md in the project repo for full system design, DB schema, SRS algorithm, and
+> AI generation pipeline.
 
 Base URL: this server's origin (e.g. http://localhost:8000 in dev). All endpoints return JSON
 except this file. CORS is restricted to the origins in CORS_ALLOWED_ORIGINS.
@@ -24,16 +25,22 @@ Liveness check.
 Response 200: `{"status": "ok"}`
 
 ### GET /grammar
-Browsable, filterable list of seeded N3 grammar items, ordered by original Anki note id.
+Browsable, filterable list of seeded grammar items across all JLPT levels (N4/N3/N2), ordered
+by original Anki note id (N3) / import order (N4/N2).
 **V2 breaking change vs MVP**: now returns a `{items, total}` wrapper (was a bare array).
 Query params (all optional):
 ```
+level   - V4, NEW. Exact match against grammar.level: "N3"|"N4"|"N2". Omitted = all levels
+          (backward compatible — pre-V4 callers keep getting everything, now spanning 3
+          levels instead of 1 once N4/N2 are seeded).
 q       - case-insensitive substring match across expression_clean, reading, meaning_ru,
           pattern_text (Postgres ILIKE, OR'd across the four columns)
 status  - filter by grammar_progress.status: new|learning|review|mastered
-tag     - tag containment filter (currently a no-op: this deck has no tags yet, kept for
-          forward-compat)
-limit   - default 205 (i.e. "return everything" by default, max 1000)
+tag     - tag containment filter. N3 items have no tags (ADR-4); N4/N2 items (V4) are tagged
+          with their level plus a semantic category, and N2 items additionally with
+          `lesson:01`..`lesson:26`.
+limit   - default 205 (i.e. "return everything" by default, max 1000). Raise this if
+          requesting all levels combined once N4/N2 are seeded (up to ~477 rows).
 offset  - default 0
 ```
 Response 200:
@@ -53,8 +60,8 @@ GrammarOut = {
   meaning_ru: string,             # Russian translation
   pattern_text: string,           # rule statement + meaning
   formation_rules: FormationRule[],
-  level: string,                  # "N3" for all rows on MVP
-  tags: string[],                 # empty on MVP (source deck has no tags)
+  level: string,                  # "N3"|"N4"|"N2" (V4 adds N4/N2 alongside MVP's N3)
+  tags: string[],                 # empty for N3 (ADR-4); populated for N4/N2 (V4, see above)
   target_construction: string,    # plain text of the grammar point being tested
 }
 FormationRule = { pos: string, form_label: string, example_html: string }
@@ -114,16 +121,21 @@ Request body:
 SessionRequest = {
   size?: 5 | 10 | 20,                          # default 10
   mode?: "due" | "confusion" | "weak_points",  # default "due"
+  level?: "N3" | "N4" | "N2",                  # V4, NEW. default null = all levels pooled
 }
 ```
 - `due` — overdue items first, then new (MVP behavior). For `size > 5`, ~20% of slots are
   mixed in from the user's weakest items regardless of due date (ADR-17).
 - `confusion` — only items connected by a `commonly_confused`/`similar_form` edge in
   `grammar_relation` (V2 graph), ranked by strongest edge. Empty if no such edges exist yet
-  (e.g. `generate_relations` hasn't been run).
+  (e.g. `generate_relations`/`import_curated_relations` hasn't been run).
 - `weak_points` — items with `repetitions > 0`, ordered by lowest
   `application_score + discrimination_score` first. Excludes never-reviewed items (no signal
   yet to call them "weak").
+- `level` (V4) narrows whichever mode above to a single JLPT level's `grammar_progress` rows
+  (for `confusion` mode, both sides of a candidate edge must be in that level). `null`/omitted
+  (default) pools all levels together exactly as before V4 — e.g. a due N4 item and a due N3
+  item compete for the same session slots. Not a mandatory selector, opt-in only.
 Response 200:
 ```
 SessionResponse = { questions: QuestionOut[], known_words: string[] }
@@ -169,6 +181,15 @@ Response 500: grammar/progress record missing (should not happen — data integr
 
 ### GET /stats
 Dashboard aggregates for the single owner.
+Query params (optional):
+```
+level   - V4, NEW. Same semantics as GET /grammar's `level`: "N3"|"N4"|"N2". Omitted =
+          combined stats across all levels (unchanged pre-V4 behavior). Scopes every count
+          below to that level's grammar_progress rows only. [ADR-23] Chosen over a separate
+          `/stats/by-level` endpoint — for a personal tool at this data volume (<=500 rows
+          total), 3 parallel `GET /stats?level=X` calls are cheap enough for a per-level
+          breakdown.
+```
 Response 200:
 ```
 StatsOut = {
@@ -180,6 +201,9 @@ StatsOut = {
   recall_pct: number,          # rolling accuracy, 0..1
   application_avg: number,     # placeholder, V2
   discrimination_avg: number,  # placeholder, V2
+  total_items: number,         # V4, NEW. Count of grammar rows matching `level` (or all
+                                # levels combined if omitted). Replaces any client-side
+                                # hardcoded item-count constant.
 }
 ```
 
@@ -208,4 +232,17 @@ This file.
 - `confusion`/`weak_points` session modes and confusion-biased distractor/generation selection
   (V3) both read from `grammar_relation` — they degrade gracefully (fewer/no results, uniform
   random distractors) when that table is empty, they never error.
+- N4/N2 grammar content (V4) is seeded once from repo-local, DB-ready JSON
+  (`data/seed/n4_grammar_authored.json`, `data/seed/n2_grammar_authored.json`) via
+  `uv run python -m app.scripts.seed_import_authored`, never from any request path. Upserts by
+  a deterministic `source_note_id` hashed from `(level, key)` (ADR-21) — idempotent re-run on
+  an edited file updates the same rows without touching their `grammar_progress`/SRS state.
+  Never reads or modifies N3's `n3_grammar_anki_export.json`-sourced rows.
+- Curated relation edges (V4) are seeded once from repo-local JSON
+  (`data/seed/relations_curated_*.json`, glob) via
+  `uv run python -m app.scripts.import_curated_relations`, never from any request path. A
+  curated (`source="manual"`) edge supersedes both `heuristic` and `llm_classified` rows for
+  the exact same unordered pair it covers (ADR-22); pairs it doesn't cover keep whatever edge
+  they already had. `--purge-remaining-heuristic` optionally deletes every remaining
+  `source="heuristic"` row after curated pairs are processed (off by default).
 """
