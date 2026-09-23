@@ -6,6 +6,11 @@ export interface FormationRule {
   example_html: string;
 }
 
+// V4 Slice §V4.1/§V4.5 — JLPT level. "all" (used by the level selector / filter UI, never
+// sent to the backend as-is) means "no level filter" — omit the `level` param entirely.
+export type GrammarLevel = "N3" | "N4" | "N2";
+export type LevelFilter = GrammarLevel | "all";
+
 export interface GrammarItem {
   id: string;
   expression_html: string;
@@ -40,6 +45,9 @@ export type ReviewMode = "due" | "confusion" | "weak_points";
 export interface SessionRequest {
   size: 5 | 10 | 20;
   mode?: ReviewMode;
+  // V4 §V4.4 — optional level filter, null/omitted = due/weak/confusion selection spans all
+  // levels together (default, unchanged behavior).
+  level?: GrammarLevel;
 }
 
 export interface SessionResponse {
@@ -70,6 +78,9 @@ export interface Stats {
   review_count: number;
   mastered_count: number;
   recall_pct: number;
+  // V4 §V4.4 (ADR-23) — real count for whichever `level` filter (or all 3 levels combined)
+  // was requested; replaces the frontend's old hardcoded TOTAL_GRAMMAR_ITEMS constant.
+  total_items: number;
 }
 
 // Furigana display mode toggle — ARCHITECTURE.md §5 (MVP: always/never/by_level) + V3 §V3.4
@@ -137,6 +148,7 @@ export interface GrammarListParams {
   q?: string;
   status?: GrammarStatus;
   tag?: string;
+  level?: GrammarLevel;
   limit?: number;
   offset?: number;
 }

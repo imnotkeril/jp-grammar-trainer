@@ -6,6 +6,7 @@ import type {
   AnswerRequest,
   AnswerResponse,
   GrammarDetailOut,
+  GrammarLevel,
   GrammarListOut,
   GrammarListParams,
   GrammarRelationEdge,
@@ -38,6 +39,7 @@ function buildQuery(params?: GrammarListParams): string {
   if (params.q) search.set("q", params.q);
   if (params.status) search.set("status", params.status);
   if (params.tag) search.set("tag", params.tag);
+  if (params.level) search.set("level", params.level);
   if (params.limit !== undefined) search.set("limit", String(params.limit));
   if (params.offset !== undefined) search.set("offset", String(params.offset));
   const qs = search.toString();
@@ -59,10 +61,15 @@ export const api = {
   getAllGrammarRelations: (): Promise<GrammarRelationEdge[]> => request("/grammar/relations"),
 
   // ARCHITECTURE.md V3 §V3.6 — mode defaults to "due" server-side when omitted.
-  startSession: (size: 5 | 10 | 20, mode?: ReviewMode): Promise<SessionResponse> =>
+  // V4 §V4.4 — level is an additional opt-in filter, null/omitted = spans all levels.
+  startSession: (size: 5 | 10 | 20, mode?: ReviewMode, level?: GrammarLevel): Promise<SessionResponse> =>
     request("/review/session", {
       method: "POST",
-      body: JSON.stringify(mode ? { size, mode } : { size }),
+      body: JSON.stringify({
+        size,
+        ...(mode ? { mode } : {}),
+        ...(level ? { level } : {}),
+      }),
     }),
 
   submitAnswer: (body: AnswerRequest): Promise<AnswerResponse> =>
@@ -71,5 +78,8 @@ export const api = {
       body: JSON.stringify(body),
     }),
 
-  getStats: (): Promise<Stats> => request("/stats"),
+  // V4 §V4.4 — level scopes every stat to that level's grammar_progress rows; omitted =
+  // combined stats across all levels (unchanged existing behavior).
+  getStats: (level?: GrammarLevel): Promise<Stats> =>
+    request(`/stats${level ? `?level=${level}` : ""}`),
 };

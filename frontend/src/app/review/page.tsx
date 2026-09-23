@@ -12,9 +12,11 @@ import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api } from "@/lib/api";
-import type { AnswerResponse, Question, ReviewMode } from "@/lib/types";
+import type { AnswerResponse, LevelFilter, Question, ReviewMode } from "@/lib/types";
 import { useFuriganaMode } from "@/lib/useFuriganaMode";
+import { isLevelFilter } from "@/lib/level-context";
 import FuriganaModeToggle from "@/components/FuriganaModeToggle";
+import LevelSelector from "@/components/LevelSelector";
 import QuestionCard from "@/components/QuestionCard";
 import ContrastiveExplanation from "@/components/ContrastiveExplanation";
 import { ErrorBlock, LoadingBlock } from "@/components/StatusBlocks";
@@ -59,6 +61,10 @@ function ReviewPageInner() {
   // Deep-linkable via ?mode= (e.g. a Dashboard/Stats "Слабые места" link) — ARCHITECTURE.md
   // V3 §V3.10. Falls back to "due" for a missing/invalid value.
   const [reviewMode, setReviewMode] = useState<ReviewMode>("due");
+  // V4 §V4.5 — level rides along as one more optional field, same as mode did in V3.
+  // Deep-linkable via ?level= (e.g. the Dashboard's "Начать повторение"/"Слабые места" links,
+  // which append the currently-selected header level). Falls back to "all" (no filter).
+  const [level, setLevel] = useState<LevelFilter>("all");
   const [phase, setPhase] = useState<Phase>("setup");
   const [startError, setStartError] = useState(false);
 
@@ -79,14 +85,18 @@ function ReviewPageInner() {
     if (isReviewMode(fromQuery)) {
       setReviewMode(fromQuery);
     }
+    const levelFromQuery = searchParams.get("level");
+    if (isLevelFilter(levelFromQuery)) {
+      setLevel(levelFromQuery);
+    }
   }, [searchParams]);
 
-  function startSession(size: SessionSize, mode: ReviewMode) {
+  function startSession(size: SessionSize, mode: ReviewMode, sessionLevel: LevelFilter) {
     setSessionSize(size);
     setPhase("starting");
     setStartError(false);
     api
-      .startSession(size, mode)
+      .startSession(size, mode, sessionLevel === "all" ? undefined : sessionLevel)
       .then((res) => {
         if (res.questions.length === 0) {
           setPhase("empty");
@@ -195,10 +205,13 @@ function ReviewPageInner() {
             ))}
           </div>
 
+          <p className="mt-2 text-sm text-[var(--ink-muted)]">Уровень</p>
+          <LevelSelector value={level} onChange={setLevel} />
+
           {startError && <ErrorBlock message="Не удалось начать сессию. Backend недоступен?" />}
           <button
             type="button"
-            onClick={() => startSession(sessionSize, reviewMode)}
+            onClick={() => startSession(sessionSize, reviewMode, level)}
             className="transition-standard mt-2 rounded-lg bg-[var(--accent)] px-6 py-3 font-medium text-[var(--accent-ink)] hover:bg-[var(--accent-hover)]"
           >
             Начать

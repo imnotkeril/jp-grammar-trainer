@@ -3,6 +3,7 @@ import { Figtree, Playfair_Display } from "next/font/google";
 import "../styles/globals.css";
 import AppHeader from "@/components/AppHeader";
 import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
+import { LevelProvider } from "@/lib/level-context";
 
 // Deliberate non-default pairing (not Inter) — an editorial serif for display/headings
 // against a warm, friendly UI sans. See globals.css for the paper/ink/hanko-red palette.
@@ -22,7 +23,7 @@ const display = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "JP Grammar Trainer",
-  description: "Personal N3 grammar spaced-retrieval trainer.",
+  description: "Personal JLPT grammar spaced-retrieval trainer (N4–N2).",
   manifest: "/manifest.webmanifest",
 };
 
@@ -39,8 +40,10 @@ export default function RootLayout({
     <html lang="ru" className={`${sans.variable} ${display.variable}`}>
       <body className="min-h-screen antialiased">
         <ServiceWorkerRegister />
-        <AppHeader />
-        {children}
+        <LevelProvider>
+          <AppHeader />
+          {children}
+        </LevelProvider>
       </body>
     </html>
   );

@@ -12,10 +12,9 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import type { Stats } from "@/lib/types";
 import { formatPercent } from "@/lib/format";
+import { useLevel } from "@/lib/level-context";
 import MasteryBar from "@/components/MasteryBar";
 import { ErrorBlock, LoadingBlock } from "@/components/StatusBlocks";
-
-const TOTAL_GRAMMAR_ITEMS = 205; // fixed N3 deck size — ARCHITECTURE.md §4/§3, not user-editable
 
 type LoadState =
   | { status: "loading" }
@@ -24,14 +23,15 @@ type LoadState =
 
 export default function StatsPage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [level] = useLevel();
 
   const load = useCallback(() => {
     setState({ status: "loading" });
     api
-      .getStats()
+      .getStats(level === "all" ? undefined : level)
       .then((stats) => setState({ status: "ready", stats }))
       .catch(() => setState({ status: "error" }));
-  }, []);
+  }, [level]);
 
   useEffect(() => {
     load();
@@ -64,20 +64,22 @@ export default function StatsPage() {
             </h2>
             <div className="flex items-baseline gap-2">
               <span className="font-display text-3xl font-semibold text-[var(--ink)]">
-                {TOTAL_GRAMMAR_ITEMS}
+                {state.stats.total_items}
               </span>
-              <span className="text-sm text-[var(--ink-muted)]">N3 grammar (Anki seed)</span>
+              <span className="text-sm text-[var(--ink-muted)]">
+                {level === "all" ? "все уровни" : `уровень ${level}`}
+              </span>
             </div>
             <div className="mt-3 h-2 w-full overflow-hidden rounded-full border border-[var(--border)] bg-[var(--bg)]">
               <div
                 className="h-full bg-[var(--success)]"
                 style={{
-                  width: `${Math.min(100, (state.stats.mastered_count / TOTAL_GRAMMAR_ITEMS) * 100)}%`,
+                  width: `${Math.min(100, (state.stats.mastered_count / Math.max(1, state.stats.total_items)) * 100)}%`,
                 }}
               />
             </div>
             <p className="mt-2 text-xs text-[var(--ink-muted)]">
-              {state.stats.mastered_count} освоено из {TOTAL_GRAMMAR_ITEMS}
+              {state.stats.mastered_count} освоено из {state.stats.total_items}
             </p>
           </section>
         </>

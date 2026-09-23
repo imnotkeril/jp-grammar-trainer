@@ -13,6 +13,7 @@ import Link from "next/link";
 import { api } from "@/lib/api";
 import type { Stats } from "@/lib/types";
 import { formatPercent } from "@/lib/format";
+import { useLevel } from "@/lib/level-context";
 import DueCounter from "@/components/DueCounter";
 import MasteryBar from "@/components/MasteryBar";
 import { ErrorBlock, LoadingBlock } from "@/components/StatusBlocks";
@@ -24,28 +25,37 @@ type LoadState =
 
 export default function DashboardPage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [level] = useLevel();
 
   const load = useCallback(() => {
     setState({ status: "loading" });
     api
-      .getStats()
+      .getStats(level === "all" ? undefined : level)
       .then((stats) => setState({ status: "ready", stats }))
       .catch(() => setState({ status: "error" }));
-  }, []);
+  }, [level]);
 
   useEffect(() => {
     load();
   }, [load]);
 
+  // V4 §V4.5 — the currently-selected level rides along into the review session request.
+  const levelQuery = level !== "all" ? `level=${level}` : "";
+  const reviewHref = levelQuery ? `/review?${levelQuery}` : "/review";
+  const weakPointsHref = levelQuery ? `/review?mode=weak_points&${levelQuery}` : "/review?mode=weak_points";
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-8 px-4 py-10">
       <div>
         <h1 className="font-display text-3xl font-semibold text-[var(--ink)]">
-          Тренажёр грамматики N3
+          Тренажёр грамматики
         </h1>
-        <p className="mt-1 text-sm text-[var(--ink-muted)]">
-          205 конструкций · интервальное повторение
-        </p>
+        {state.status === "ready" && (
+          <p className="mt-1 text-sm text-[var(--ink-muted)]">
+            {state.stats.total_items} конструкций
+            {level !== "all" ? ` · уровень ${level}` : ""} · интервальное повторение
+          </p>
+        )}
       </div>
 
       {state.status === "loading" && <LoadingBlock label="Загружаю статистику…" />}
@@ -56,7 +66,7 @@ export default function DashboardPage() {
           <DueCounter dueCount={state.stats.due_count} />
 
           <Link
-            href="/review"
+            href={reviewHref}
             className="transition-standard rounded-lg bg-[var(--accent)] px-6 py-4 text-center text-lg font-medium text-[var(--accent-ink)] hover:bg-[var(--accent-hover)]"
           >
             Начать повторение
@@ -64,7 +74,7 @@ export default function DashboardPage() {
 
           {/* V3 §27/§28 — quick entry point into the "Слабые места" review mode. */}
           <Link
-            href="/review?mode=weak_points"
+            href={weakPointsHref}
             className="transition-standard flex items-center justify-between rounded-xl border border-[var(--border)] bg-[var(--surface)] px-6 py-4 hover:border-[var(--accent)]"
           >
             <span>

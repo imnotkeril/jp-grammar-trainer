@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import type { GrammarStatus, GrammarWithProgressOut } from "@/lib/types";
+import type { GrammarStatus, GrammarWithProgressOut, LevelFilter } from "@/lib/types";
 import { STATUS_COLORS, STATUS_LABELS } from "@/lib/grammar";
 import { ErrorBlock, LoadingBlock } from "@/components/StatusBlocks";
 
@@ -19,10 +19,17 @@ type LoadState =
 
 const STATUS_FILTERS: GrammarStatus[] = ["new", "learning", "review", "mastered"];
 
+// ARCHITECTURE.md V4 §V4.5 — the Grammar list page's own level filter chips stay page-local
+// (default "all"), independent of the header's global LevelSelector/level-context, same as
+// the existing status filter chips already are.
+const LEVEL_FILTERS: LevelFilter[] = ["N3", "N4", "N2"];
+const LEVEL_LABELS: Record<LevelFilter, string> = { N3: "N3", N4: "N4", N2: "N2", all: "Все" };
+
 export default function GrammarListPage() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<GrammarStatus | null>(null);
+  const [levelFilter, setLevelFilter] = useState<LevelFilter>("all");
 
   useEffect(() => {
     let cancelled = false;
@@ -45,6 +52,7 @@ export default function GrammarListPage() {
     const q = query.trim().toLowerCase();
     return state.items.filter((item) => {
       if (statusFilter && item.status !== statusFilter) return false;
+      if (levelFilter !== "all" && item.level !== levelFilter) return false;
       if (!q) return true;
       return (
         item.expression_clean.toLowerCase().includes(q) ||
@@ -52,7 +60,7 @@ export default function GrammarListPage() {
         item.meaning_ru.toLowerCase().includes(q)
       );
     });
-  }, [state, query, statusFilter]);
+  }, [state, query, statusFilter, levelFilter]);
 
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 px-4 py-10">
@@ -60,7 +68,7 @@ export default function GrammarListPage() {
         <div>
           <h1 className="font-display text-3xl font-semibold text-[var(--ink)]">Грамматика</h1>
           <p className="mt-1 text-sm text-[var(--ink-muted)]">
-            Все конструкции N3 · просмотр вне сессий повторения
+            Все конструкции · просмотр вне сессий повторения
           </p>
         </div>
         <Link
@@ -87,6 +95,13 @@ export default function GrammarListPage() {
             <FilterChip key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)}>
               <span aria-hidden className={`mr-1.5 inline-block h-2 w-2 rounded-full ${STATUS_COLORS[s]}`} />
               {STATUS_LABELS[s]}
+            </FilterChip>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2" role="group" aria-label="Фильтр по уровню">
+          {(["all", ...LEVEL_FILTERS] as LevelFilter[]).map((lvl) => (
+            <FilterChip key={lvl} active={levelFilter === lvl} onClick={() => setLevelFilter(lvl)}>
+              {LEVEL_LABELS[lvl]}
             </FilterChip>
           ))}
         </div>
