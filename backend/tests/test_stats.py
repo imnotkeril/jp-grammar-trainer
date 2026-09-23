@@ -22,6 +22,7 @@ def test_stats_empty_db(client: TestClient, db_session: Session) -> None:
         "recall_pct": 0.0,
         "application_avg": 0.0,
         "discrimination_avg": 0.0,
+        "total_items": 0,
     }
 
 

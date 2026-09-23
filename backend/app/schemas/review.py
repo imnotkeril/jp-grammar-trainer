@@ -10,6 +10,7 @@ from pydantic import BaseModel
 class SessionRequest(BaseModel):
     size: Literal[5, 10, 20] = 10
     mode: Literal["due", "confusion", "weak_points"] = "due"
+    level: Literal["N3", "N4", "N2"] | None = None
 
 
 class QuestionOption(BaseModel):

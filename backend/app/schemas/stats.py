@@ -12,3 +12,4 @@ class StatsOut(BaseModel):
     recall_pct: float
     application_avg: float
     discrimination_avg: float
+    total_items: int

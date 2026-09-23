@@ -96,17 +96,27 @@ def _canonicalize_symmetric(a_id: str, b_id: str) -> tuple[str, str]:
 
 
 @beartype
-def _delete_stale_heuristic_rows(db: Session, pair_keys: set[PairKey]) -> int:
-    """Delete any existing `source="heuristic"` row whose unordered (grammar_id,
-    related_grammar_id) pair is in `pair_keys` — the pragmatic idempotency mechanism for the
-    LLM-upgrade pass (module docstring point 3): a rerun with a real API key should replace
-    the earlier heuristic guess (whatever relation_type it picked) with the LLM's verdict,
-    rather than leaving a stale heuristic row alongside a differently-typed LLM row.
-    Manual/llm_classified rows are never deleted here.
+def _delete_stale_heuristic_rows(
+    db: Session,
+    pair_keys: set[PairKey],
+    sources: frozenset[RelationSource] = frozenset({RelationSource.HEURISTIC}),
+) -> int:
+    """Delete any existing row (whose `source` is in `sources`) whose unordered
+    (grammar_id, related_grammar_id) pair is in `pair_keys` — the pragmatic idempotency
+    mechanism for the LLM-upgrade pass (module docstring point 3): a rerun with a real API
+    key should replace the earlier heuristic guess (whatever relation_type it picked) with
+    the LLM's verdict, rather than leaving a stale heuristic row alongside a differently-typed
+    LLM row.
+
+    `sources` defaults to `{heuristic}` only (the original call site's behavior, unchanged).
+    `import_curated_relations.py` (ARCHITECTURE.md V4.3, ADR-22) passes
+    `{heuristic, llm_classified}` so a curated (`manual`) edge supersedes *either* kind of
+    automated guess for a pair it covers — `manual` rows themselves are never matched by this
+    function regardless of `sources`, since a curated edge should never be silently deleted by
+    a later curated import touching the same pair (that path goes through the normal upsert
+    instead).
     """
-    existing = list(
-        db.scalars(select(GrammarRelation).where(GrammarRelation.source == RelationSource.HEURISTIC))
-    )
+    existing = list(db.scalars(select(GrammarRelation).where(GrammarRelation.source.in_(sources))))
     to_delete = [
         row
         for row in existing

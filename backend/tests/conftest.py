@@ -99,6 +99,7 @@ def make_grammar(
     pattern_text: str = "Паттерн: テスト / Значение: test",
     meaning_ru: str = "тестовое значение",
     source_note_id: int | None = None,
+    level: str = "N3",
 ) -> Grammar:
     grammar = Grammar(
         source_note_id=source_note_id or int(uuid.uuid4().int % 10_000_000_000),
@@ -108,7 +109,7 @@ def make_grammar(
         meaning_ru=meaning_ru,
         pattern_text=pattern_text,
         formation_rules=[],
-        level="N3",
+        level=level,
         tags=[],
         target_construction=target_construction,
     )

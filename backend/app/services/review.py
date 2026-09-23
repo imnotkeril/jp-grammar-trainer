@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 
 from beartype import beartype
 from sqlalchemy import case, func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from app.config import settings
 from app.models.grammar import Grammar
@@ -22,22 +22,25 @@ ERROR_TYPE_CONFUSION = "confusion"
 
 
 @beartype
-def select_due_progress(db: Session, size: int, now: datetime | None = None) -> list[GrammarProgress]:
+def select_due_progress(
+    db: Session, size: int, now: datetime | None = None, level: str | None = None
+) -> list[GrammarProgress]:
     """Select up to `size` due grammar_progress rows, overdue-first then new.
 
     "Due" = next_review <= now (ARCHITECTURE.md §8). Ordering: non-new (overdue) items first,
     most-overdue (smallest next_review) first within that group; new items (next_review set
     to their creation time, per ADR-5/seed_import) come after, in the same next_review order.
     See ARCHITECTURE.md §9 task 2.4.
+
+    `level` (ARCHITECTURE.md V4 slice §V4.4) is an optional additional filter on
+    `Grammar.level` — omitted/None spans all levels together, unchanged behavior.
     """
     now = now or datetime.now(timezone.utc)
     is_new_last = case((GrammarProgress.status == GrammarStatus.NEW, 1), else_=0)
-    stmt = (
-        select(GrammarProgress)
-        .where(GrammarProgress.next_review <= now)
-        .order_by(is_new_last, GrammarProgress.next_review.asc())
-        .limit(size)
-    )
+    stmt = select(GrammarProgress).where(GrammarProgress.next_review <= now)
+    if level is not None:
+        stmt = stmt.join(Grammar, Grammar.id == GrammarProgress.grammar_id).where(Grammar.level == level)
+    stmt = stmt.order_by(is_new_last, GrammarProgress.next_review.asc()).limit(size)
     return list(db.scalars(stmt))
 
 
@@ -51,15 +54,29 @@ CONFUSION_RELATION_TYPES: frozenset[RelationType] = frozenset(
 
 
 @beartype
-def select_confusion_progress(db: Session, size: int) -> list[GrammarProgress]:
+def select_confusion_progress(
+    db: Session, size: int, level: str | None = None
+) -> list[GrammarProgress]:
     """Confusion Practice (idea doc §15, ARCHITECTURE.md V3.3): up to `size` grammar items
     drawn only from items connected by a commonly_confused/similar_form edge, ranked by their
     strongest qualifying edge. Ignores due-ness entirely — may return fewer than `size` items
     (or none) if too few/no qualifying edges exist yet.
+
+    `level` (ARCHITECTURE.md V4 slice §V4.4): when set, only edges where BOTH sides belong to
+    that level are considered, and the ranked ids are narrowed to that level.
     """
     stmt = select(
         GrammarRelation.grammar_id, GrammarRelation.related_grammar_id, GrammarRelation.strength
     ).where(GrammarRelation.relation_type.in_(CONFUSION_RELATION_TYPES))
+
+    if level is not None:
+        grammar_a = aliased(Grammar)
+        grammar_b = aliased(Grammar)
+        stmt = (
+            stmt.join(grammar_a, grammar_a.id == GrammarRelation.grammar_id)
+            .join(grammar_b, grammar_b.id == GrammarRelation.related_grammar_id)
+            .where(grammar_a.level == level, grammar_b.level == level)
+        )
 
     best_strength: dict[uuid.UUID, float] = {}
     for grammar_id, related_grammar_id, strength in db.execute(stmt).all():
@@ -83,18 +100,25 @@ def select_confusion_progress(db: Session, size: int) -> list[GrammarProgress]:
 
 @beartype
 def select_weak_progress(
-    db: Session, size: int, exclude_ids: frozenset[uuid.UUID] = frozenset()
+    db: Session,
+    size: int,
+    exclude_ids: frozenset[uuid.UUID] = frozenset(),
+    level: str | None = None,
 ) -> list[GrammarProgress]:
     """Weak Points (idea doc §28/§37, ARCHITECTURE.md V3.3): the `size` worst-performing
     already-attempted grammar items, ranked by (application_score + discrimination_score)
     ascending. Never-attempted (`repetitions == 0`) items are excluded — weakness must be
     demonstrated, not assumed from a default 0.0 score.
+
+    `level` (ARCHITECTURE.md V4 slice §V4.4): optional additional filter on `Grammar.level`.
     """
     if size <= 0:
         return []
     stmt = select(GrammarProgress).where(GrammarProgress.repetitions > 0)
     if exclude_ids:
         stmt = stmt.where(GrammarProgress.grammar_id.not_in(exclude_ids))
+    if level is not None:
+        stmt = stmt.join(Grammar, Grammar.id == GrammarProgress.grammar_id).where(Grammar.level == level)
     stmt = stmt.order_by(
         (GrammarProgress.application_score + GrammarProgress.discrimination_score).asc(),
         GrammarProgress.next_review.asc(),
@@ -108,26 +132,31 @@ def select_due_progress_mixed(
     size: int,
     now: datetime | None = None,
     weak_ratio: float = settings.weak_point_mix_ratio,
+    level: str | None = None,
 ) -> list[GrammarProgress]:
     """Default `due` mode with a weak-point mix-in (ARCHITECTURE.md V3.3, ADR-17): reserves
     `round(size * weak_ratio)` slots (only when size >= 5) for the weakest already-attempted
     items, filling the rest from the ordinary due queue. Tops back up from due items if too
     few weak-eligible items exist to fill the reserved slots.
+
+    `level` (ARCHITECTURE.md V4 slice §V4.4): optional additional filter threaded through to
+    both the due queue and the weak-point mix-in — `None` (default) pools all levels together
+    exactly as before.
     """
     now = now or datetime.now(timezone.utc)
     # ADR-17: reserving even one slot out of a 5-question session would over-weight it
     # relative to the 20%-of-10 intent, so only size > 5 (10/20) gets a mix-in.
     weak_slots = round(size * weak_ratio) if size > 5 else 0
 
-    due_items = select_due_progress(db, size - weak_slots, now)
+    due_items = select_due_progress(db, size - weak_slots, now, level=level)
     weak_items = select_weak_progress(
-        db, weak_slots, exclude_ids=frozenset(p.grammar_id for p in due_items)
+        db, weak_slots, exclude_ids=frozenset(p.grammar_id for p in due_items), level=level
     )
     combined = due_items + weak_items
 
     if len(combined) < size:
         seen = {p.grammar_id for p in combined}
-        topped_up = [p for p in select_due_progress(db, size, now) if p.grammar_id not in seen]
+        topped_up = [p for p in select_due_progress(db, size, now, level=level) if p.grammar_id not in seen]
         combined += topped_up[: size - len(combined)]
 
     return combined[:size]
@@ -260,31 +289,46 @@ class ReviewStats:
     recall_pct: float
     application_avg: float
     discrimination_avg: float
+    total_items: int
 
 
 @beartype
-def compute_stats(db: Session, now: datetime | None = None) -> ReviewStats:
-    """Aggregate dashboard stats per SPEC.md §27/§8 and ARCHITECTURE.md §9 task 2.6."""
+def compute_stats(db: Session, now: datetime | None = None, level: str | None = None) -> ReviewStats:
+    """Aggregate dashboard stats per SPEC.md §27/§8 and ARCHITECTURE.md §9 task 2.6.
+
+    `level` (ARCHITECTURE.md V4 slice §V4.4, ADR-23): optional filter scoping every count to
+    that level's `grammar_progress` rows only. `None` (default) = combined stats across all
+    levels, unchanged existing behavior.
+    """
     now = now or datetime.now(timezone.utc)
 
-    due_count = db.execute(
-        select(func.count()).select_from(GrammarProgress).where(GrammarProgress.next_review <= now)
-    ).scalar_one()
+    due_stmt = select(func.count()).select_from(GrammarProgress).where(GrammarProgress.next_review <= now)
+    if level is not None:
+        due_stmt = due_stmt.join(Grammar, Grammar.id == GrammarProgress.grammar_id).where(Grammar.level == level)
+    due_count = db.execute(due_stmt).scalar_one()
 
+    status_stmt = select(GrammarProgress.status, func.count())
+    if level is not None:
+        status_stmt = status_stmt.join(Grammar, Grammar.id == GrammarProgress.grammar_id).where(
+            Grammar.level == level
+        )
     status_counts: dict[GrammarStatus, int] = {
-        status: count
-        for status, count in db.execute(
-            select(GrammarProgress.status, func.count()).group_by(GrammarProgress.status)
-        ).all()
+        status: count for status, count in db.execute(status_stmt.group_by(GrammarProgress.status)).all()
     }
 
-    recall_avg, application_avg, discrimination_avg = db.execute(
-        select(
-            func.coalesce(func.avg(GrammarProgress.recall_score), 0.0),
-            func.coalesce(func.avg(GrammarProgress.application_score), 0.0),
-            func.coalesce(func.avg(GrammarProgress.discrimination_score), 0.0),
-        )
-    ).one()
+    agg_stmt = select(
+        func.coalesce(func.avg(GrammarProgress.recall_score), 0.0),
+        func.coalesce(func.avg(GrammarProgress.application_score), 0.0),
+        func.coalesce(func.avg(GrammarProgress.discrimination_score), 0.0),
+    )
+    if level is not None:
+        agg_stmt = agg_stmt.join(Grammar, Grammar.id == GrammarProgress.grammar_id).where(Grammar.level == level)
+    recall_avg, application_avg, discrimination_avg = db.execute(agg_stmt).one()
+
+    total_items_stmt = select(func.count()).select_from(Grammar)
+    if level is not None:
+        total_items_stmt = total_items_stmt.where(Grammar.level == level)
+    total_items = db.execute(total_items_stmt).scalar_one()
 
     return ReviewStats(
         due_count=int(due_count),
@@ -295,4 +339,5 @@ def compute_stats(db: Session, now: datetime | None = None) -> ReviewStats:
         recall_pct=round(float(recall_avg) * 100, 1),
         application_avg=round(float(application_avg), 3),
         discrimination_avg=round(float(discrimination_avg), 3),
+        total_items=int(total_items),
     )

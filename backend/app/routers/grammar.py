@@ -28,18 +28,26 @@ def list_grammar(
     q: str | None = Query(default=None, description="case-insensitive substring match"),
     status: str | None = Query(default=None, description="grammar_progress.status filter"),
     tag: str | None = Query(default=None, description="tag containment filter (no-op until tags are populated)"),
+    level: str | None = Query(default=None, description="exact match against grammar.level (N3|N4|N2)"),
     limit: int = Query(default=205, ge=1, le=1000),
     offset: int = Query(default=0, ge=0),
 ) -> GrammarListOut:
-    """GET /grammar — browsable, filterable list of seeded N3 grammar items.
+    """GET /grammar — browsable, filterable list of seeded grammar items across all JLPT
+    levels (N3/N4/N2).
 
-    See ARCHITECTURE.md V2.3. Default limit/offset return everything (matches MVP behavior);
-    the {items, total} wrapper is the one breaking change vs MVP's bare list[GrammarOut].
+    See ARCHITECTURE.md V2.3 / V4.4. Default limit/offset return everything (matches MVP
+    behavior); the {items, total} wrapper is the one breaking change vs MVP's bare
+    list[GrammarOut]. `level` (V4) is optional — omitted spans all levels (backward
+    compatible with pre-V4 callers).
     """
     stmt = select(Grammar).join(GrammarProgress, GrammarProgress.grammar_id == Grammar.id, isouter=True)
     count_stmt = select(func.count()).select_from(Grammar).join(
         GrammarProgress, GrammarProgress.grammar_id == Grammar.id, isouter=True
     )
+
+    if level:
+        stmt = stmt.where(Grammar.level == level)
+        count_stmt = count_stmt.where(Grammar.level == level)
 
     if q:
         pattern = f"%{q}%"
