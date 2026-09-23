@@ -5,7 +5,11 @@
 import type {
   AnswerRequest,
   AnswerResponse,
-  GrammarItem,
+  GrammarDetailOut,
+  GrammarListOut,
+  GrammarListParams,
+  GrammarRelationEdge,
+  GrammarRelationOut,
   SessionResponse,
   Stats,
 } from "./types";
@@ -27,10 +31,31 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export const api = {
-  listGrammar: (): Promise<GrammarItem[]> => request("/grammar"),
+function buildQuery(params?: GrammarListParams): string {
+  if (!params) return "";
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.status) search.set("status", params.status);
+  if (params.tag) search.set("tag", params.tag);
+  if (params.limit !== undefined) search.set("limit", String(params.limit));
+  if (params.offset !== undefined) search.set("offset", String(params.offset));
+  const qs = search.toString();
+  return qs ? `?${qs}` : "";
+}
 
-  getGrammar: (id: string): Promise<GrammarItem> => request(`/grammar/${id}`),
+export const api = {
+  // ARCHITECTURE.md V2 §V2.3 — {items, total} wrapper replaces MVP's bare array.
+  // Default limit=205 offset=0 on the backend means an unparameterized call still returns
+  // "everything", matching the list page's client-side search/filter approach (§V2.4).
+  listGrammar: (params?: GrammarListParams): Promise<GrammarListOut> =>
+    request(`/grammar${buildQuery(params)}`),
+
+  getGrammar: (id: string): Promise<GrammarDetailOut> => request(`/grammar/${id}`),
+
+  getGrammarRelations: (id: string): Promise<GrammarRelationOut[]> =>
+    request(`/grammar/${id}/relations`),
+
+  getAllGrammarRelations: (): Promise<GrammarRelationEdge[]> => request("/grammar/relations"),
 
   startSession: (size: 5 | 10 | 20): Promise<SessionResponse> =>
     request("/review/session", {

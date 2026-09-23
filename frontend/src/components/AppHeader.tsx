@@ -3,6 +3,7 @@ import Link from "next/link";
 const NAV = [
   { href: "/", label: "Главная" },
   { href: "/review", label: "Повторение" },
+  { href: "/grammar", label: "Грамматика" },
   { href: "/stats", label: "Статистика" },
 ] as const;
 
