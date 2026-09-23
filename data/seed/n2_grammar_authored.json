@@ -2440,6 +2440,626 @@
         "Emphasis",
         "lesson:21"
       ]
+    },
+    {
+      "key": "n2_119_to_mieru",
+      "expression_html": "<ruby>道<rt>みち</rt></ruby>が<ruby>濡<rt>ぬ</rt></ruby>れている。<ruby>夜中<rt>よなか</rt></ruby>に雨が<ruby>降<rt>ふ</rt></ruby>った<b>とみえる</b>。",
+      "reading": "みちがぬれている。よなかにあめがふった<b>とみえる</b>。",
+      "meaning_ru": "Дорога мокрая. Похоже, ночью шёл дождь.",
+      "pattern_text": "Паттерн: 普通形 + とみえる\nЗначение: «похоже, что; судя по всему» — вывод на основе наблюдаемых признаков.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形+とみえる",
+          "example_html": "<ruby>降<rt>ふ</rt></ruby>った<b>とみえる</b>"
+        }
+      ],
+      "target_construction": "とみえる",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:22"
+      ]
+    },
+    {
+      "key": "n2_120_kanenai",
+      "expression_html": "そんな<ruby>無理<rt>むり</rt></ruby>な<ruby>運転<rt>うんてん</rt></ruby>をしていたら、<ruby>事故<rt>じこ</rt></ruby>を<ruby>起<rt>お</rt></ruby>こし<b>かねない</b>。",
+      "reading": "そんなむりなうんてんをしていたら、じこをおこし<b>かねない</b>。",
+      "meaning_ru": "Если продолжать так неосторожно водить, недолго и до аварии.",
+      "pattern_text": "Паттерн: 動詞ます形 + かねない\nЗначение: «может (случиться плохое), не исключено, что» — вероятность негативного развития событий.",
+      "formation_rules": [
+        {
+          "pos": "動詞ます形",
+          "form_label": "動詞ます形+かねない",
+          "example_html": "<ruby>起<rt>お</rt></ruby>こし<b>かねない</b>"
+        }
+      ],
+      "target_construction": "かねない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:22"
+      ]
+    },
+    {
+      "key": "n2_121_osoreganaru",
+      "expression_html": "<ruby>台風<rt>たいふう</rt></ruby>の<ruby>影響<rt>えいけょう</rt></ruby>で、<ruby>川<rt>かわ</rt></ruby>が<ruby>汛濫<rt>はんらん</rt></ruby>する<b>おそれがある</b>。",
+      "reading": "たいふうのえいけょうで、かわがはんらんする<b>おそれがある</b>。",
+      "meaning_ru": "Из-за тайфуна есть опасность разлива реки.",
+      "pattern_text": "Паттерн: 動詞辨書形／名詞の + おそれがある\nЗначение: «есть опасение, что; существует риск» — формальное указание на возможную опасность.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+おそれがある",
+          "example_html": "<ruby>汛濫<rt>はんらん</rt></ruby>する<b>おそれがある</b>"
+        }
+      ],
+      "target_construction": "おそれがある",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:22"
+      ]
+    },
+    {
+      "key": "n2_122_mai",
+      "expression_html": "彼は<ruby>二度<rt>にど</rt></ruby>とここへは<ruby>来<rt>く</rt></ruby>る<b>まい</b>。",
+      "reading": "かれはにどとここへはくる<b>まい</b>。",
+      "meaning_ru": "Он, наверное, больше сюда не придёт.",
+      "pattern_text": "Паттерн: 動詞辨書形 + まい\nЗначение: «наверно, не...; не буду делать» — предположение об отрицании, либо твёрдое намерение не делать.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+まい",
+          "example_html": "<ruby>来<rt>く</rt></ruby>る<b>まい</b>"
+        }
+      ],
+      "target_construction": "まい",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:22"
+      ]
+    },
+    {
+      "key": "n2_123_nichigainai",
+      "expression_html": "この<ruby>筆跡<rt>ひっせき</rt></ruby>は、彼のもの<b>に違いない</b>。",
+      "reading": "このひっせきは、かれのもの<b>にちがいない</b>。",
+      "meaning_ru": "Этот почерк наверняка принадлежит ему.",
+      "pattern_text": "Паттерн: 普通形 + に違いない\nЗначение: «несомненно, наверняка» — уверенное предположение на основе фактов.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+に違いない",
+          "example_html": "<ruby>彼<rt>かれ</rt></ruby>のもの<b>に違いない</b>"
+        }
+      ],
+      "target_construction": "に違いない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:22"
+      ]
+    },
+    {
+      "key": "n2_124_nikimatteiru",
+      "expression_html": "そんな<ruby>高<rt>たか</rt></ruby>いもの、売れるわけがない。買う人なんていない<b>にきまっている</b>。",
+      "reading": "そんなたかいもの、うれるわけがない。かうひとなんていない<b>にきまっている</b>。",
+      "meaning_ru": "Такую дорогую вещь не продать. Наверняка никто её не купит.",
+      "pattern_text": "Паттерн: 普通形 + にきまっている\nЗначение: «точно, наверняка (разговорно, категорично)» — твёрдая уверенность, часто эмоциональная.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+にきまっている",
+          "example_html": "いない<b>にきまっている</b>"
+        }
+      ],
+      "target_construction": "にきまっている",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:22"
+      ]
+    },
+    {
+      "key": "n2_125_monoda",
+      "expression_html": "人は<ruby>誰<rt>だれ</rt></ruby>でも<ruby>失敗<rt>しっぱい</rt></ruby>する<b>ものだ</b>。",
+      "reading": "ひとはだれでもしっぱいする<b>ものだ</b>。",
+      "meaning_ru": "Люди, кем бы они ни были, естественно ошибаются.",
+      "pattern_text": "Паттерн: 普通形 + ものだ\nЗначение: «так уж заведено, естественно» — общее утверждение о природе вещей/норме.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+ものだ",
+          "example_html": "<ruby>失敗<rt>しっぱい</rt></ruby>する<b>ものだ</b>"
+        }
+      ],
+      "target_construction": "ものだ",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:23"
+      ]
+    },
+    {
+      "key": "n2_126_toiumonoda",
+      "expression_html": "<ruby>困<rt>こま</rt></ruby>っている人を<ruby>助<rt>たす</rt></ruby>ける、それが<ruby>人情<rt>にんじょう</rt></ruby><b>というものだ</b>。",
+      "reading": "こまっているひとをたすける、それがにんじょう<b>というものだ</b>。",
+      "meaning_ru": "Помогать тем, кто в беде, — вот что такое человечность.",
+      "pattern_text": "Паттерн: 普通形 + というものだ\nЗначение: «вот это и называется...» — оценочное суждение о том, что данная ситуация — типичный пример чего-либо.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+というものだ",
+          "example_html": "<ruby>人情<rt>にんじょう</rt></ruby><b>というものだ</b>"
+        }
+      ],
+      "target_construction": "というものだ",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:23"
+      ]
+    },
+    {
+      "key": "n2_127_nisuginai",
+      "expression_html": "これはほんの<ruby>一例<rt>いちれい</rt></ruby><b>にすぎない</b>。",
+      "reading": "これはほんのいちれい<b>にすぎない</b>。",
+      "meaning_ru": "Это всего лишь один из примеров.",
+      "pattern_text": "Паттерн: 名詞 + にすぎない\nЗначение: «не более чем, всего лишь» — принижение значимости/масштаба чего-либо.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+にすぎない",
+          "example_html": "<ruby>一例<rt>いちれい</rt></ruby><b>にすぎない</b>"
+        }
+      ],
+      "target_construction": "にすぎない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:23"
+      ]
+    },
+    {
+      "key": "n2_128_nihokanaranai",
+      "expression_html": "彼が<ruby>成功<rt>せいこう</rt></ruby>したのは、<ruby>努力<rt>どりょく</rt></ruby>の<ruby>結果<rt>けっか</rt></ruby><b>にほかならない</b>。",
+      "reading": "かれがせいこうしたのは、どりょくのけっか<b>にほかならない</b>。",
+      "meaning_ru": "Его успех — не что иное, как результат упорного труда.",
+      "pattern_text": "Паттерн: 名詞 + にほかならない\nЗначение: «не что иное, как; именно» — категоричное утверждение об истинной причине/сущности.",
+      "formation_rules": [
+        {
+          "pos": "名詞",
+          "form_label": "名詞+にほかならない",
+          "example_html": "<ruby>結果<rt>けっか</rt></ruby><b>にほかならない</b>"
+        }
+      ],
+      "target_construction": "にほかならない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:23"
+      ]
+    },
+    {
+      "key": "n2_129_ni_koshita_koto_wa_nai",
+      "expression_html": "<ruby>早<rt>はや</rt></ruby>めに<ruby>準備<rt>じゅんび</rt></ruby>しておく<b>に越したことはない</b>。",
+      "reading": "はやめにじゅんびしておく<b>にこしたことはない</b>。",
+      "meaning_ru": "Лучше всего заранее всё подготовить.",
+      "pattern_text": "Паттерн: 普通形 + に越したことはない\nЗначение: «лучше всего, безопаснее всего» — оптимальный, самый разумный выбор среди вариантов.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+に越したことはない",
+          "example_html": "<ruby>準備<rt>じゅんび</rt></ruby>しておく<b>に越したことはない</b>"
+        }
+      ],
+      "target_construction": "に越したことはない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:23"
+      ]
+    },
+    {
+      "key": "n2_130_shikanai",
+      "expression_html": "バスに<ruby>乗<rt>の</rt></ruby>り<ruby>遅<rt>おく</rt></ruby>れたので、<ruby>歩<rt>ある</rt></ruby>いて<ruby>行<rt>い</rt></ruby>く<b>しかない</b>。",
+      "reading": "バスにのりおくれたので、あるいていく<b>しかない</b>。",
+      "meaning_ru": "Раз я опоздал на автобус, ничего не остаётся, кроме как идти пешком.",
+      "pattern_text": "Паттерн: 動詞辨書形 + しかない\nЗначение: «ничего не остаётся, кроме» — единственный оставшийся вариант.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+しかない",
+          "example_html": "<ruby>行<rt>い</rt></ruby>く<b>しかない</b>"
+        }
+      ],
+      "target_construction": "しかない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:23"
+      ]
+    },
+    {
+      "key": "n2_131_bekida",
+      "expression_html": "<ruby>約束<rt>やくそく</rt></ruby>は<ruby>必<rt>かなら</rt></ruby>す<ruby>守<rt>まも</rt></ruby>る<b>べきだ</b>。",
+      "reading": "やくそくはかならずまもる<b>べきだ</b>。",
+      "meaning_ru": "Обещания непременно нужно выполнять.",
+      "pattern_text": "Паттерн: 動詞辨書形 + べきだ\nЗначение: «должен, следует» — долженствование, основанное на общепринятой норме/морали.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+べきだ",
+          "example_html": "<ruby>守<rt>まも</rt></ruby>る<b>べきだ</b>"
+        }
+      ],
+      "target_construction": "べきだ",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:23"
+      ]
+    },
+    {
+      "key": "n2_132_youdewanaika",
+      "expression_html": "<ruby>皆<rt>みんな</rt></ruby>で<ruby>力<rt>ちから</rt></ruby>を<ruby>合<rt>あ</rt></ruby>わせて、この<ruby>困難<rt>こんなん</rt></ruby>を<ruby>乗<rt>の</rt></ruby>り<ruby>越<rt>こ</rt></ruby>えよう<b>ではないか</b>。",
+      "reading": "みんなでちからをあわせて、このこんなんをのりこえよう<b>ではないか</b>。",
+      "meaning_ru": "Давайте же все вместе объединим усилия и преодолеем эту трудность!",
+      "pattern_text": "Паттерн: 動詞意向形 + ではないか\nЗначение: «давайте же...!» — призыв к совместному действию, ораторский/формальный оттенок.",
+      "formation_rules": [
+        {
+          "pos": "動詞意向形",
+          "form_label": "動詞意向形+ではないか",
+          "example_html": "<ruby>乗<rt>の</rt></ruby>り<ruby>越<rt>こ</rt></ruby>えよう<b>ではないか</b>"
+        }
+      ],
+      "target_construction": "うではないか",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:24"
+      ]
+    },
+    {
+      "key": "n2_133_kotoda_advice",
+      "expression_html": "<ruby>健康<rt>けんこう</rt></ruby>でいたいなら、<ruby>規則正しい<rt>きそくただしい</rt></ruby><ruby>生活<rt>せいかつ</rt></ruby>をする<b>ことだ</b>。",
+      "reading": "けんこうでいたいなら、きそくただしいせいかつをする<b>ことだ</b>。",
+      "meaning_ru": "Если хочешь быть здоровым, нужно вести размеренный образ жизни.",
+      "pattern_text": "Паттерн: 動詞辨書形／ない形 + ことだ\nЗначение: «нужно (делать), лучше бы» — совет/рекомендация, иногда с назидательным тоном.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+ことだ",
+          "example_html": "<ruby>生活<rt>せいかつ</rt></ruby>をする<b>ことだ</b>"
+        }
+      ],
+      "target_construction": "ことだ",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:24"
+      ]
+    },
+    {
+      "key": "n2_134_monoda_common_sense",
+      "expression_html": "人の<ruby>悪口<rt>わるくち</rt></ruby>を<ruby>言<rt>い</rt></ruby>う<b>ものではない</b>。",
+      "reading": "ひとのわるくちをいう<b>ものではない</b>。",
+      "meaning_ru": "Не следует злословить о людях.",
+      "pattern_text": "Паттерн: 動詞辨書形 + ものではない\nЗначение: «не следует (по общепринятым нормам)» — морализаторское утверждение о том, как правильно себя вести.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+ものではない",
+          "example_html": "<ruby>言<rt>い</rt></ruby>う<b>ものではない</b>"
+        }
+      ],
+      "target_construction": "ものではない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:24"
+      ]
+    },
+    {
+      "key": "n2_135_kotohanai",
+      "expression_html": "<ruby>大<rt>たい</rt></ruby>した<ruby>怒我<rt>けが</rt></ruby>ではないから、<ruby>心配<rt>しんぱい</rt></ruby>する<b>ことはない</b>。",
+      "reading": "たいしたけがではないから、しんぱいする<b>ことはない</b>。",
+      "meaning_ru": "Травма несерьёзная, так что не стоит переживать.",
+      "pattern_text": "Паттерн: 動詞辨書形 + ことはない\nЗначение: «нет необходимости, не стоит» — успокаивающий совет о том, что действие не требуется.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+ことはない",
+          "example_html": "<ruby>心配<rt>しんぱい</rt></ruby>する<b>ことはない</b>"
+        }
+      ],
+      "target_construction": "ことはない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:24"
+      ]
+    },
+    {
+      "key": "n2_136_mai_youkamaika",
+      "expression_html": "彼に<ruby>本当<rt>ほんとう</rt></ruby>のことを<ruby>言<rt>い</rt></ruby>おうか<ruby>言<rt>い</rt></ruby>う<b>まいか</b>、ずっと<ruby>迷<rt>まよ</rt></ruby>っている。",
+      "reading": "かれにほんとうのことをいおうかいう<b>まいか</b>、ずっとまよっている。",
+      "meaning_ru": "Я всё никак не могу решить, сказать ли ему правду или нет.",
+      "pattern_text": "Паттерн: 動詞意向形 + か + 動詞辨書形 + まいか\nЗначение: «делать или не делать» — колебание между двумя противоположными решениями.",
+      "formation_rules": [
+        {
+          "pos": "動詞意向形",
+          "form_label": "動詞意向形+か+動詞辨書形+まいか",
+          "example_html": "<ruby>言<rt>い</rt></ruby>おうか<ruby>言<rt>い</rt></ruby>う<b>まいか</b>"
+        }
+      ],
+      "target_construction": "うかまいか",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:24"
+      ]
+    },
+    {
+      "key": "n2_137_monoka_intention",
+      "expression_html": "こんな<ruby>会社<rt>かいしゃ</rt></ruby>、<ruby>二度<rt>にど</rt></ruby>と<ruby>入<rt>はい</rt></ruby>る<b>ものか</b>。",
+      "reading": "こんなかいしゃ、にどとはいる<b>ものか</b>。",
+      "meaning_ru": "В такую компанию я больше ни за что не приду работать.",
+      "pattern_text": "Паттерн: 動詞辨書形 + ものか\nЗначение: «да ни за что не стану (делать)!» — твёрдая решимость не совершать действие.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+ものか",
+          "example_html": "<ruby>入<rt>はい</rt></ruby>る<b>ものか</b>"
+        }
+      ],
+      "target_construction": "ものか",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:24"
+      ]
+    },
+    {
+      "key": "n2_138_te_shikataganai",
+      "expression_html": "<ruby>一人暮<rt>ひとりぐ</rt></ruby>らしを<ruby>始<rt>はじ</rt></ruby>めたばかりで、<ruby>家族<rt>かぞく</rt></ruby>が<ruby>恰<rt>こい</rt></ruby>しくて<b>しかたがない</b>。",
+      "reading": "ひとりぐらしをはじめたばかりで、かぞくがこいしくて<b>しかたがない</b>。",
+      "meaning_ru": "Я только начал жить один, и ужасно скучаю по семье.",
+      "pattern_text": "Паттерн: 動詞て形／形容詞くて + しかたがない\nЗначение: «невыносимо, ужасно (сильное чувство)» — крайняя степень эмоции/ощущения, которую невозможно контролировать.",
+      "formation_rules": [
+        {
+          "pos": "形容詞くて",
+          "form_label": "形容詞くて+しかたがない",
+          "example_html": "<ruby>恰<rt>こい</rt></ruby>しくて<b>しかたがない</b>"
+        }
+      ],
+      "target_construction": "てしかたがない",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:25"
+      ]
+    },
+    {
+      "key": "n2_139_tenaranai",
+      "expression_html": "<ruby>何<rt>なに</rt></ruby>か<ruby>悪<rt>わる</rt></ruby>いことが<ruby>起<rt>お</rt></ruby>こるような<ruby>気<rt>き</rt></ruby>がして<b>ならない</b>。",
+      "reading": "なにかわるいことがおこるようなきがして<b>ならない</b>。",
+      "meaning_ru": "У меня никак не проходит чувство, что вот-вот случится что-то плохое.",
+      "pattern_text": "Паттерн: 動詞て形／形容詞くて + ならない\nЗначение: «не могу перестать чувствовать» — непроизвольное, устойчивое чувство/ощущение.",
+      "formation_rules": [
+        {
+          "pos": "動詞て形",
+          "form_label": "動詞て形+ならない",
+          "example_html": "<ruby>気<rt>き</rt></ruby>がして<b>ならない</b>"
+        }
+      ],
+      "target_construction": "てならない",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:25"
+      ]
+    },
+    {
+      "key": "n2_140_naidehairarenai",
+      "expression_html": "あまりにおかしくて、<ruby>笑<rt>わら</rt></ruby>わ<b>ずにはいられなかった</b>。",
+      "reading": "あまりにおかしくて、わらわ<b>ずにはいられなかった</b>。",
+      "meaning_ru": "Это было так смешно, что я не мог удержаться от смеха.",
+      "pattern_text": "Паттерн: 動詞ない形（ず） + にはいられない\nЗначение: «не могу удержаться от того, чтобы не...» — действие, которое невозможно сдержать под влиянием чувств.",
+      "formation_rules": [
+        {
+          "pos": "動詞ない形",
+          "form_label": "動詞ない形（ず）+にはいられない",
+          "example_html": "<ruby>笑<rt>わら</rt></ruby>わず<b>にはいられなかった</b>"
+        }
+      ],
+      "target_construction": "ずにはいられない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:25"
+      ]
+    },
+    {
+      "key": "n2_141_naiwakeniwaikanai",
+      "expression_html": "<ruby>上司<rt>じょうし</rt></ruby>に<ruby>頼<rt>たの</rt></ruby>まれた<ruby>以上<rt>いじょう</rt></ruby>、<ruby>断<rt>ことわ</rt></ruby>らない<b>わけにはいかない</b>。",
+      "reading": "じょうしにたのまれたいじょう、ことわらない<b>わけにはいかない</b>。",
+      "meaning_ru": "Раз уж начальник попросил, отказать я не могу.",
+      "pattern_text": "Паттерн: 動詞ない形 + わけにはいかない\nЗначение: «нельзя не сделать» — обязанность/долг, от которого невозможно уклониться.",
+      "formation_rules": [
+        {
+          "pos": "動詞ない形",
+          "form_label": "動詞ない形+わけにはいかない",
+          "example_html": "<ruby>断<rt>ことわ</rt></ruby>らない<b>わけにはいかない</b>"
+        }
+      ],
+      "target_construction": "ないわけにはいかない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:25"
+      ]
+    },
+    {
+      "key": "n2_142_zaruoenai",
+      "expression_html": "<ruby>台風<rt>たいふう</rt></ruby>のため、<ruby>旅行<rt>りょこう</rt></ruby>を<ruby>中止<rt>ちゅうし</rt></ruby>せ<b>ざるを得なかった</b>。",
+      "reading": "たいふうのため、りょこうをちゅうしせ<b>ざるをえなかった</b>。",
+      "meaning_ru": "Из-за тайфуна пришлось отменить поездку.",
+      "pattern_text": "Паттерн: 動詞ない形（ず） + るを得ない\nЗначение: «вынужден, не остаётся выбора, кроме как» — действие совершается вопреки желанию, под давлением обстоятельств.",
+      "formation_rules": [
+        {
+          "pos": "動詞ない形",
+          "form_label": "動詞ない形（ず）+るを得ない",
+          "example_html": "<ruby>中止<rt>ちゅうし</rt></ruby>せ<b>ざるを得なかった</b>"
+        }
+      ],
+      "target_construction": "ざるを得ない",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:25"
+      ]
+    },
+    {
+      "key": "n2_143_taimonoda",
+      "expression_html": "いつか<ruby>自分<rt>じぶん</rt></ruby>の<ruby>店<rt>みぞ</rt></ruby>を<ruby>持<rt>も</rt></ruby>ちたい<b>ものだ</b>。",
+      "reading": "いつかじぶんのみぞをもちたい<b>ものだ</b>。",
+      "meaning_ru": "Как бы мне хотелось когда-нибудь иметь свой собственный магазин.",
+      "pattern_text": "Паттерн: 動詞たい形 + ものだ\nЗначение: «как бы хотелось...» — выражение искреннего желания, не обращённого к конкретному адресату.",
+      "formation_rules": [
+        {
+          "pos": "動詞たい形",
+          "form_label": "動詞たい形+ものだ",
+          "example_html": "<ruby>持<rt>も</rt></ruby>ちたい<b>ものだ</b>"
+        }
+      ],
+      "target_construction": "たいものだ",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:26"
+      ]
+    },
+    {
+      "key": "n2_144_monoda_nostalgia",
+      "expression_html": "<ruby>子供<rt>こども</rt></ruby>のころ、よくこの<ruby>川<rt>かわ</rt></ruby>で<ruby>泳<rt>およ</rt></ruby>いだ<b>ものだ</b>。",
+      "reading": "こどものころ、よくこのかわでおよいだ<b>ものだ</b>。",
+      "meaning_ru": "В детстве я, бывало, часто плавал в этой реке.",
+      "pattern_text": "Паттерн: 動詞た形 + ものだ\nЗначение: «бывало, что делал...» — ностальгическое воспоминание о привычном действии в прошлом.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形+ものだ",
+          "example_html": "<ruby>泳<rt>およ</rt></ruby>いだ<b>ものだ</b>"
+        }
+      ],
+      "target_construction": "ものだ",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:26"
+      ]
+    },
+    {
+      "key": "n2_145_monoda_strongfeel",
+      "expression_html": "<ruby>時<rt>とき</rt></ruby>が<ruby>経<rt>た</rt></ruby>つのは<ruby>早<rt>はや</rt></ruby>い<b>ものだ</b>。",
+      "reading": "ときがたつのははやい<b>ものだ</b>。",
+      "meaning_ru": "Надо же, как быстро летит время.",
+      "pattern_text": "Паттерн: 普通形 + ものだ\nЗначение: «надо же, действительно» — эмоциональное восклицание, сильное впечатление от осознанного факта.",
+      "formation_rules": [
+        {
+          "pos": "形容詞",
+          "form_label": "形容詞+ものだ",
+          "example_html": "<ruby>早<rt>はや</rt></ruby>い<b>ものだ</b>"
+        }
+      ],
+      "target_construction": "ものだ",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:26"
+      ]
+    },
+    {
+      "key": "n2_146_naimonodaroka",
+      "expression_html": "どうにかしてこの<ruby>問題<rt>もんだい</rt></ruby>を<ruby>解決<rt>かいけつ</rt></ruby>できない<b>ものだろうか</b>。",
+      "reading": "どうにかしてこのもんだいをかいけつできない<b>ものだろうか</b>。",
+      "meaning_ru": "Нельзя ли как-нибудь решить эту проблему?",
+      "pattern_text": "Паттерн: 動詞ない形 + ものだろうか\nЗначение: «нельзя ли как-нибудь...; хотелось бы, чтобы» — выражение надежды на решение/улучшение ситуации.",
+      "formation_rules": [
+        {
+          "pos": "動詞ない形",
+          "form_label": "動詞ない形+ものだろうか",
+          "example_html": "<ruby>解決<rt>かいけつ</rt></ruby>できない<b>ものだろうか</b>"
+        }
+      ],
+      "target_construction": "ないものだろうか",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:26"
+      ]
+    },
+    {
+      "key": "n2_147_monogaaru",
+      "expression_html": "彼の<ruby>演技<rt>えんぎ</rt></ruby>には、人を<ruby>惙<rt>ひ</rt></ruby>きつける<b>ものがある</b>。",
+      "reading": "かれのえんぎには、ひとをひきつける<b>ものがある</b>。",
+      "meaning_ru": "В его актёрской игре есть что-то, что притягивает людей.",
+      "pattern_text": "Паттерн: 動詞辨書形 + ものがある\nЗначение: «есть в этом что-то..., невольно чувствуется» — интуитивная, эмоциональная оценка качества чего-либо.",
+      "formation_rules": [
+        {
+          "pos": "動詞辨書形",
+          "form_label": "動詞辨書形+ものがある",
+          "example_html": "<ruby>惙<rt>ひ</rt></ruby>きつける<b>ものがある</b>"
+        }
+      ],
+      "target_construction": "ものがある",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:26"
+      ]
+    },
+    {
+      "key": "n2_148_kotoda_surprise",
+      "expression_html": "こんな<ruby>田舎<rt>いなか</rt></ruby>に<ruby>高級<rt>こうきゅう</rt></ruby>レストランがあるとは、<ruby>驚<rt>おどろ</rt></ruby>いた<b>ことだ</b>。",
+      "reading": "こんないなかにこうきゅうレストランがあるとは、おどろいた<b>ことだ</b>。",
+      "meaning_ru": "Надо же, кто бы мог подумать, что в такой глуши есть дорогой ресторан.",
+      "pattern_text": "Паттерн: 動詞た形 + ことだ\nЗначение: «надо же, вот это да» — восклицание об удивительном/ироничном факте.",
+      "formation_rules": [
+        {
+          "pos": "動詞た形",
+          "form_label": "動詞た形+ことだ",
+          "example_html": "<ruby>驚<rt>おどろ</rt></ruby>いた<b>ことだ</b>"
+        }
+      ],
+      "target_construction": "ことだ",
+      "tags": [
+        "N2",
+        "Modality",
+        "lesson:26"
+      ]
+    },
+    {
+      "key": "n2_149_kotodarou_kotoka",
+      "expression_html": "<ruby>子供<rt>こども</rt></ruby>の<ruby>成長<rt>せいちょう</rt></ruby>を<ruby>見<rt>み</rt></ruby>るのは、なんと<ruby>嫌<rt>うれ</rt></ruby>しい<b>ことだろう</b>。",
+      "reading": "こどものせいちょうをみるのは、なんとうれしい<b>ことだろう</b>。",
+      "meaning_ru": "Как же радостно наблюдать за тем, как растёт ребёнок!",
+      "pattern_text": "Паттерн: 形容詞／動詞普通形 + ことだろう（ことか）\nЗначение: «как же (сильно)!, сколько раз...!» — риторическое восклицание об интенсивности чувства или частоте действия.",
+      "formation_rules": [
+        {
+          "pos": "形容詞",
+          "form_label": "形容詞+ことだろう",
+          "example_html": "<ruby>嫌<rt>うれ</rt></ruby>しい<b>ことだろう</b>"
+        }
+      ],
+      "target_construction": "ことだろう",
+      "tags": [
+        "N2",
+        "Emphasis",
+        "lesson:26"
+      ]
     }
   ]
 }
