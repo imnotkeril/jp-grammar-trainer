@@ -1,0 +1,628 @@
+{
+  "level": "N2",
+  "items": [
+    {
+      "key": "n2_001_ni_sai_ni",
+      "expression_html": "<ruby>面接<rt>めんせつ</rt></ruby>の<b><ruby>際<rt>さい</rt></ruby>に</b>、<ruby>履歴書<rt>りれきしょ</rt></ruby>を<ruby>持参<rt>じさん</rt></ruby>してください。",
+      "reading": "めんせつの<b>さいに</b>、りれきしょを じさんしてください。",
+      "meaning_ru": "При собеседовании, пожалуйста, принесите с собой резюме.",
+      "pattern_text": "Паттерн: 名詞の／動詞辞書形・た形 + 際に\nЗначение: Формальное «когда/в случае» — используется в официальных, письменных или объявлениях-подобных контекстах.",
+      "formation_rules": [
+        {"pos": "名詞+の", "form_label": "名詞の", "example_html": "<ruby>面接<rt>めんせつ</rt></ruby>の<b>際に</b>"},
+        {"pos": "動詞辞書形", "form_label": "動詞辞書形", "example_html": "<ruby>来日<rt>らいにち</rt></ruby>する<b>際に</b>"},
+        {"pos": "動詞た形", "form_label": "動詞た形", "example_html": "<ruby>出発<rt>しゅっぱつ</rt></ruby>した<b>際に</b>"}
+      ],
+      "target_construction": "際に",
+      "tags": ["N2", "Time", "lesson:01"]
+    },
+    {
+      "key": "n2_002_ni_saishite",
+      "expression_html": "<ruby>新<rt>あたら</rt></ruby>しい<ruby>生活<rt>せいかつ</rt></ruby>を<ruby>始<rt>はじ</rt></ruby>めるに<b><ruby>際<rt>さい</rt></ruby>して</b>、いろいろと<ruby>準備<rt>じゅんび</rt></ruby>をした。",
+      "reading": "あたらしい せいかつを はじめるに<b>さいして</b>、いろいろと じゅんびをした。",
+      "meaning_ru": "Начиная новую жизнь, я во многом подготовился.",
+      "pattern_text": "Паттерн: 名詞／動詞辞書形 + に際して（＝にあたって）\nЗначение: По случаю важного, особого события начинается/делается что-то — более формальный, письменный синоним とき.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞に際して", "example_html": "<ruby>開会<rt>かいかい</rt></ruby>に<b>際して</b>"},
+        {"pos": "動詞辞書形", "form_label": "動詞辞書形+にあたって", "example_html": "<ruby>結婚<rt>けっこん</rt></ruby>するに<b>あたって</b>"}
+      ],
+      "target_construction": "際して",
+      "tags": ["N2", "Time", "lesson:01"]
+    },
+    {
+      "key": "n2_003_totan",
+      "expression_html": "ドアを<ruby>開<rt>あ</rt></ruby>けた<b>とたん</b>、<ruby>猫<rt>ねこ</rt></ruby>が<ruby>飛<rt>と</rt></ruby>び<ruby>出<rt>だ</rt></ruby>してきた。",
+      "reading": "ドアを あけた<b>とたん</b>、ねこが とびだしてきた。",
+      "meaning_ru": "В тот момент, как я открыл дверь, оттуда выскочил кот.",
+      "pattern_text": "Паттерн: 動詞た形 + とたん（に）\nЗначение: В тот самый момент, как произошло A, неожиданно случилось B (эффект-сюрприз, вне контроля говорящего).",
+      "formation_rules": [
+        {"pos": "動詞た形", "form_label": "動詞た形+とたん", "example_html": "<ruby>立<rt>た</rt></ruby>ち<ruby>上<rt>あ</rt></ruby>がった<b>とたん</b>"}
+      ],
+      "target_construction": "とたん",
+      "tags": ["N2", "Time", "lesson:01"]
+    },
+    {
+      "key": "n2_004_ka_to_omou_to",
+      "expression_html": "<ruby>空<rt>そら</rt></ruby>が<ruby>急<rt>きゅう</rt></ruby>に<ruby>暗<rt>くら</rt></ruby>くなった<b>かと<ruby>思<rt>おも</rt></ruby>うと</b>、<ruby>大粒<rt>おおつぶ</rt></ruby>の<ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>り<ruby>出<rt>だ</rt></ruby>した。",
+      "reading": "そらが きゅうに くらくなった<b>かとおもうと</b>、おおつぶの あめが ふりだした。",
+      "meaning_ru": "Не успело небо резко потемнеть, как тут же хлынул крупный дождь.",
+      "pattern_text": "Паттерн: 動詞た形 + かと思うと／かと思ったら\nЗначение: Едва успело произойти A, как тут же (неожиданно, часто с контрастом) происходит B.",
+      "formation_rules": [
+        {"pos": "動詞た形", "form_label": "動詞た形+かと思うと", "example_html": "<ruby>泣<rt>な</rt></ruby>いていた<b>かと思うと</b>"}
+      ],
+      "target_construction": "かと思うと",
+      "tags": ["N2", "Time", "lesson:01"]
+    },
+    {
+      "key": "n2_005_ka_naika_no_uchi_ni",
+      "expression_html": "<ruby>授業<rt>じゅぎょう</rt></ruby>が<ruby>終<rt>お</rt></ruby>わる<b>か<ruby>終<rt>お</rt></ruby>わらないかのうちに</b>、<ruby>学生<rt>がくせい</rt></ruby>たちは<ruby>教室<rt>きょうしつ</rt></ruby>を<ruby>飛<rt>と</rt></ruby>び<ruby>出<rt>だ</rt></ruby>した。",
+      "reading": "じゅぎょうが おわる<b>かおわらないかのうちに</b>、がくせいたちは きょうしつを とびだした。",
+      "meaning_ru": "Едва закончился урок, как студенты выбежали из аудитории.",
+      "pattern_text": "Паттерн: 動詞辞書形 + か + 動詞ない形 + ないかのうちに\nЗначение: A и B происходят почти одновременно — B начинается до того, как A полностью завершилось.",
+      "formation_rules": [
+        {"pos": "動詞辞書形+動詞ない形", "form_label": "V辞書形かV ないかのうちに", "example_html": "<ruby>着<rt>つ</rt></ruby>くか<ruby>着<rt>つ</rt></ruby>かないかのうちに"}
+      ],
+      "target_construction": "か終わらないかのうちに",
+      "tags": ["N2", "Time", "lesson:01"]
+    },
+    {
+      "key": "n2_006_saichuu_da",
+      "expression_html": "すみません、<ruby>今<rt>いま</rt></ruby>、<ruby>会議<rt>かいぎ</rt></ruby>の<b><ruby>最中<rt>さいちゅう</rt></ruby>です</b>。",
+      "reading": "すみません、いま、かいぎの<b>さいちゅうです</b>。",
+      "meaning_ru": "Извините, сейчас я как раз в разгаре совещания.",
+      "pattern_text": "Паттерн: 名詞の／動詞ている形 + 最中だ\nЗначение: Как раз в самом разгаре/в процессе действия, когда происходит что-то другое.",
+      "formation_rules": [
+        {"pos": "名詞+の", "form_label": "名詞の最中だ", "example_html": "<ruby>食事<rt>しょくじ</rt></ruby>の<b>最中だ</b>"},
+        {"pos": "動詞ている", "form_label": "V-ている最中だ", "example_html": "<ruby>話<rt>はな</rt></ruby>している<b>最中に</b>"}
+      ],
+      "target_construction": "最中です",
+      "tags": ["N2", "Time", "lesson:02"]
+    },
+    {
+      "key": "n2_007_uchi_ni_a",
+      "expression_html": "<ruby>元気<rt>げんき</rt></ruby>な<b>うちに</b>いろいろな<ruby>国<rt>くに</rt></ruby>を<ruby>旅行<rt>りょこう</rt></ruby>したい。",
+      "reading": "げんきな<b>うちに</b> いろいろな くにを りょこうしたい。",
+      "meaning_ru": "Хочу попутешествовать по разным странам, пока я в добром здравии.",
+      "pattern_text": "Паттерン: 状態 + うちに (A)\nЗначение: Сделать что-то, пока есть время/пока состояние подходит для этого (обычное время-возможность, повтор N3-паттерна, здесь — акцент на «пока есть шанс»).",
+      "formation_rules": [
+        {"pos": "な形", "form_label": "な形容詞な+うちに", "example_html": "<ruby>元気<rt>げんき</rt></ruby>な<b>うちに</b>"},
+        {"pos": "動詞辞書形", "form_label": "動詞辞書形+うちに", "example_html": "<ruby>若<rt>わか</rt></ruby>いうちに"}
+      ],
+      "target_construction": "うちに",
+      "tags": ["N2", "Time", "lesson:02"]
+    },
+    {
+      "key": "n2_008_uchi_ni_b",
+      "expression_html": "<ruby>子供<rt>こども</rt></ruby>のことを<ruby>考<rt>かんが</rt></ruby>えている<b>うちに</b>、いつの<ruby>間<rt>ま</rt></ruby>にか<ruby>涙<rt>なみだ</rt></ruby>が<ruby>出<rt>で</rt></ruby>てきた。",
+      "reading": "こどもの ことを かんがえている<b>うちに</b>、いつのまにか なみだが でてきた。",
+      "meaning_ru": "Пока я думал о ребёнке, у меня незаметно потекли слёзы.",
+      "pattern_text": "Паттерン: 動詞ている形 + うちに (B)\nЗначение: Пока продолжается A, незаметно, само собой наступает изменение/результат B (без воли говорящего).",
+      "formation_rules": [
+        {"pos": "動詞ている", "form_label": "V-ているうちに", "example_html": "<ruby>歩<rt>ある</rt></ruby>いているうちに"}
+      ],
+      "target_construction": "うちに",
+      "tags": ["N2", "Time", "lesson:02"]
+    },
+    {
+      "key": "n2_009_bakari_da_ippou_da",
+      "expression_html": "この<ruby>町<rt>まち</rt></ruby>の<ruby>人口<rt>じんこう</rt></ruby>は<ruby>減<rt>へ</rt></ruby>る<b>一方だ</b>。",
+      "reading": "このまちの じんこうは へる<b>いっぽうだ</b>。",
+      "meaning_ru": "Население этого города только продолжает уменьшаться.",
+      "pattern_text": "Паттерン: 動詞辞書形 + 一方だ／ばかりだ\nЗначение: Ситуация непрерывно движется в одном (обычно негативном) направлении, без остановки.",
+      "formation_rules": [
+        {"pos": "動詞辞書形", "form_label": "V辞書形+一方だ", "example_html": "<ruby>悪<rt>わる</rt></ruby>くなる<b>一方だ</b>"},
+        {"pos": "動詞辞書形", "form_label": "V辞書形+ばかりだ", "example_html": "<ruby>太<rt>ふと</rt></ruby>る<b>ばかりだ</b>"}
+      ],
+      "target_construction": "一方だ",
+      "tags": ["N2", "Quantity", "lesson:02"]
+    },
+    {
+      "key": "n2_010_you_to_shite_iru",
+      "expression_html": "バスは<ruby>今<rt>いま</rt></ruby>、<ruby>出発<rt>しゅっぱつ</rt></ruby>し<b>ようとしている</b>。",
+      "reading": "バスは いま、しゅっぱつし<b>ようとしている</b>。",
+      "meaning_ru": "Автобус вот-вот собирается отправиться.",
+      "pattern_text": "Паттерン: 動詞意向形 + うとしている\nЗначение: Действие/событие вот-вот произойдёт, находится на грани начала.",
+      "formation_rules": [
+        {"pos": "動詞意向形", "form_label": "V意向形+としている", "example_html": "<ruby>日<rt>ひ</rt></ruby>が<ruby>沈<rt>しず</rt></ruby>もうとしている"}
+      ],
+      "target_construction": "ようとしている",
+      "tags": ["N2", "Time", "lesson:02"]
+    },
+    {
+      "key": "n2_011_tsutsu_aru",
+      "expression_html": "この<ruby>地域<rt>ちいき</rt></ruby>の<ruby>人口<rt>じんこう</rt></ruby>は<ruby>増加<rt>ぞうか</rt></ruby>し<b>つつある</b>。",
+      "reading": "この ちいきの じんこうは ぞうかし<b>つつある</b>。",
+      "meaning_ru": "Население этого региона постепенно растёт.",
+      "pattern_text": "Паттерン: 動詞ます形 + つつある\nЗначение: Изменение постепенно, но неуклонно продолжается прямо сейчас (книжный/формальный стиль).",
+      "formation_rules": [
+        {"pos": "動詞ます形", "form_label": "V-ます形+つつある", "example_html": "<ruby>回復<rt>かいふく</rt></ruby>しつつある"}
+      ],
+      "target_construction": "つつある",
+      "tags": ["N2", "Time", "lesson:02"]
+    },
+    {
+      "key": "n2_012_tsutsu",
+      "expression_html": "テレビを<ruby>見<rt>み</rt></ruby><b>つつ</b>、<ruby>晩<rt>ばん</rt></ruby><ruby>御飯<rt>ごはん</rt></ruby>を<ruby>食<rt>た</rt></ruby>べた。",
+      "reading": "テレビを み<b>つつ</b>、ばんごはんを たべた。",
+      "meaning_ru": "Ужинал, одновременно смотря телевизор.",
+      "pattern_text": "Паттерン: 動詞ます形 + つつ\nЗначение: Два действия происходят одновременно (書き言葉風, синоним ながら).",
+      "formation_rules": [
+        {"pos": "動詞ます形", "form_label": "V-ます形+つつ", "example_html": "<ruby>働<rt>はたら</rt></ruby>きつつ<ruby>学<rt>まな</rt></ruby>ぶ"}
+      ],
+      "target_construction": "つつ",
+      "tags": ["N2", "Time", "lesson:02"]
+    },
+    {
+      "key": "n2_013_te_hajimete",
+      "expression_html": "<ruby>一人暮<rt>ひとりぐ</rt></ruby>らしをし<b>てはじめて</b>、<ruby>親<rt>おや</rt></ruby>のありがたさが<ruby>分<rt>わ</rt></ruby>かった。",
+      "reading": "ひとりぐらしを し<b>てはじめて</b>、おやの ありがたさが わかった。",
+      "meaning_ru": "Только начав жить одному, я понял, как ценны родители.",
+      "pattern_text": "Паттерン: 動詞て形 + はじめて\nЗначение: Только после того, как сделал A, впервые понял/осознал B (раньше не понимал).",
+      "formation_rules": [
+        {"pos": "動詞て形", "form_label": "V-て形+はじめて", "example_html": "<ruby>失<rt>うしな</rt></ruby>ってはじめて"}
+      ],
+      "target_construction": "てはじめて",
+      "tags": ["N2", "Time", "lesson:03"]
+    },
+    {
+      "key": "n2_014_ue_de",
+      "expression_html": "よく<ruby>考<rt>かんが</rt></ruby>えた<b><ruby>上<rt>うえ</rt></ruby>で</b>、ご<ruby>返事<rt>へんじ</rt></ruby>いたします。",
+      "reading": "よく かんがえた<b>うえで</b>、ご へんじいたします。",
+      "meaning_ru": "Хорошо всё обдумав, дам вам ответ.",
+      "pattern_text": "Паттерン: 動詞た形／名詞の + 上（で）\nЗначение: После того, как сделал A (как необходимый предварительный шаг), делает B.",
+      "formation_rules": [
+        {"pos": "動詞た形", "form_label": "V-た形+上で", "example_html": "<ruby>相談<rt>そうだん</rt></ruby>した<b>上で</b>"},
+        {"pos": "名詞+の", "form_label": "名詞の上で", "example_html": "<ruby>契約<rt>けいやく</rt></ruby>の<b>上で</b>"}
+      ],
+      "target_construction": "上で",
+      "tags": ["N2", "Time", "lesson:03"]
+    },
+    {
+      "key": "n2_015_shidai",
+      "expression_html": "<ruby>空港<rt>くうこう</rt></ruby>に<ruby>着<rt>つ</rt></ruby>き<b>次第</b>、ご<ruby>連絡<rt>れんらく</rt></ruby>いたします。",
+      "reading": "くうこうに つき<b>しだい</b>、ご れんらくいたします。",
+      "meaning_ru": "Как только прибуду в аэропорт, сразу свяжусь с вами.",
+      "pattern_text": "Паттерン: 動詞ます形 + 次第\nЗначение: Сразу же, как только произойдёт A, немедленно делает B (о будущем, ещё не наступившем событии).",
+      "formation_rules": [
+        {"pos": "動詞ます形", "form_label": "V-ます形+次第", "example_html": "<ruby>決<rt>き</rt></ruby>まり<b>次第</b>"}
+      ],
+      "target_construction": "次第",
+      "tags": ["N2", "Time", "lesson:03"]
+    },
+    {
+      "key": "n2_016_te_irai",
+      "expression_html": "<ruby>大学<rt>だいがく</rt></ruby>を<ruby>卒業<rt>そつぎょう</rt></ruby>し<b>て<ruby>以来<rt>いらい</rt></b></ruby>、<ruby>一度<rt>いちど</rt></ruby>も<ruby>田舎<rt>いなか</rt></ruby>に<ruby>帰<rt>かえ</rt></ruby>っていない。",
+      "reading": "だいがくを そつぎょうし<b>ていらい</b>、いちども いなかに かえっていない。",
+      "meaning_ru": "С тех пор как окончил университет, я ни разу не возвращался в родные края.",
+      "pattern_text": "Паттерン: 動詞て形 + 以来／てこのかた\nЗначение: С тех пор как случилось A, состояние/ситуация B продолжается без изменений до сих пор.",
+      "formation_rules": [
+        {"pos": "動詞て形", "form_label": "V-て形+以来", "example_html": "<ruby>引<rt>ひ</rt></ruby>っ<ruby>越<rt>こ</rt></ruby>して<b>以来</b>"},
+        {"pos": "動詞て形", "form_label": "V-て形+てこのかた", "example_html": "<ruby>生<rt>う</rt></ruby>まれ<b>てこのかた</b>"}
+      ],
+      "target_construction": "て以来",
+      "tags": ["N2", "Time", "lesson:03"]
+    },
+    {
+      "key": "n2_017_kara_denai_to",
+      "expression_html": "<ruby>本人<rt>ほんにん</rt></ruby>に<ruby>確認<rt>かくにん</rt></ruby>し<b>てからでないと</b>、お<ruby>答<rt>こた</rt></ruby>えできません。",
+      "reading": "ほんにんに かくにんし<b>てからでないと</b>、お こたえできません。",
+      "meaning_ru": "Не проверив у самого человека, не смогу дать ответ.",
+      "pattern_text": "Паттерン: 動詞て形 + からでないと／からでなければ\nЗначение: Если сначала не сделать A, то B невозможно/не разрешается (негативный результат подчёркнут).",
+      "formation_rules": [
+        {"pos": "動詞て形", "form_label": "V-て形+からでないと", "example_html": "<ruby>許可<rt>きょか</rt></ruby>を<ruby>得<rt>え</rt></ruby>てからでないと"}
+      ],
+      "target_construction": "てからでないと",
+      "tags": ["N2", "Conditionals", "lesson:03"]
+    },
+    {
+      "key": "n2_018_wo_hajime",
+      "expression_html": "このクラスには<ruby>田中<rt>たなか</rt></ruby>さん<b>をはじめ</b>、<ruby>優秀<rt>ゆうしゅう</rt></ruby>な<ruby>学生<rt>がくせい</rt></ruby>が<ruby>多<rt>おお</rt></ruby>い。",
+      "reading": "この クラスには たなかさん<b>をはじめ</b>、ゆうしゅうな がくせいが おおい。",
+      "meaning_ru": "В этом классе, начиная с Танаки-сан, много способных студентов.",
+      "pattern_text": "Паттерン: 名詞 + をはじめ（として）\nЗначение: Начиная с A (типичного представителя), включая и другие подобные примеры.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+をはじめ", "example_html": "<ruby>社長<rt>しゃちょう</rt></ruby><b>をはじめ</b>"}
+      ],
+      "target_construction": "をはじめ",
+      "tags": ["N2", "Emphasis", "lesson:04"]
+    },
+    {
+      "key": "n2_019_kara_shite",
+      "expression_html": "この<ruby>店<rt>みせ</rt></ruby>は<ruby>名前<rt>なまえ</rt></ruby><b>からして</b><ruby>怪<rt>あや</rt></ruby>しい。",
+      "reading": "この みせは なまえ<b>からして</b> あやしい。",
+      "meaning_ru": "Судя по одному только названию, это заведение уже подозрительное.",
+      "pattern_text": "Паттерン: 名詞 + からして\nЗначение: Судя даже по A (одному, самому очевидному признаку), можно сделать вывод о целом.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+からして", "example_html": "<ruby>態度<rt>たいど</rt></ruby><b>からして</b>"}
+      ],
+      "target_construction": "からして",
+      "tags": ["N2", "Emphasis", "lesson:04"]
+    },
+    {
+      "key": "n2_020_ni_watatte",
+      "expression_html": "この<ruby>会議<rt>かいぎ</rt></ruby>は3<ruby>時間<rt>じかん</rt></ruby><b>にわたって</b><ruby>行<rt>おこな</rt></ruby>われた。",
+      "reading": "この かいぎは さんじかん<b>にわたって</b> おこなわれた。",
+      "meaning_ru": "Это совещание длилось на протяжении трёх часов.",
+      "pattern_text": "Паттерン: 名詞（期間／範囲） + にわたって\nЗначение: На протяжении всего указанного периода/диапазона — подчёркивает большой охват.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+にわたって", "example_html": "10<ruby>年<rt>ねん</rt></ruby><b>にわたって</b>"}
+      ],
+      "target_construction": "にわたって",
+      "tags": ["N2", "Quantity", "lesson:04"]
+    },
+    {
+      "key": "n2_021_wo_tsujite_a",
+      "expression_html": "この<ruby>地方<rt>ちほう</rt></ruby>は1<ruby>年<rt>ねん</rt></ruby><b>を<ruby>通<rt>つう</rt></ruby>じて</b><ruby>雨<rt>あめ</rt></ruby>が<ruby>多<rt>おお</rt></ruby>い。",
+      "reading": "この ちほうは いちねん<b>をつうじて</b> あめが おおい。",
+      "meaning_ru": "В этой местности в течение всего года часто идут дожди.",
+      "pattern_text": "Паттерン: 期間の名詞 + を通じて／を通して (A)\nЗначение: На протяжении всего указанного периода времени, без исключения — временное значение.",
+      "formation_rules": [
+        {"pos": "名詞（期間）", "form_label": "名詞+を通じて", "example_html": "<ruby>一生<rt>いっしょう</rt></ruby><b>を通じて</b>"}
+      ],
+      "target_construction": "を通じて",
+      "tags": ["N2", "Time", "lesson:04"]
+    },
+    {
+      "key": "n2_022_wo_tsujite_b",
+      "expression_html": "その<ruby>情報<rt>じょうほう</rt></ruby>は<ruby>友人<rt>ゆうじん</rt></ruby><b>を<ruby>通<rt>つう</rt></ruby>じて</b><ruby>知<rt>し</rt></ruby>った。",
+      "reading": "その じょうほうは ゆうじん<b>をつうじて</b> しった。",
+      "meaning_ru": "Об этой информации я узнал через своего друга.",
+      "pattern_text": "Паттерン: 名詞（手段・仲介） + を通じて／を通して (B)\nЗначение: Через посредство/при помощи A (человека, СМИ, канала) делается/узнаётся B — значение способа/посредника.",
+      "formation_rules": [
+        {"pos": "名詞（手段）", "form_label": "名詞+を通して", "example_html": "テレビ<b>を通して</b>"}
+      ],
+      "target_construction": "を通じて",
+      "tags": ["N2", "Modality", "lesson:04"]
+    },
+    {
+      "key": "n2_023_kagiri",
+      "expression_html": "わたしが<ruby>知<rt>し</rt></ruby>っている<b>限り</b>、この<ruby>問題<rt>もんだい</rt></ruby>に<ruby>正解<rt>せいかい</rt></ruby>はない。",
+      "reading": "わたしが しっている<b>かぎり</b>、この もんだいに せいかいは ない。",
+      "meaning_ru": "Насколько мне известно, у этой проблемы нет правильного ответа.",
+      "pattern_text": "Паттерン: 動詞普通形 + 限り\nЗначение: В пределах того, насколько/пока (знаю, возможно) — ограничение сферы утверждения.",
+      "formation_rules": [
+        {"pos": "動詞普通形", "form_label": "V普通形+限り", "example_html": "<ruby>調<rt>しら</rt></ruby>べた<b>限り</b>"}
+      ],
+      "target_construction": "限り",
+      "tags": ["N2", "Quantity", "lesson:04"]
+    },
+    {
+      "key": "n2_024_dake",
+      "expression_html": "できる<b>だけ</b>はやく<ruby>返事<rt>へんじ</rt></ruby>をください。",
+      "reading": "できる<b>だけ</b> はやく へんじを ください。",
+      "meaning_ru": "Ответьте мне, пожалуйста, как можно скорее.",
+      "pattern_text": "Паттерン: 動詞可能形辞書形 + だけ\nЗначение: В той мере, насколько возможно — «настолько, насколько получится».",
+      "formation_rules": [
+        {"pos": "動詞可能形", "form_label": "V可能形+だけ", "example_html": "<ruby>食<rt>た</rt></ruby>べられる<b>だけ</b>"}
+      ],
+      "target_construction": "だけ",
+      "tags": ["N2", "Quantity", "lesson:04"]
+    },
+    {
+      "key": "n2_025_ni_kagiri",
+      "expression_html": "この<ruby>特別割引<rt>とくべつわりびき</rt></ruby>は<ruby>今週中<rt>こんしゅうちゅう</rt></ruby><b>に<ruby>限<rt>かぎ</rt></ruby>り</b>ご<ruby>利用<rt>りよう</rt></ruby>いただけます。",
+      "reading": "この とくべつわりびきは こんしゅうちゅう<b>にかぎり</b> ご りよういただけます。",
+      "meaning_ru": "Эта специальная скидка действует только в течение этой недели.",
+      "pattern_text": "Паттерン: 名詞 + に限り\nЗначение: Только в случае A, только при условии A (ограничение области действия — часто в объявлениях/условиях).",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に限り", "example_html": "<ruby>会員<rt>かいいん</rt></ruby><b>に限り</b>"}
+      ],
+      "target_construction": "に限り",
+      "tags": ["N2", "Conditionals", "lesson:05"]
+    },
+    {
+      "key": "n2_026_kagiri_wa",
+      "expression_html": "わたしが<ruby>社長<rt>しゃちょう</rt></ruby>である<b>限り</b>、この<ruby>会社<rt>かいしゃ</rt></ruby>を<ruby>売<rt>う</rt></ruby>ることはない。",
+      "reading": "わたしが しゃちょうである<b>かぎり</b>、この かいしゃを うることは ない。",
+      "meaning_ru": "Пока я являюсь президентом компании, я никогда не продам эту фирму.",
+      "pattern_text": "Паттерン: 普通形 + 限り（は）\nЗначение: Пока сохраняется данное условие/статус, будет действовать и следствие — «пока... до тех пор».",
+      "formation_rules": [
+        {"pos": "普通形", "form_label": "普通形+限りは", "example_html": "<ruby>健康<rt>けんこう</rt></ruby>である<b>限りは</b>"}
+      ],
+      "target_construction": "限り",
+      "tags": ["N2", "Conditionals", "lesson:05"]
+    },
+    {
+      "key": "n2_027_kagiri_dewa",
+      "expression_html": "わたしが<ruby>見<rt>み</rt></ruby>た<b>限りでは</b>、この<ruby>映画<rt>えいが</rt></ruby>は<ruby>面白<rt>おもしろ</rt></ruby>かった。",
+      "reading": "わたしが みた<b>かぎりでは</b>、この えいがは おもしろかった。",
+      "meaning_ru": "Насколько я смог увидеть, этот фильм был интересным.",
+      "pattern_text": "Паттерン: 動詞た形 + 限りでは\nЗначение: Судя по той информации/опыту, что у говорящего есть — субъективный, ограниченный вывод.",
+      "formation_rules": [
+        {"pos": "動詞た形", "form_label": "V-た形+限りでは", "example_html": "<ruby>聞<rt>き</rt></ruby>いた<b>限りでは</b>"}
+      ],
+      "target_construction": "限りでは",
+      "tags": ["N2", "Quantity", "lesson:05"]
+    },
+    {
+      "key": "n2_028_ni_kagitte_a",
+      "expression_html": "この<ruby>店<rt>みせ</rt></ruby>は<ruby>平日<rt>へいじつ</rt></ruby><b>に<ruby>限<rt>かぎ</rt></ruby>って</b><ruby>安<rt>やす</rt></ruby>い<ruby>定食<rt>ていしょく</rt></ruby>がある。",
+      "reading": "この みせは へいじつ<b>にかぎって</b> やすい ていしょくが ある。",
+      "meaning_ru": "Только по будням в этом заведении есть дешёвые сеты.",
+      "pattern_text": "Паттерン: 名詞 + に限って (A)\nЗначение: Только в этом случае/только для A (нейтральное ограничение, близко к に限り).",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に限って", "example_html": "<ruby>今回<rt>こんかい</rt></ruby><b>に限って</b>"}
+      ],
+      "target_construction": "に限って",
+      "tags": ["N2", "Conditionals", "lesson:05"]
+    },
+    {
+      "key": "n2_029_ni_kagitte_b",
+      "expression_html": "<ruby>傘<rt>かさ</rt></ruby>を<ruby>持<rt>も</rt></ruby>っていない<ruby>日<rt>ひ</rt></ruby><b>に<ruby>限<rt>かぎ</rt></ruby>って</b><ruby>雨<rt>あめ</rt></ruby>が<ruby>降<rt>ふ</rt></ruby>る。",
+      "reading": "かさを もっていない ひ<b>にかぎって</b> あめが ふる。",
+      "meaning_ru": "Именно в те дни, когда у меня нет зонта, обязательно идёт дождь.",
+      "pattern_text": "Паттерン: 名詞 + に限って (B)\nЗначение: Как назло, именно в этом случае происходит что-то нежелательное — оттенок раздражения/невезения.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に限って", "example_html": "<ruby>急<rt>いそ</rt></ruby>いでいる<ruby>時<rt>とき</rt></ruby><b>に限って</b>"}
+      ],
+      "target_construction": "に限って",
+      "tags": ["N2", "Emphasis", "lesson:05"]
+    },
+    {
+      "key": "n2_030_ni_kagitte_c",
+      "expression_html": "うちの<ruby>子<rt>こ</rt></ruby><b>に<ruby>限<rt>かぎ</rt></ruby>って</b>、そんな<ruby>悪<rt>わる</rt></ruby>いことをするはずがない。",
+      "reading": "うちの こ<b>にかぎって</b>、そんな わるい ことを する はずが ない。",
+      "meaning_ru": "Уж мой-то ребёнок точно не мог сделать ничего подобного плохого.",
+      "pattern_text": "Паттерン: 名詞（人） + に限って (C)\nЗначение: Уж кто-кто, а именно этот человек — никогда бы этого не сделал (уверенное доверие/исключение, часто с последующим отрицанием はずがない).",
+      "formation_rules": [
+        {"pos": "名詞（人）", "form_label": "名詞+に限って", "example_html": "<ruby>彼<rt>かれ</rt></ruby><b>に限って</b>"}
+      ],
+      "target_construction": "に限って",
+      "tags": ["N2", "Modality", "lesson:05"]
+    },
+    {
+      "key": "n2_031_ni_kagirazu",
+      "expression_html": "この<ruby>問題<rt>もんだい</rt></ruby>は<ruby>日本<rt>にほん</rt></ruby><b>に<ruby>限<rt>かぎ</rt></ruby>らず</b>、<ruby>世界中<rt>せかいじゅう</rt></ruby>で<ruby>起<rt>お</rt></ruby>きている。",
+      "reading": "この もんだいは にほん<b>にかぎらず</b>、せかいじゅうで おきている。",
+      "meaning_ru": "Эта проблема встречается не только в Японии, но и во всём мире.",
+      "pattern_text": "Паттерン: 名詞 + に限らず\nЗначение: Не ограничиваясь только A, а также и в других похожих случаях/сферах.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に限らず", "example_html": "<ruby>学生<rt>がくせい</rt></ruby><b>に限らず</b>"}
+      ],
+      "target_construction": "に限らず",
+      "tags": ["N2", "Comparison", "lesson:06"]
+    },
+    {
+      "key": "n2_032_nominarazu",
+      "expression_html": "この<ruby>薬<rt>くすり</rt></ruby>は<ruby>風邪<rt>かぜ</rt></ruby>に<ruby>効<rt>き</rt></ruby>く<b>のみならず</b>、<ruby>疲労回復<rt>ひろうかいふく</rt></ruby>にも<ruby>効果<rt>こうか</rt></ruby>がある。",
+      "reading": "この くすりは かぜに きく<b>のみならず</b>、ひろうかいふくにも こうかが ある。",
+      "meaning_ru": "Это лекарство не только помогает от простуды, но и эффективно снимает усталость.",
+      "pattern_text": "Паттерン: 普通形 + のみならず\nЗначение: Не только A, но и (вдобавок) ещё и B — книжный, формальный синоним だけでなく.",
+      "formation_rules": [
+        {"pos": "普通形", "form_label": "普通形+のみならず", "example_html": "<ruby>安<rt>やす</rt></ruby>い<b>のみならず</b>"}
+      ],
+      "target_construction": "のみならず",
+      "tags": ["N2", "Emphasis", "lesson:06"]
+    },
+    {
+      "key": "n2_033_bakari_ka",
+      "expression_html": "彼は<ruby>数学<rt>すうがく</rt></ruby>が<ruby>得意<rt>とくい</rt></ruby>な<b>ばかりか</b>、スポーツも<ruby>万能<rt>ばんのう</rt></ruby>だ。",
+      "reading": "かれは すうがくが とくいな<b>ばかりか</b>、スポーツも ばんのうだ。",
+      "meaning_ru": "Он не только силён в математике, но, представьте, ещё и универсал в спорте.",
+      "pattern_text": "Паттерン: 普通形 + ばかりか\nЗначение: Не только A, но и (что даже удивительно) B — оттенок «мало того, ещё и».",
+      "formation_rules": [
+        {"pos": "普通形", "form_label": "普通形+ばかりか", "example_html": "<ruby>失敗<rt>しっぱい</rt></ruby>した<b>ばかりか</b>"}
+      ],
+      "target_construction": "ばかりか",
+      "tags": ["N2", "Emphasis", "lesson:06"]
+    },
+    {
+      "key": "n2_034_wa_motoyori",
+      "expression_html": "この<ruby>選手<rt>せんしゅ</rt></ruby>は<ruby>国内<rt>こくない</rt></ruby>で<b>はもとより</b>、<ruby>海外<rt>かいがい</rt></ruby>でも<ruby>有名<rt>ゆうめい</rt></ruby>だ。",
+      "reading": "この せんしゅは こくないで<b>はもとより</b>、かいがいでも ゆうめいだ。",
+      "meaning_ru": "Этот спортсмен известен не то что внутри страны — он знаменит и за рубежом.",
+      "pattern_text": "Паттерン: 名詞 + はもとより\nЗначение: A — это само собой разумеется, но даже и B (более неожиданное) тоже верно.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+はもとより", "example_html": "<ruby>英語<rt>えいご</rt></ruby><b>はもとより</b>"}
+      ],
+      "target_construction": "はもとより",
+      "tags": ["N2", "Emphasis", "lesson:06"]
+    },
+    {
+      "key": "n2_035_ue_ni",
+      "expression_html": "この<ruby>部屋<rt>へや</rt></ruby>は<ruby>広<rt>ひろ</rt></ruby>い<b><ruby>上<rt>うえ</rt></ruby>に</b>、<ruby>家賃<rt>やちん</rt></ruby>も<ruby>安<rt>やす</rt></ruby>い。",
+      "reading": "この へやは ひろい<b>うえに</b>、やちんも やすい。",
+      "meaning_ru": "Эта комната не только просторная, но вдобавок аренда ещё и дешёвая.",
+      "pattern_text": "Паттерン: 普通形 + 上に\nЗначение: В дополнение к A, ещё и B — обычно оба пункта в одном направлении (плюс к плюсу или минус к минусу).",
+      "formation_rules": [
+        {"pos": "い形", "form_label": "い形容詞+上に", "example_html": "<ruby>安<rt>やす</rt></ruby>い<b>上に</b>"},
+        {"pos": "動詞普通形", "form_label": "V普通形+上に", "example_html": "<ruby>遅刻<rt>ちこく</rt></ruby>した<b>上に</b>"}
+      ],
+      "target_construction": "上に",
+      "tags": ["N2", "Emphasis", "lesson:06"]
+    },
+    {
+      "key": "n2_036_ni_kanshite",
+      "expression_html": "この<ruby>問題<rt>もんだい</rt></ruby><b>に<ruby>関<rt>かん</rt></ruby>して</b>、ご<ruby>意見<rt>いけん</rt></ruby>をお<ruby>聞<rt>き</rt></ruby>かせください。",
+      "reading": "この もんだい<b>にかんして</b>、ご いけんを おきかせください。",
+      "meaning_ru": "Расскажите, пожалуйста, ваше мнение по этому вопросу.",
+      "pattern_text": "Паттерン: 名詞 + に関して\nЗначение: Относительно A, касательно темы A — формальное «о/об/насчёт» для тем разговора, документов.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に関して", "example_html": "<ruby>歴史<rt>れきし</rt></ruby><b>に関して</b>"}
+      ],
+      "target_construction": "に関して",
+      "tags": ["N2", "Modality", "lesson:07"]
+    },
+    {
+      "key": "n2_037_wo_megutte",
+      "expression_html": "その<ruby>土地<rt>とち</rt></ruby>の<ruby>所有権<rt>しょゆうけん</rt></ruby><b>をめぐって</b>、<ruby>兄弟<rt>きょうだい</rt></ruby>が<ruby>争<rt>あらそ</rt></ruby>っている。",
+      "reading": "その とちの しょゆうけん<b>をめぐって</b>、きょうだいが あらそっている。",
+      "meaning_ru": "Братья ссорятся вокруг вопроса о праве собственности на этот участок земли.",
+      "pattern_text": "Паттерン: 名詞 + をめぐって\nЗначение: Вокруг темы A разворачивается спор/дискуссия/конфликт между несколькими сторонами.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+をめぐって", "example_html": "<ruby>遺産<rt>いさん</rt></ruby><b>をめぐって</b>"}
+      ],
+      "target_construction": "をめぐって",
+      "tags": ["N2", "Modality", "lesson:07"]
+    },
+    {
+      "key": "n2_038_ni_kakete_wa",
+      "expression_html": "サッカーの<ruby>技術<rt>ぎじゅつ</rt></ruby><b>にかけては</b>、彼にかなう<ruby>者<rt>もの</rt></ruby>はいない。",
+      "reading": "サッカーの ぎじゅつ<b>にかけては</b>、かれに かなう ものは いない。",
+      "meaning_ru": "Что касается футбольного мастерства, ему нет равных.",
+      "pattern_text": "Паттерン: 名詞 + にかけては\nЗначение: Что касается конкретной сферы/навыка A, то (субъект) в этом превосходит всех — позитивная оценка.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+にかけては", "example_html": "<ruby>料理<rt>りょうり</rt></ruby><b>にかけては</b>"}
+      ],
+      "target_construction": "にかけては",
+      "tags": ["N2", "Comparison", "lesson:07"]
+    },
+    {
+      "key": "n2_039_ni_taishite_a",
+      "expression_html": "その<ruby>質問<rt>しつもん</rt></ruby><b>に<ruby>対<rt>たい</rt></ruby>して</b>、はっきりと<ruby>答<rt>こた</rt></ruby>えた。",
+      "reading": "その しつもん<b>にたいして</b>、はっきりと こたえた。",
+      "meaning_ru": "Он чётко ответил на этот вопрос.",
+      "pattern_text": "Паттерン: 名詞 + に対して (A)\nЗначение: По направлению к A, обращаясь к A — указывает адресата/направление действия или отношения.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に対して", "example_html": "<ruby>先生<rt>せんせい</rt></ruby><b>に対して</b>"}
+      ],
+      "target_construction": "に対して",
+      "tags": ["N2", "Modality", "lesson:07"]
+    },
+    {
+      "key": "n2_040_ni_taishite_b",
+      "expression_html": "<ruby>兄<rt>あに</rt></ruby>が<ruby>活発<rt>かっぱつ</rt></ruby>な<ruby>の<rt></rt></ruby><b>に<ruby>対<rt>たい</rt></ruby>して</b>、<ruby>弟<rt>おとうと</rt></ruby>はおとなしい。",
+      "reading": "あにが かっぱつなのに<b>たいして</b>、おとうとは おとなしい。",
+      "meaning_ru": "В противоположность тому, что старший брат активный, младший — тихий.",
+      "pattern_text": "Паттерン: 普通形の + に対して (B)\nЗначение: В контрасте/противопоставлении с A, тогда как A ..., B наоборот ... — сравнение двух сторон.",
+      "formation_rules": [
+        {"pos": "普通形+の", "form_label": "普通形のに対して", "example_html": "<ruby>都会<rt>とかい</rt></ruby>は<ruby>便利<rt>べんり</rt></ruby>なの<b>に対して</b>"}
+      ],
+      "target_construction": "に対して",
+      "tags": ["N2", "Contrast", "lesson:07"]
+    },
+    {
+      "key": "n2_041_ni_kotaete",
+      "expression_html": "ファンの<ruby>声援<rt>せいえん</rt></ruby><b>にこたえて</b>、もう一<ruby>曲<rt>きょく</rt></ruby><ruby>歌<rt>うた</rt></ruby>うことにした。",
+      "reading": "ファンの せいえん<b>にこたえて</b>、もう いっきょく うたうことに した。",
+      "meaning_ru": "В ответ на поддержку фанатов решил спеть ещё одну песню.",
+      "pattern_text": "Паттерン: 名詞（要望・期待） + にこたえて\nЗначение: Отвечая на ожидания/просьбу/поддержку A, делает B — часто в позитивном, «оправдывая ожидания» смысле.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+にこたえて", "example_html": "<ruby>期待<rt>きたい</rt></ruby><b>にこたえて</b>"}
+      ],
+      "target_construction": "にこたえて",
+      "tags": ["N2", "Causality", "lesson:07"]
+    },
+    {
+      "key": "n2_042_wo_moto_ni_shite",
+      "expression_html": "この<ruby>映画<rt>えいが</rt></ruby>は<ruby>実話<rt>じつわ</rt></ruby><b>をもとにして</b>、<ruby>作<rt>つく</rt></ruby>られた。",
+      "reading": "この えいがは じつわ<b>をもとにして</b>、つくられた。",
+      "meaning_ru": "Этот фильм был снят на основе реальной истории.",
+      "pattern_text": "Паттерン: 名詞 + をもとにして\nЗначение: На основе/за основу взяв A, создаётся/делается B (A — материал, исходная информация).",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+をもとにして", "example_html": "アンケート<ruby>結果<rt>けっか</rt></ruby><b>をもとにして</b>"}
+      ],
+      "target_construction": "をもとにして",
+      "tags": ["N2", "Causality", "lesson:08"]
+    },
+    {
+      "key": "n2_043_ni_motozuite",
+      "expression_html": "この<ruby>報告書<rt>ほうこくしょ</rt></ruby>は<ruby>事実<rt>じじつ</rt></ruby><b>に<ruby>基<rt>もと</rt></ruby>づいて</b><ruby>書<rt>か</rt></ruby>かれている。",
+      "reading": "この ほうこくしょは じじつ<b>にもとづいて</b> かかれている。",
+      "meaning_ru": "Этот отчёт написан на основании фактов.",
+      "pattern_text": "Паттерン: 名詞 + に基づいて\nЗначение: Опираясь/основываясь на A (более формально, «в соответствии с» законом, данными, правилами), делается B.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に基づいて", "example_html": "<ruby>法律<rt>ほうりつ</rt></ruby><b>に基づいて</b>"}
+      ],
+      "target_construction": "に基づいて",
+      "tags": ["N2", "Causality", "lesson:08"]
+    },
+    {
+      "key": "n2_044_ni_sotte",
+      "expression_html": "マニュアル<b>に<ruby>沿<rt>そ</rt></ruby>って</b>、<ruby>作業<rt>さぎょう</rt></ruby>を<ruby>進<rt>すす</rt></ruby>めてください。",
+      "reading": "マニュアル<b>にそって</b>、さぎょうを すすめてください。",
+      "meaning_ru": "Пожалуйста, выполняйте работу в соответствии с инструкцией.",
+      "pattern_text": "Паттерン: 名詞 + に沿って\nЗначение: Вдоль, в соответствии с A (планом, инструкцией, руслом реки) — придерживаясь заданного курса/направления.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に沿って", "example_html": "<ruby>方針<rt>ほうしん</rt></ruby><b>に沿って</b>"}
+      ],
+      "target_construction": "に沿って",
+      "tags": ["N2", "Causality", "lesson:08"]
+    },
+    {
+      "key": "n2_045_no_moto_de",
+      "expression_html": "この<ruby>研究<rt>けんきゅう</rt></ruby>は<ruby>有名<rt>ゆうめい</rt></ruby>な<ruby>教授<rt>きょうじゅ</rt></ruby>の<b><ruby>指導<rt>しどう</rt></ruby>のもとで</b><ruby>行<rt>おこな</rt></ruby>われた。",
+      "reading": "この けんきゅうは ゆうめいな きょうじゅの<b>しどうのもとで</b> おこなわれた。",
+      "meaning_ru": "Это исследование проводилось под руководством известного профессора.",
+      "pattern_text": "Паттерン: 名詞の + もとで／もとに\nЗначение: Под влиянием/руководством/при условии A — A является покровительствующей или обрамляющей средой для действия.",
+      "formation_rules": [
+        {"pos": "名詞+の", "form_label": "名詞のもとで", "example_html": "<ruby>法<rt>ほう</rt></ruby>のもとで"},
+        {"pos": "名詞+の", "form_label": "名詞のもとに", "example_html": "<ruby>同<rt>おな</rt></ruby>じ<ruby>条件<rt>じょうけん</rt></ruby>のもとに"}
+      ],
+      "target_construction": "のもとで",
+      "tags": ["N2", "Causality", "lesson:08"]
+    },
+    {
+      "key": "n2_046_muke_da",
+      "expression_html": "この<ruby>本<rt>ほん</rt></ruby>は<ruby>初心者<rt>しょしんしゃ</rt></ruby><b>向けだ</b>。",
+      "reading": "この ほんは しょしんしゃ<b>むけだ</b>。",
+      "meaning_ru": "Эта книга предназначена для начинающих.",
+      "pattern_text": "Паттерン: 名詞 + 向けだ\nЗначение: Сделано/предназначено специально для целевой аудитории A.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+向けだ", "example_html": "<ruby>子供<rt>こども</rt></ruby><b>向けだ</b>"}
+      ],
+      "target_construction": "向けだ",
+      "tags": ["N2", "Modality", "lesson:08"]
+    },
+    {
+      "key": "n2_047_ni_tsurete",
+      "expression_html": "<ruby>都会<rt>とかい</rt></ruby>に<ruby>近<rt>ちか</rt></ruby>づく<b>につれて</b>、<ruby>建物<rt>たてもの</rt></ruby>が<ruby>増<rt>ふ</rt></ruby>えてきた。",
+      "reading": "とかいに ちかづく<b>につれて</b>、たてものが ふえてきた。",
+      "meaning_ru": "По мере приближения к городу, зданий становилось всё больше.",
+      "pattern_text": "Паттерン: 動詞辞書形 + につれて／にしたがって\nЗначение: По мере того, как происходит изменение A, пропорционально меняется и B.",
+      "formation_rules": [
+        {"pos": "動詞辞書形", "form_label": "V辞書形+につれて", "example_html": "<ruby>年<rt>とし</rt></ruby>を<ruby>取<rt>と</rt></ruby>るにつれて"}
+      ],
+      "target_construction": "につれて",
+      "tags": ["N2", "Causality", "lesson:09"]
+    },
+    {
+      "key": "n2_048_ni_tomonatte",
+      "expression_html": "<ruby>技術<rt>ぎじゅつ</rt></ruby>の<ruby>進歩<rt>しんぽ</rt></ruby><b>に<ruby>伴<rt>ともな</rt></ruby>って</b>、<ruby>生活<rt>せいかつ</rt></ruby>が<ruby>便利<rt>べんり</rt></ruby>になった。",
+      "reading": "ぎじゅつの しんぽ<b>にともなって</b>、せいかつが べんりに なった。",
+      "meaning_ru": "С развитием технологий жизнь стала удобнее.",
+      "pattern_text": "Паттерン: 名詞／動詞辞書形 + に伴って／とともに\nЗначение: Вместе с/сопровождая изменение A, происходит и изменение B.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に伴って", "example_html": "<ruby>人口増加<rt>じんこうぞうか</rt></ruby><b>に伴って</b>"},
+        {"pos": "動詞辞書形", "form_label": "V辞書形+とともに", "example_html": "<ruby>成長<rt>せいちょう</rt></ruby>するとともに"}
+      ],
+      "target_construction": "に伴って",
+      "tags": ["N2", "Causality", "lesson:09"]
+    },
+    {
+      "key": "n2_049_shidai_da",
+      "expression_html": "うまくいくかどうかは、あなたの<ruby>努力<rt>どりょく</rt></ruby><b>次第だ</b>。",
+      "reading": "うまく いくかどうかは、あなたの どりょく<b>しだいだ</b>。",
+      "meaning_ru": "Получится или нет — зависит от твоих усилий.",
+      "pattern_text": "Паттерン: 名詞 + 次第だ\nЗначение: Результат целиком зависит от/определяется фактором A.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+次第だ", "example_html": "<ruby>天気<rt>てんき</rt></ruby><b>次第だ</b>"}
+      ],
+      "target_construction": "次第だ",
+      "tags": ["N2", "Conditionals", "lesson:09"]
+    },
+    {
+      "key": "n2_050_ni_oujite",
+      "expression_html": "<ruby>能力<rt>のうりょく</rt></ruby><b>に<ruby>応<rt>おう</rt></ruby>じて</b>、<ruby>仕事<rt>しごと</rt></ruby>を<ruby>与<rt>あた</rt></ruby>えられる。",
+      "reading": "のうりょく<b>におうじて</b>、しごとを あたえられる。",
+      "meaning_ru": "Работу дают в соответствии со способностями.",
+      "pattern_text": "Паттерン: 名詞 + に応じて\nЗначение: В соответствии с/сообразно A, изменяясь пропорционально ему — B подстраивается под A.",
+      "formation_rules": [
+        {"pos": "名詞", "form_label": "名詞+に応じて", "example_html": "<ruby>収入<rt>しゅうにゅう</rt></ruby><b>に応じて</b>"}
+      ],
+      "target_construction": "に応じて",
+      "tags": ["N2", "Causality", "lesson:09"]
+    },
+    {
+      "key": "n2_051_ni_tsukete",
+      "expression_html": "この<ruby>歌<rt>うた</rt></ruby>を<ruby>聞<rt>き</rt></ruby>く<b>につけて</b>、<ruby>学生時代<rt>がくせいじだい</rt></ruby>を<ruby>思<rt>おも</rt></ruby>い<ruby>出<rt>だ</rt></ruby>す。",
+      "reading": "この うたを きく<b>につけて</b>、がくせいじだいを おもいだす。",
+      "meaning_ru": "Каждый раз, слыша эту песню, вспоминаю студенческие годы.",
+      "pattern_text": "Паттерン: 動詞辞書形 + につけて（は）\nЗначение: Каждый раз, когда происходит/замечается A, естественно приходит на ум/чувствуется B.",
+      "formation_rules": [
+        {"pos": "動詞辞書形", "form_label": "V辞書形+につけて", "example_html": "これ<b>につけて</b>"}
+      ],
+      "target_construction": "につけて",
+      "tags": ["N2", "Causality", "lesson:09"]
+    }
+  ]
+}
