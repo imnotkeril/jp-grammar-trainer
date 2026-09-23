@@ -116,7 +116,10 @@ export default function GrammarGraph({ items, edges }: GrammarGraphProps) {
   const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [ready, setReady] = useState(false);
-  const [hiddenTypes, setHiddenTypes] = useState<Set<GrammarRelationType>>(new Set());
+  // "related" starts hidden: with no LLM key configured, these edges are heuristic-fallback
+  // noise (weak particle/keyword overlap, see ARCHITECTURE.md ADR-12) and dominate the layout
+  // to the point of unreadability if shown by default. The legend toggle still lets it back in.
+  const [hiddenTypes, setHiddenTypes] = useState<Set<GrammarRelationType>>(new Set(["related"]));
   const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const nodesRef = useRef<LayoutNode[]>([]);

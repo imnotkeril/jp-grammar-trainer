@@ -131,14 +131,20 @@ function groupHeading(rel: GrammarRelationOut): string {
     : relationLabel(rel.relation_type, rel.direction);
 }
 
+// Heuristic edges (no LLM key configured, see ARCHITECTURE.md ADR-12) carry a lot of weak
+// "related" noise — a generic-particle overlap alone isn't worth showing as a comparison.
+// Require a minimum signal strength before surfacing an edge in this user-facing list.
+const MIN_DISPLAY_STRENGTH = 0.15;
+
 function CompareWithSection({ relations }: { relations: GrammarRelationOut[] }) {
-  if (relations.length === 0) return null;
+  const visible = relations.filter((rel) => rel.strength >= MIN_DISPLAY_STRENGTH);
+  if (visible.length === 0) return null;
 
   const grouped = new Map<
     string,
     { heading: string; sortType: GrammarRelationOut["relation_type"]; items: GrammarRelationOut[] }
   >();
-  for (const rel of relations) {
+  for (const rel of visible) {
     const key = groupKey(rel);
     const entry = grouped.get(key);
     if (entry) {
@@ -184,11 +190,6 @@ function CompareWithSection({ relations }: { relations: GrammarRelationOut[] }) 
                         <p className="truncate text-xs text-[var(--ink-muted)]">
                           {rel.related_grammar.meaning_ru}
                         </p>
-                        {rel.note && (
-                          <p className="mt-1 text-xs italic text-[var(--ink-faint)]" title={rel.note}>
-                            {rel.note}
-                          </p>
-                        )}
                       </div>
                     </Link>
                   </li>
