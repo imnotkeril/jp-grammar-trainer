@@ -115,7 +115,9 @@ def select_due_progress_mixed(
     few weak-eligible items exist to fill the reserved slots.
     """
     now = now or datetime.now(timezone.utc)
-    weak_slots = round(size * weak_ratio) if size >= 5 else 0
+    # ADR-17: reserving even one slot out of a 5-question session would over-weight it
+    # relative to the 20%-of-10 intent, so only size > 5 (10/20) gets a mix-in.
+    weak_slots = round(size * weak_ratio) if size > 5 else 0
 
     due_items = select_due_progress(db, size - weak_slots, now)
     weak_items = select_weak_progress(

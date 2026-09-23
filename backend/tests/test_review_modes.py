@@ -121,17 +121,23 @@ def test_select_due_progress_mixed_reserves_weak_slots(db_session: Session) -> N
         p = make_progress(db_session, g, status=GrammarStatus.REVIEW, next_review=now - timedelta(days=1))
         due_items.append(p)
 
-    weak = make_grammar(db_session, target_construction="weak", source_note_id=9_500_200)
-    weak_p = make_progress(db_session, weak, status=GrammarStatus.REVIEW, next_review=now + timedelta(days=30))
-    weak_p.repetitions = 5
-    weak_p.application_score = 0.0
-    weak_p.discrimination_score = 0.0
+    weak_ids = []
+    for i in range(2):
+        weak = make_grammar(db_session, target_construction=f"weak{i}", source_note_id=9_500_200 + i)
+        weak_p = make_progress(
+            db_session, weak, status=GrammarStatus.REVIEW, next_review=now + timedelta(days=30)
+        )
+        weak_p.repetitions = 5
+        weak_p.application_score = 0.0
+        weak_p.discrimination_score = 0.0
+        weak_ids.append(weak.id)
     db_session.commit()
 
     result = select_due_progress_mixed(db_session, 10, now)
     result_ids = {p.grammar_id for p in result}
     assert len(result) == 10
-    assert weak.id in result_ids  # not due (next_review in future) but pulled in as a weak slot
+    # not due (next_review in future) but pulled in as the 2 reserved weak slots (10*0.2)
+    assert set(weak_ids).issubset(result_ids)
 
 
 def test_select_due_progress_mixed_no_mixin_below_size_5(db_session: Session) -> None:

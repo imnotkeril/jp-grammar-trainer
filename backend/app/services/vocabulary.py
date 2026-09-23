@@ -50,7 +50,12 @@ def record_exposures(db: Session, sentence_full_html: str, is_correct: bool, now
     for vocab in vocab_rows:
         uv = db.get(UserVocabulary, vocab.id)
         if uv is None:
-            uv = UserVocabulary(vocabulary_id=vocab.id)
+            # Explicit zeros: the ORM-level `default=0` only applies at flush/INSERT time, so
+            # a freshly-constructed row's counters would otherwise be None until then — and
+            # the increments below run before any flush.
+            uv = UserVocabulary(
+                vocabulary_id=vocab.id, correct_exposures=0, incorrect_exposures=0, correct_streak=0
+            )
             db.add(uv)
 
         if is_correct:
@@ -63,3 +68,8 @@ def record_exposures(db: Session, sentence_full_html: str, is_correct: bool, now
             uv.correct_streak = 0
             uv.known_since = None  # relapse — ADR-16
         uv.last_exposed_at = now
+
+    # Flush (not commit — the caller owns the transaction) so a newly-inserted row is visible
+    # to `db.get()` on a subsequent call within the same still-open session/transaction (e.g.
+    # repeated exposures across several answers before the request-scoped session commits).
+    db.flush()
