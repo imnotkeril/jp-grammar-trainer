@@ -34,8 +34,11 @@ export default function GrammarListPage() {
   useEffect(() => {
     let cancelled = false;
     setState({ status: "loading" });
+    // V4: the backend's default limit (205) predates N4/N2 — now that there are ~496 items
+    // across all three levels, an unbounded call truncates to the first 205 (all N3), silently
+    // hiding N4/N2 from this page. Request everything explicitly.
     api
-      .listGrammar()
+      .listGrammar({ limit: 1000 })
       .then((res) => {
         if (!cancelled) setState({ status: "ready", items: res.items });
       })

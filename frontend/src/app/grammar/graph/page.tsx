@@ -21,7 +21,9 @@ export default function GrammarGraphPage() {
 
   const load = useCallback(() => {
     setState({ status: "loading" });
-    Promise.all([api.listGrammar(), api.getAllGrammarRelations()])
+    // V4: same 205-item default-limit truncation bug as the grammar list page — request all
+    // ~496 items across N3/N4/N2 explicitly, or the graph silently only shows N3 nodes.
+    Promise.all([api.listGrammar({ limit: 1000 }), api.getAllGrammarRelations()])
       .then(([list, edges]) => setState({ status: "ready", items: list.items, edges }))
       .catch(() => setState({ status: "error" }));
   }, []);
