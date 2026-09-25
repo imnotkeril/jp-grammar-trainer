@@ -123,13 +123,27 @@ function computeLayout(
       p.dx += (cx - p.x) * centerPull;
       p.dy += (cy - p.y) * centerPull;
     }
+    // Soft walls instead of a hard position clamp: a hard clamp makes every node that reaches
+    // the boundary land at the exact same coordinate (y=20 or y=H-20), which is what drew the
+    // ruler-straight lines of dots along the top/bottom edges. Push back with a force that
+    // grows as a node nears the wall instead, so nodes settle at slightly different distances
+    // from the edge based on their own force balance — a jittery edge, not a straight line.
+    const margin = 30;
+    for (const p of pos.values()) {
+      if (p.x < margin) p.dx += (margin - p.x) * 2;
+      if (p.x > CANVAS_W - margin) p.dx -= (p.x - (CANVAS_W - margin)) * 2;
+      if (p.y < margin) p.dy += (margin - p.y) * 2;
+      if (p.y > CANVAS_H - margin) p.dy -= (p.y - (CANVAS_H - margin)) * 2;
+    }
     for (const p of pos.values()) {
       const dist = Math.sqrt(p.dx * p.dx + p.dy * p.dy) || 0.01;
       const limited = Math.min(dist, temperature);
       p.x += (p.dx / dist) * limited;
       p.y += (p.dy / dist) * limited;
-      p.x = Math.min(CANVAS_W - 20, Math.max(20, p.x));
-      p.y = Math.min(CANVAS_H - 20, Math.max(20, p.y));
+      // Safety clamp only — the soft wall force above should make this a rare, small correction
+      // rather than the primary mechanism (which is what caused the straight-line pileup).
+      p.x = Math.min(CANVAS_W - 8, Math.max(8, p.x));
+      p.y = Math.min(CANVAS_H - 8, Math.max(8, p.y));
     }
     temperature = Math.max(temperature - cooling, 0.5);
   }
@@ -435,6 +449,18 @@ export default function GrammarGraph({ items, edges }: GrammarGraphProps) {
   };
 
   const hoveredNode = hoveredId ? nodesRef.current.find((n) => n.id === hoveredId) : null;
+  // The tooltip only showed the hovered item's own (Japanese) label — no indication of WHAT
+  // it's related to or WHY, which was the whole point of curating real relation types. List
+  // each connection's Russian relation-type label + the other item's label.
+  const hoveredConnections = hoveredId
+    ? edgesRef.current
+        .filter((e) => e.a === hoveredId || e.b === hoveredId)
+        .map((e) => {
+          const otherId = e.a === hoveredId ? e.b : e.a;
+          const other = nodesRef.current.find((n) => n.id === otherId);
+          return { type: e.type, label: other?.label ?? "" };
+        })
+    : [];
 
   return (
     <div className="flex flex-col gap-4">
@@ -479,9 +505,20 @@ export default function GrammarGraph({ items, edges }: GrammarGraphProps) {
           onWheel={handleWheel}
         />
         {hoveredNode && (
-          <div className="pointer-events-none absolute left-3 top-3 rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-xs shadow-sm">
+          <div className="pointer-events-none absolute left-3 top-3 max-w-xs rounded-lg border border-[var(--border)] bg-[var(--surface-raised)] px-3 py-2 text-xs shadow-sm">
             <p className="jp-text font-medium text-[var(--ink)]">{hoveredNode.label}</p>
-            <p className="text-[var(--ink-faint)]">{hoveredNode.degree} связ{hoveredNode.degree === 1 ? "ь" : "и"}</p>
+            <p className="mb-1 text-[var(--ink-faint)]">
+              {hoveredNode.degree} связ{hoveredNode.degree === 1 ? "ь" : "и"}
+            </p>
+            {hoveredConnections.slice(0, 6).map((c, i) => (
+              <p key={i} className="leading-snug">
+                <span style={{ color: RELATION_TYPE_COLORS[c.type] }}>{RELATION_TYPE_LABELS[c.type]}:</span>{" "}
+                <span className="jp-text text-[var(--ink)]">{c.label}</span>
+              </p>
+            ))}
+            {hoveredConnections.length > 6 && (
+              <p className="text-[var(--ink-faint)]">+{hoveredConnections.length - 6} ещё</p>
+            )}
           </div>
         )}
       </div>
