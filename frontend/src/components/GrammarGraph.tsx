@@ -35,8 +35,19 @@ const CANVAS_W = 960;
 const CANVAS_H = 640;
 const ITERATIONS = 260;
 const HUB_LABEL_MIN_DEGREE = 6;
+// Isolated (degree-0) nodes have no spring force pulling them back toward the graph — only
+// mutual repulsion, which the boundary clamp below turns into a pile-up flush against the
+// canvas edges (a "picture frame" of dots). Curated relations (V4) intentionally don't cover
+// every item, so a large chunk of nodes are genuinely isolated now — give them their own grid
+// strip instead of feeding them into the physics sim at all.
+const ISOLATED_STRIP_HEIGHT = 90;
 
-function computeLayout(nodeIds: string[], edges: LayoutEdge[]): Map<string, { x: number; y: number }> {
+function computeLayout(
+  nodeIds: string[],
+  edges: LayoutEdge[],
+  bounds: { w: number; h: number } = { w: CANVAS_W, h: CANVAS_H },
+): Map<string, { x: number; y: number }> {
+  const { w: CANVAS_W, h: CANVAS_H } = bounds;
   const n = nodeIds.length || 1;
   const area = CANVAS_W * CANVAS_H;
   const k = Math.sqrt(area / n);
@@ -95,6 +106,22 @@ function computeLayout(nodeIds: string[], edges: LayoutEdge[]): Map<string, { x:
       a.dy -= dy;
       b.dx += dx;
       b.dy += dy;
+    }
+    // Pure repulsion + springs (classic Fruchterman-Reingold) has no notion of "center" — a
+    // weakly-connected pair (degree 1 each) feels only its own small spring but full global
+    // repulsion from all 400+ other nodes, so it drifts outward with nothing to stop it until
+    // the boundary clamp below snaps it flush against the edge (the "picture frame" bug). A
+    // small constant pull toward the canvas center (d3-force's forceCenter equivalent) fixes
+    // this without meaningfully distorting well-connected clusters, where spring forces dominate.
+    const cx = CANVAS_W / 2;
+    const cy = CANVAS_H / 2;
+    // Coefficient scaled by node count: with O(n) other nodes each contributing k²/dist of
+    // outward push, a fixed-strength centering pull gets drowned out as n grows. Scaling it by
+    // n keeps the pull competitive with the summed repulsion regardless of graph size.
+    const centerPull = 0.006 * n;
+    for (const p of pos.values()) {
+      p.dx += (cx - p.x) * centerPull;
+      p.dy += (cy - p.y) * centerPull;
     }
     for (const p of pos.values()) {
       const dist = Math.sqrt(p.dx * p.dx + p.dy * p.dy) || 0.01;
@@ -159,11 +186,29 @@ export default function GrammarGraph({ items, edges }: GrammarGraphProps) {
       degree.set(e.b, (degree.get(e.b) ?? 0) + 1);
     }
 
-    const nodeIds = items.map((i) => i.id);
-    const positions = computeLayout(nodeIds, layoutEdges);
+    const connectedIds = items.filter((i) => (degree.get(i.id) ?? 0) > 0).map((i) => i.id);
+    const isolatedIds = items.filter((i) => (degree.get(i.id) ?? 0) === 0).map((i) => i.id);
+
+    // Connected nodes get the physics sim, confined to the area above the isolated strip.
+    const graphAreaH = CANVAS_H - ISOLATED_STRIP_HEIGHT;
+    const positions = computeLayout(connectedIds, layoutEdges, { w: CANVAS_W, h: graphAreaH });
+
+    // Isolated nodes (no curated relation yet) get a plain grid in a reserved strip along the
+    // bottom instead — no physics, no pile-up, just a tidy "browse the rest" row.
+    const isolatedPositions = new Map<string, { x: number; y: number }>();
+    const cols = Math.max(1, Math.floor(CANVAS_W / 14));
+    isolatedIds.forEach((id, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      isolatedPositions.set(id, {
+        x: 12 + col * 14,
+        y: graphAreaH + 16 + row * 12,
+      });
+    });
 
     nodesRef.current = items.map((item) => {
-      const p = positions.get(item.id) ?? { x: CANVAS_W / 2, y: CANVAS_H / 2 };
+      const p =
+        positions.get(item.id) ?? isolatedPositions.get(item.id) ?? { x: CANVAS_W / 2, y: CANVAS_H / 2 };
       return {
         id: item.id,
         label: item.expression_clean,
@@ -200,6 +245,19 @@ export default function GrammarGraph({ items, edges }: GrammarGraphProps) {
     ctx.save();
     ctx.translate(offsetX, offsetY);
     ctx.scale(scale, scale);
+
+    const stripY = CANVAS_H - ISOLATED_STRIP_HEIGHT;
+    ctx.beginPath();
+    ctx.moveTo(0, stripY);
+    ctx.lineTo(CANVAS_W, stripY);
+    ctx.strokeStyle = border;
+    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = 1 / scale;
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+    ctx.font = `${11 / scale}px var(--font-sans), sans-serif`;
+    ctx.fillStyle = inkMuted;
+    ctx.fillText("Пока без связей", 8, stripY + 12 / scale);
 
     const nodesById = new Map(nodesRef.current.map((n) => [n.id, n]));
     const hidden = hiddenRef.current;
