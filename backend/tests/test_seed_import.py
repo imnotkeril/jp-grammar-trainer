@@ -96,8 +96,10 @@ KNOWN_NO_TARGET_NOTE_IDS = {1775898451577, 1775898451579, 1775898451653}
 
 def test_all_205_real_rows_parse_without_exception() -> None:
     """Runs the parsers over the real seed file end-to-end — no unhandled exceptions,
-    and confirms our expectation about the dataset shape (ARCHITECTURE.md §4/§9):
-    exactly the one known <rt>-anomaly row, the 3 known no-<b> rows, tags empty everywhere.
+    and confirms our expectation about the dataset shape. Updated after two content passes:
+    a correctness audit fixed all 9 ADR-6 <rt>-anomaly rows (ruby-scope bleed), and a
+    separate pass gave every N3 item a category tag from the shared N4/N2 taxonomy (the
+    grouped-dashboard feature) — both are now the expected, not the exceptional, state.
     """
     items = _load_seed()
     assert len(items) == 205
@@ -121,14 +123,14 @@ def test_all_205_real_rows_parse_without_exception() -> None:
         if check_rt_payloads_are_kana(item["expression_html"]):
             rt_anomaly_note_ids.append(item["note_id"])
 
-    assert non_empty_tag_rows == 0, "SPEC.md §9 risk confirmed empty; update ADR-4 if this ever changes"
-    # 9 of 205 rows have a <rt> payload containing a nested tag or stray Latin text — a
-    # clear ruby-scope bleed heuristic catches automatically. note_id 1775898451281 (the
-    # row that first surfaced this issue) bleeds pure-kana text ("、こ") into its <rt>, which
-    # is visually wrong but indistinguishable from a legitimate multi-morpheme kana reading
-    # by this heuristic — documented, not auto-flagged. See ARCHITECTURE.md ADR-6.
-    assert len(rt_anomaly_note_ids) == 9, (
-        "expected exactly 9 ADR-6 anomaly rows; dataset shape changed — re-check ARCHITECTURE.md §4"
+    # Every N3 row now carries exactly one category tag (dashboard grouping feature) drawn
+    # from the shared N4/N2 taxonomy — ADR-4's "N3 has no tags" no longer holds.
+    assert non_empty_tag_rows == 205, "all 205 N3 rows should carry a category tag post-categorization"
+    # A correctness audit fixed all previously-known ADR-6 ruby-scope-bleed rows (was 9,
+    # reconstructed from the already-correct `reading` field) — none should remain.
+    assert len(rt_anomaly_note_ids) == 0, (
+        "expected zero ADR-6 anomaly rows after the correctness-audit fix; if this is nonzero, "
+        "a new bad row was introduced"
     )
     assert set(no_target_note_ids) == KNOWN_NO_TARGET_NOTE_IDS, (
         "no-target-construction row set changed — re-check ARCHITECTURE.md §4 addendum"
