@@ -95,6 +95,15 @@ try {
     if (Test-Url "http://localhost:3000") {
         Log "Frontend already running, leaving it be."
     } else {
+        # Next.js dev mode on this machine has repeatedly corrupted .next across restarts
+        # (stale/missing webpack chunk -> "Cannot find module './NN.js'" or similar at runtime).
+        # A fresh start is the fix every time; costs a few extra seconds of cold compile, cheap
+        # insurance against the app being visibly broken on open.
+        $nextCache = Join-Path $root "frontend\.next"
+        if (Test-Path $nextCache) {
+            Log "Clearing frontend build cache (.next) before starting..."
+            Remove-Item -Recurse -Force $nextCache
+        }
         Log "Starting frontend (hidden)..."
         Start-Process -FilePath "cmd.exe" `
             -ArgumentList "/c npm run dev" `
