@@ -111,7 +111,18 @@ export function masteryPct(items: { status: GrammarStatus }[]): number | null {
 export interface RelationCluster {
   id: string;
   label: string;
+  summary: string;
   members: GrammarWithProgressOut[];
+}
+
+// `meaning_ru` is the example sentence's translation, not the grammar point's own gloss — the
+// actual "what does this construction mean" text lives inside `pattern_text` after "Значение:"
+// (both N3's Anki-derived and N4/N2's authored content follow this "Паттерн: ... \nЗначение:
+// ..." convention). Pull just that part for a short Russian summary of what a cluster is about.
+function meaningGloss(patternText: string): string {
+  const match = /Значение:\s*(.+)/s.exec(patternText);
+  const text = (match?.[1] ?? patternText).split("\n")[0]?.trim() ?? "";
+  return text.length > 60 ? `${text.slice(0, 57)}…` : text;
 }
 
 /** Connected components over the relation edge graph (undirected — direction only matters
@@ -170,9 +181,15 @@ export function computeRelationClusters(
       .slice(0, 2)
       .map((m) => m.target_construction)
       .join(" / ");
+    // Short Russian summary of what the cluster is actually about, not just its Japanese
+    // forms — dedup identical glosses (small clusters often share near-identical meanings).
+    const glosses = Array.from(
+      new Set(members.slice(0, 3).map((m) => meaningGloss(m.pattern_text)).filter(Boolean)),
+    );
     clusters.push({
       id: componentIds.slice().sort().join("-"),
       label: headline,
+      summary: glosses.join(" · "),
       members,
     });
   }

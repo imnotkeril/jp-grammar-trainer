@@ -278,7 +278,10 @@ function ClusterCard({
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="jp-text truncate text-base font-semibold text-[var(--ink)]">{cluster.label}</p>
-          <p className="text-xs text-[var(--ink-faint)]">{cluster.members.length} конструкций в группе</p>
+          {cluster.summary && (
+            <p className="mt-0.5 text-sm text-[var(--ink-muted)]">{cluster.summary}</p>
+          )}
+          <p className="mt-0.5 text-xs text-[var(--ink-faint)]">{cluster.members.length} конструкций в группе</p>
         </div>
         {pct !== null && <MasteryBadge pct={pct} />}
       </div>
