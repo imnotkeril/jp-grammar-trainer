@@ -32,7 +32,11 @@ interface LayoutEdge {
 }
 
 const CANVAS_W = 960;
-const CANVAS_H = 640;
+// Taller than it looks natural for a "graph" (was 640, a 1.5:1 rectangle): the connected-node
+// physics sim runs in CANVAS_H minus the isolated strip, and a wide-short area squeezes nodes
+// vertically far more than horizontally, which is exactly what kept producing a dense top/bottom
+// band even with wall forces and centering. A near-square physics area removes that asymmetry.
+const CANVAS_H = 900;
 const ITERATIONS = 260;
 const HUB_LABEL_MIN_DEGREE = 6;
 // Isolated (degree-0) nodes have no spring force pulling them back toward the graph — only
@@ -40,7 +44,7 @@ const HUB_LABEL_MIN_DEGREE = 6;
 // canvas edges (a "picture frame" of dots). Curated relations (V4) intentionally don't cover
 // every item, so a large chunk of nodes are genuinely isolated now — give them their own grid
 // strip instead of feeding them into the physics sim at all.
-const ISOLATED_STRIP_HEIGHT = 90;
+const ISOLATED_STRIP_HEIGHT = 110;
 
 function computeLayout(
   nodeIds: string[],
