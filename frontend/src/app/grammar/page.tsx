@@ -289,7 +289,7 @@ function ClusterCard({
               href={`/grammar/${member.id}`}
               className="transition-standard jp-text inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg)] px-3 py-1.5 text-sm text-[var(--ink)] hover:border-[var(--accent)]"
             >
-              {member.expression_clean}
+              {member.target_construction || member.expression_clean}
               <span
                 aria-hidden
                 className={`h-1.5 w-1.5 rounded-full ${STATUS_COLORS[member.status]}`}

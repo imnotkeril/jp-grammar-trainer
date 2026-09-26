@@ -163,9 +163,12 @@ export function computeRelationClusters(
       // representative label and reads as "the thing everything else is confused with".
       .sort((a, b) => (degree.get(b.id) ?? 0) - (degree.get(a.id) ?? 0));
     if (members.length < 2) continue;
+    // The bare grammar form (target_construction, e.g. "ようだ"), not expression_clean (the
+    // full example sentence) — a cluster of 10+ members reads as a wall of unrelated
+    // sentences if the "name" is two random full sentences stitched together.
     const headline = members
       .slice(0, 2)
-      .map((m) => m.expression_clean)
+      .map((m) => m.target_construction)
       .join(" / ");
     clusters.push({
       id: componentIds.slice().sort().join("-"),
