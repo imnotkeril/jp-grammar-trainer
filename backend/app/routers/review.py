@@ -127,7 +127,7 @@ async def submit_answer(
     )
 
     now = datetime.now(timezone.utc)
-    apply_answer(db, progress, is_correct, now)
+    apply_answer(db, progress, question, is_correct, now)
     record_exposures(db, question.sentence_full_html, is_correct, now)
 
     explanation_ru = build_explanation_ru(question, grammar, request.selected_option)

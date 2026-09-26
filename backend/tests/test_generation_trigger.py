@@ -52,6 +52,8 @@ async def test_generate_batch_wires_distractors_into_options(db_session: Session
     # the 3 distractors must all be real, distinct target_constructions, none equal to correct
     distractor_texts = option_texts - {"うちに"}
     assert len(distractor_texts) == 3
+    # no commonly_confused/similar_form relations exist for this grammar -> uniform-random pool
+    assert question.has_confusion_distractor is False
 
 
 async def test_generate_batch_rejects_when_target_missing(db_session: Session, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -142,6 +144,7 @@ async def test_generate_batch_biases_distractors_toward_confused_grammar(
     question = db_session.query(Question).filter_by(grammar_id=grammar.id).one()
     option_texts = {o["text"] for o in question.options}
     assert "あいだに" in option_texts  # preferred confusable partner used as a distractor
+    assert question.has_confusion_distractor is True
 
 
 async def test_generate_batch_rejects_when_not_enough_distractor_candidates(

@@ -46,8 +46,14 @@ class GrammarProgress(Base):
     repetitions: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     lapses: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     recall_score: Mapped[float] = mapped_column(REAL, nullable=False, default=0.0)
-    application_score: Mapped[float] = mapped_column(REAL, nullable=False, default=0.0)
-    discrimination_score: Mapped[float] = mapped_column(REAL, nullable=False, default=0.0)
+    # NEUTRAL_SCORE_DEFAULT = 0.5 (not 0.0, unlike recall_score): these two are only updated on
+    # "informative" attempts (see services/review.py::is_application_informative /
+    # is_discrimination_informative + apply_answer) — an item with no informative attempts yet
+    # (e.g. no AI-generated questions served, or no confusion-derived distractors served) must
+    # not look like a confirmed 0.0 ("always wrong") in the weak-points ranking or the stats
+    # dashboard average. 0.5 reads as "no signal yet" until a real EMA update moves it.
+    application_score: Mapped[float] = mapped_column(REAL, nullable=False, default=0.5)
+    discrimination_score: Mapped[float] = mapped_column(REAL, nullable=False, default=0.5)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
     )

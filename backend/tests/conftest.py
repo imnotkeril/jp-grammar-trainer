@@ -143,6 +143,8 @@ def make_question(
     distractor_texts: tuple[str, str, str] = ("A案", "B案", "C案"),
     validation_status: ValidationStatus = ValidationStatus.VALID,
     used_count: int = 0,
+    source: QuestionSource = QuestionSource.SEED,
+    has_confusion_distractor: bool = False,
 ) -> Question:
     correct = correct_text or grammar.target_construction
     keys = ["A", "B", "C", "D"]
@@ -155,9 +157,10 @@ def make_question(
         options=options,
         correct_option="A",
         explanation_ru="説明。",
-        source=QuestionSource.SEED,
+        source=source,
         validation_status=validation_status,
         used_count=used_count,
+        has_confusion_distractor=has_confusion_distractor,
     )
     db.add(question)
     db.flush()

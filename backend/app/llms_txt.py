@@ -131,7 +131,9 @@ SessionRequest = {
   (e.g. `generate_relations`/`import_curated_relations` hasn't been run).
 - `weak_points` — items with `repetitions > 0`, ordered by lowest
   `application_score + discrimination_score` first. Excludes never-reviewed items (no signal
-  yet to call them "weak").
+  yet to call them "weak"). Both scores are real per-item EMAs (see `POST /review/answer`
+  below) — an item that has repetitions but no *informative* attempts yet for one dimension
+  simply keeps that dimension's neutral 0.5 default rather than a misleadingly low value.
 - `level` (V4) narrows whichever mode above to a single JLPT level's `grammar_progress` rows
   (for `confusion` mode, both sides of a candidate edge must be in that level). `null`/omitted
   (default) pools all levels together exactly as before V4 — e.g. a due N4 item and a due N3
@@ -157,7 +159,29 @@ this round and stays due for the next session — the response may contain fewer
 
 ### POST /review/answer
 Submit an answer to a served question. Records the attempt, runs the SRS scheduler to update
-that grammar item's progress, and returns a contrastive explanation.
+that grammar item's progress (including `recall_score` and, when the served question is
+"informative" for that dimension, `application_score`/`discrimination_score` — see below), and
+returns a contrastive explanation.
+
+`application_score` and `discrimination_score` (SPEC.md idea doc §28's 4 skill dimensions,
+alongside `recall_score`) are rolling EMAs (same `alpha=0.2` update as `recall_score`,
+`services/srs.py::rolling_accuracy`), each updated only on an "informative" attempt for that
+dimension — not every answer moves both:
+- `application_score` — updated only when the served question's `source == "ai_generated"`
+  (a genuinely fresh, novel sentence) as opposed to `source == "seed"` (the one fixed,
+  drillable sentence per grammar item the learner might just pattern-match against). Answering
+  a seed question leaves it untouched.
+- `discrimination_score` — updated only when the served question had
+  `has_confusion_distractor == true` (at least one of its 3 distractors was drawn from a real
+  `commonly_confused`/`similar_form` `grammar_relation` edge rather than the uniform-random
+  fallback pool) — getting it wrong then plausibly means confusing this item with a real
+  confusable partner. Answering a question with no confusion-derived distractor leaves it
+  untouched.
+- Both default to **0.5** (not 0.0) on a fresh `grammar_progress` row, and stay at 0.5 until
+  their first informative attempt lands — this is a deliberate "no signal yet" neutral
+  baseline, distinct from a confirmed-bad 0.0. In particular, without an `OPENAI_API_KEY`/
+  `ANTHROPIC_API_KEY` configured (no AI-generated questions ever served), `application_score`
+  stays at 0.5 for every item indefinitely — this is expected, not a bug.
 Request body:
 ```
 AnswerRequest = {
@@ -199,8 +223,11 @@ StatsOut = {
   review_count: number,
   mastered_count: number,
   recall_pct: number,          # rolling accuracy, 0..1
-  application_avg: number,     # placeholder, V2
-  discrimination_avg: number,  # placeholder, V2
+  application_avg: number,     # avg grammar_progress.application_score across matched rows,
+                                # 0..1, neutral 0.5 per row until it has an informative
+                                # (ai_generated-question) attempt — see POST /review/answer
+  discrimination_avg: number,  # avg grammar_progress.discrimination_score, same semantics,
+                                # neutral 0.5 per row until it has a confusion-distractor attempt
   total_items: number,         # V4, NEW. Count of grammar rows matching `level` (or all
                                 # levels combined if omitted). Replaces any client-side
                                 # hardcoded item-count constant.

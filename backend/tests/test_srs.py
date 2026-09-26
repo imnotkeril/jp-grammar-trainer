@@ -2,8 +2,16 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+import pytest
+
 from app.models.grammar_progress import GrammarStatus
-from app.services.srs import FIXED_INTERVALS_DAYS, GrammarProgressState, derive_status, schedule_next
+from app.services.srs import (
+    FIXED_INTERVALS_DAYS,
+    GrammarProgressState,
+    derive_status,
+    rolling_accuracy,
+    schedule_next,
+)
 
 NOW = datetime(2026, 1, 1, tzinfo=timezone.utc)
 
@@ -69,3 +77,25 @@ def test_next_review_date_matches_interval() -> None:
     state = schedule_next(state, is_correct=True, now=NOW)
     assert state.interval_days == FIXED_INTERVALS_DAYS[1]
     assert (state.next_review - NOW).days == FIXED_INTERVALS_DAYS[1]
+
+
+def test_rolling_accuracy_moves_toward_correct() -> None:
+    # reused (per SPEC.md idea doc §28) by application_score/discrimination_score, starting
+    # from their neutral 0.5 default rather than recall_score's 0.0 — verify the EMA math
+    # itself is default-agnostic.
+    assert rolling_accuracy(0.5, is_correct=True) == pytest.approx(0.6)
+
+
+def test_rolling_accuracy_moves_toward_incorrect() -> None:
+    assert rolling_accuracy(0.5, is_correct=False) == pytest.approx(0.4)
+
+
+def test_rolling_accuracy_custom_alpha() -> None:
+    assert rolling_accuracy(0.0, is_correct=True, alpha=0.5) == pytest.approx(0.5)
+
+
+def test_rolling_accuracy_converges_with_repeated_correct_answers() -> None:
+    value = 0.5
+    for _ in range(50):
+        value = rolling_accuracy(value, is_correct=True)
+    assert value == pytest.approx(1.0, abs=1e-3)

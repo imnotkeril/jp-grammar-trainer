@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -61,6 +61,12 @@ class Question(Base):
     )
     used_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     dedup_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # True iff at least one of the 3 served distractors was drawn from the `preferred` pool
+    # (a real commonly_confused/similar_form grammar_relation edge, see distractors.py /
+    # generation/trigger.py) rather than the uniform-random fallback pool. Set once at
+    # generation/seed time, never mutated after. Drives discrimination_score's EMA update in
+    # services/review.py::apply_answer — see grammar_progress.py for the scoring rationale.
+    has_confusion_distractor: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     grammar: Mapped["Grammar"] = relationship(back_populates="questions")  # noqa: F821

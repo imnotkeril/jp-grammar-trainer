@@ -12,8 +12,8 @@ from app.config import settings
 from app.models.grammar import Grammar
 from app.models.grammar_progress import GrammarProgress, GrammarStatus
 from app.models.grammar_relation import GrammarRelation, RelationType
-from app.models.question import Question, ValidationStatus
-from app.services.srs import GrammarProgressState, schedule_next
+from app.models.question import Question, QuestionSource, ValidationStatus
+from app.services.srs import GrammarProgressState, rolling_accuracy, schedule_next
 
 # SPEC.md (idea doc) §29 error taxonomy. MVP uses a best-effort heuristic (no grammar-graph
 # / confusion-set data on MVP, per ARCHITECTURE.md §11) rather than the full classifier.
@@ -108,7 +108,12 @@ def select_weak_progress(
     """Weak Points (idea doc §28/§37, ARCHITECTURE.md V3.3): the `size` worst-performing
     already-attempted grammar items, ranked by (application_score + discrimination_score)
     ascending. Never-attempted (`repetitions == 0`) items are excluded — weakness must be
-    demonstrated, not assumed from a default 0.0 score.
+    demonstrated, not assumed from a default score.
+
+    Both scores are real, apply_answer-computed EMAs as of this fix (see apply_answer /
+    is_application_informative / is_discrimination_informative in this module) — an item with
+    no informative attempts yet for one or both dimensions simply keeps that dimension's
+    neutral 0.5 default (grammar_progress.py) rather than a misleading confirmed-bad 0.0.
 
     `level` (ARCHITECTURE.md V4 slice §V4.4): optional additional filter on `Grammar.level`.
     """
@@ -250,15 +255,47 @@ def progress_state_from_row(progress: GrammarProgress) -> GrammarProgressState:
 
 
 @beartype
+def is_application_informative(question: Question) -> bool:
+    """True when this question tests applying the grammar in a *fresh* context rather than a
+    fixed, drillable one the learner might just pattern-match against — SPEC.md idea doc §28's
+    "application" skill dimension. Operationalized as `source == "ai_generated"` (a genuinely
+    novel sentence) vs `source == "seed"` (the one fixed sentence per grammar item imported
+    from the Anki export, ARCHITECTURE.md §7.4).
+    """
+    return question.source == QuestionSource.AI_GENERATED
+
+
+@beartype
+def is_discrimination_informative(question: Question) -> bool:
+    """True when this question tests distinguishing the grammar point from something it's
+    commonly confused with — SPEC.md idea doc §28's "discrimination" skill dimension.
+    Operationalized as `has_confusion_distractor` (set at generation/seed time, see
+    question.py): at least one of the 3 served distractors was drawn from a real
+    commonly_confused/similar_form `grammar_relation` edge (ARCHITECTURE.md V3.5) rather than
+    the uniform-random fallback pool, so getting it wrong plausibly means confusing this item
+    with a real confusable partner rather than just not knowing any answer.
+    """
+    return question.has_confusion_distractor
+
+
+@beartype
 def apply_answer(
     db: Session,
     progress: GrammarProgress,
+    question: Question,
     is_correct: bool,
     now: datetime | None = None,
 ) -> GrammarProgressState:
     """Run SRS scheduling for one answer and write the result back onto `progress`.
 
-    See ARCHITECTURE.md §6 (schedule_next) and §9 task 2.5.
+    See ARCHITECTURE.md §6 (schedule_next) and §9 task 2.5. Also updates
+    application_score/discrimination_score (real signals as of this fix, previously
+    dead/always-0.0 columns) — each is only nudged by `rolling_accuracy` (the same EMA used
+    for recall_score) on an "informative" attempt for that dimension (see
+    is_application_informative/is_discrimination_informative above); a non-informative attempt
+    leaves that score untouched, so an item with no AI-generated questions served yet (no API
+    key configured, e.g.) simply keeps its neutral 0.5 default (grammar_progress.py) instead of
+    drifting toward a misleading value from unrelated attempts.
     """
     now = now or datetime.now(timezone.utc)
     state = schedule_next(progress_state_from_row(progress), is_correct, now)
@@ -273,6 +310,11 @@ def apply_answer(
     progress.next_review = state.next_review
     if progress.first_seen is None:
         progress.first_seen = now
+
+    if is_application_informative(question):
+        progress.application_score = rolling_accuracy(progress.application_score, is_correct)
+    if is_discrimination_informative(question):
+        progress.discrimination_score = rolling_accuracy(progress.discrimination_score, is_correct)
 
     return state
 

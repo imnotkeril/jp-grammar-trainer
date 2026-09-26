@@ -3,10 +3,12 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timedelta, timezone
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 from app.models.grammar_progress import GrammarProgress, GrammarStatus
+from app.models.question import QuestionSource
 from app.models.question_attempt import QuestionAttempt
 from app.services.srs import FIXED_INTERVALS_DAYS
 from tests.conftest import make_grammar, make_progress, make_question
@@ -101,6 +103,89 @@ def test_answer_wrong_option_matching_real_grammar_is_similar_grammar_confusion(
 
     attempts = db_session.query(QuestionAttempt).filter_by(question_id=question.id).all()
     assert attempts[0].error_type == "similar_grammar_confusion"
+
+
+def test_answer_on_ai_generated_question_updates_application_score(
+    client: TestClient, db_session: Session
+) -> None:
+    grammar = make_grammar(db_session, target_construction="うちに", source_note_id=9_600_001)
+    progress = make_progress(db_session, grammar, status=GrammarStatus.REVIEW)
+    assert progress.application_score == pytest.approx(0.5)  # neutral default, never written yet
+    question = make_question(db_session, grammar, source=QuestionSource.AI_GENERATED)
+    db_session.commit()
+
+    resp = client.post(
+        "/review/answer",
+        json={"question_id": str(question.id), "selected_option": "A"},
+    )
+    assert resp.status_code == 200
+
+    refreshed = db_session.get(GrammarProgress, grammar.id)
+    assert refreshed is not None
+    # rolling_accuracy(0.5, True) with alpha=0.2 -> 0.6
+    assert refreshed.application_score == pytest.approx(0.6)
+    assert refreshed.discrimination_score == pytest.approx(0.5)  # untouched, no confusion distractor
+
+
+def test_answer_on_seed_question_leaves_application_score_at_neutral_default(
+    client: TestClient, db_session: Session
+) -> None:
+    grammar = make_grammar(db_session, target_construction="うちに", source_note_id=9_600_002)
+    make_progress(db_session, grammar, status=GrammarStatus.REVIEW)
+    question = make_question(db_session, grammar, source=QuestionSource.SEED)
+    db_session.commit()
+
+    resp = client.post(
+        "/review/answer",
+        json={"question_id": str(question.id), "selected_option": "A"},
+    )
+    assert resp.status_code == 200
+
+    refreshed = db_session.get(GrammarProgress, grammar.id)
+    assert refreshed is not None
+    # seed question -> not "fresh context" -> application_score untouched (no data yet)
+    assert refreshed.application_score == pytest.approx(0.5)
+
+
+def test_answer_with_confusion_distractor_updates_discrimination_score(
+    client: TestClient, db_session: Session
+) -> None:
+    grammar = make_grammar(db_session, target_construction="うちに", source_note_id=9_600_003)
+    make_progress(db_session, grammar, status=GrammarStatus.REVIEW)
+    question = make_question(db_session, grammar, has_confusion_distractor=True)
+    db_session.commit()
+
+    # answer wrong, on purpose, to check the EMA moves toward 0 for an incorrect informative attempt
+    resp = client.post(
+        "/review/answer",
+        json={"question_id": str(question.id), "selected_option": "B"},
+    )
+    assert resp.status_code == 200
+
+    refreshed = db_session.get(GrammarProgress, grammar.id)
+    assert refreshed is not None
+    # rolling_accuracy(0.5, False) with alpha=0.2 -> 0.4
+    assert refreshed.discrimination_score == pytest.approx(0.4)
+    assert refreshed.application_score == pytest.approx(0.5)  # seed question, untouched
+
+
+def test_answer_without_confusion_distractor_leaves_discrimination_score_at_neutral_default(
+    client: TestClient, db_session: Session
+) -> None:
+    grammar = make_grammar(db_session, target_construction="うちに", source_note_id=9_600_004)
+    make_progress(db_session, grammar, status=GrammarStatus.REVIEW)
+    question = make_question(db_session, grammar, has_confusion_distractor=False)
+    db_session.commit()
+
+    resp = client.post(
+        "/review/answer",
+        json={"question_id": str(question.id), "selected_option": "A"},
+    )
+    assert resp.status_code == 200
+
+    refreshed = db_session.get(GrammarProgress, grammar.id)
+    assert refreshed is not None
+    assert refreshed.discrimination_score == pytest.approx(0.5)
 
 
 def test_answer_unknown_question_404(client: TestClient, db_session: Session) -> None:

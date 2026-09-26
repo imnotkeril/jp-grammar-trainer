@@ -89,11 +89,15 @@ def _build_options(
     candidates: list[tuple[uuid.UUID, str]],
     rng: random.Random,
     preferred: list[str] | None = None,
-) -> tuple[list[dict[str, str]], str] | None:
+) -> tuple[list[dict[str, str]], str, bool] | None:
     """Build shuffled A-D options for a generated sentence, per ARCHITECTURE.md §7.5.
 
     Returns None when there aren't enough distractor candidates to build a real 4-choice
-    question (too few grammar items seeded) — caller should treat that as invalid.
+    question (too few grammar items seeded) — caller should treat that as invalid. The third
+    element of the returned tuple (`has_confusion_distractor`) is True iff at least one of the
+    3 served distractors came from the `preferred` pool (a real commonly_confused/similar_form
+    grammar_relation edge) rather than the uniform-random fallback pool — see question.py's
+    `has_confusion_distractor` field and services/review.py's discrimination_score scoring.
     """
     try:
         distractor_texts = pick_distractors(
@@ -102,11 +106,14 @@ def _build_options(
     except ValueError:
         return None
 
+    preferred_set = {t.strip() for t in (preferred or [])}
+    has_confusion_distractor = any(t in preferred_set for t in distractor_texts)
+
     texts = [correct_answer_text, *distractor_texts]
     rng.shuffle(texts)
     options = [{"key": key, "text": text} for key, text in zip(_OPTION_KEYS, texts, strict=True)]
     correct_option = next(opt["key"] for opt in options if opt["text"] == correct_answer_text)
-    return options, correct_option
+    return options, correct_option, has_confusion_distractor
 
 
 @beartype
@@ -153,6 +160,7 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
         is_valid = validate_generated_sentence(raw, grammar.target_construction)
         options: list[dict[str, str]] = []
         correct_option = "A"
+        has_confusion_distractor = False
         if is_valid:
             built = _build_options(grammar_id, raw.correct_answer_text, candidates, rng, preferred=preferred)
             if built is None:
@@ -160,7 +168,7 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
                 # reject rather than serve a broken question with < 4 options.
                 is_valid = False
             else:
-                options, correct_option = built
+                options, correct_option, has_confusion_distractor = built
 
         question = Question(
             grammar_id=grammar_id,
@@ -174,6 +182,7 @@ async def generate_batch_for_grammar(db: Session, grammar_id: uuid.UUID) -> int:
             generation_prompt_version=PROMPT_VERSION,
             validation_status=ValidationStatus.VALID if is_valid else ValidationStatus.REJECTED,
             dedup_hash=dedup_hash(raw.sentence_full_html),
+            has_confusion_distractor=has_confusion_distractor,
         )
         db.add(question)
         try:
