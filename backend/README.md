@@ -16,16 +16,21 @@ cp .env.example .env   # fill in DATABASE_URL + at least one of OPENAI_API_KEY/A
 uv run alembic upgrade head
 ```
 
-## Seed the grammar table (205 N3 items from the owner's Anki export)
+## Seed the database (496 grammar items, vocabulary, curated relations)
 
 ```bash
-uv run python -m app.scripts.seed_import
+uv run python -m app.scripts.seed_import                 # N3 (Anki export)
+uv run python -m app.scripts.seed_import_authored         # N4 + N2
+uv run python -m app.scripts.seed_vocabulary              # from data/seed/vocabulary_n3.json
+uv run python -m app.scripts.import_curated_relations --purge-remaining-heuristic
 ```
+
+(`./setup.sh` / `setup.ps1` run all of this for you.)
 
 ## Dev server
 
 ```bash
-uv run uvicorn app.main:app --reload
+uv run python -m uvicorn app.main:app --reload
 ```
 
 ## Tests / type-checking

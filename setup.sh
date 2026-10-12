@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-command local dev bootstrap: Postgres (Docker) + migrations + seed data.
+# One-command local dev bootstrap: Postgres (Docker) + migrations + seed data (496 grammar items, vocabulary, curated relations).
 # Does NOT start the backend/frontend dev servers themselves (run those by hand afterwards —
 # see the printed commands at the end).
 #
@@ -27,15 +27,22 @@ cd backend
 echo "==> Running migrations (alembic upgrade head)..."
 uv run alembic upgrade head
 
-echo "==> Seeding grammar data (idempotent, safe to re-run)..."
+export PYTHONUTF8=1 PYTHONIOENCODING=utf-8
+echo "==> Seeding N3 grammar (idempotent, safe to re-run)..."
 uv run python -m app.scripts.seed_import
+echo "==> Seeding N4 + N2 grammar..."
+uv run python -m app.scripts.seed_import_authored
+echo "==> Seeding vocabulary (adaptive furigana)..."
+uv run python -m app.scripts.seed_vocabulary
+echo "==> Importing curated relations (graph + confusion practice)..."
+uv run python -m app.scripts.import_curated_relations --purge-remaining-heuristic > /dev/null
 cd ..
 
 cat <<'EOF'
 
 ==> Setup complete. Start the dev servers yourself, in two separate terminals:
 
-    cd backend && uv run uvicorn app.main:app --reload
+    cd backend && uv run python -m uvicorn app.main:app --reload
     cd frontend && npm run dev
 
 Backend:  http://localhost:8000

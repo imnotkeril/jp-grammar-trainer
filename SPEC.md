@@ -4,7 +4,7 @@ Status: draft v1 · Owner: champ59ru · Scope: personal tool (single-user, no au
 
 ## 1. Цель и гипотеза
 
-См. исходную идею: [japanese_grammar_retrieval_trainer (1).md](./japanese_grammar_retrieval_trainer%20%281%29.md).
+См. исходную идею: [IDEA.md](./IDEA.md).
 
 Гипотеза продукта (§69 исходника): пассивное знание грамматики JLPT сильно опережает
 активное применение. Регулярный spaced retrieval в новых контекстах + contrastive

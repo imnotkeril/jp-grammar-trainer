@@ -11,7 +11,7 @@ Personal-use app: one Postgres container (persistent data) + backend + frontend 
 (Git Bash: `./setup.sh`)
 
 This starts Postgres via Docker Compose, waits for it to be healthy, runs Alembic migrations,
-and re-imports the seed grammar data (idempotent — safe to run every time, won't duplicate
+and re-imports all seed data — N3/N4/N2 grammar, vocabulary, curated relations (idempotent — safe to run every time, won't duplicate
 rows or wipe progress). It does **not** start the backend or frontend dev servers; it prints
 the two commands to do that yourself.
 
@@ -22,7 +22,7 @@ need to run `setup.ps1` again unless you tore the container down. Just:
 
 ```powershell
 docker compose up -d      # if Postgres isn't already running
-cd backend; uv run uvicorn app.main:app --reload
+cd backend; uv run python -m uvicorn app.main:app --reload
 ```
 
 ```powershell

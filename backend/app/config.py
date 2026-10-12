@@ -27,7 +27,9 @@ class Settings(BaseSettings):
     known_streak_threshold: int = 5
     # Personal path on the owner's machine, not portable — only used by the one-off
     # `app/scripts/seed_vocabulary.py`, never read at request time. See ARCHITECTURE.md V3.2.
-    vocabulary_csv_source_dir: str = r"E:\Main\Main\Папки\Japanese\Анки"
+    # Optional: directory with the original Anki vocabulary CSVs. Empty -> use the committed
+    # data/seed/vocabulary_n3.json snapshot (what a fresh clone should do).
+    vocabulary_csv_source_dir: str = ""
 
     cors_allowed_origins: str = "http://localhost:3000"
 

@@ -30,9 +30,24 @@ try {
     uv run alembic upgrade head
     if ($LASTEXITCODE -ne 0) { throw "alembic upgrade head failed" }
 
-    Write-Host "==> Seeding grammar data (idempotent, safe to re-run)..." -ForegroundColor Cyan
+    $env:PYTHONUTF8 = "1"
+    $env:PYTHONIOENCODING = "utf-8"
+
+    Write-Host "==> Seeding N3 grammar (idempotent, safe to re-run)..." -ForegroundColor Cyan
     uv run python -m app.scripts.seed_import
     if ($LASTEXITCODE -ne 0) { throw "seed_import failed" }
+
+    Write-Host "==> Seeding N4 + N2 grammar..." -ForegroundColor Cyan
+    uv run python -m app.scripts.seed_import_authored
+    if ($LASTEXITCODE -ne 0) { throw "seed_import_authored failed" }
+
+    Write-Host "==> Seeding vocabulary (adaptive furigana)..." -ForegroundColor Cyan
+    uv run python -m app.scripts.seed_vocabulary
+    if ($LASTEXITCODE -ne 0) { throw "seed_vocabulary failed" }
+
+    Write-Host "==> Importing curated relations (graph + confusion practice)..." -ForegroundColor Cyan
+    uv run python -m app.scripts.import_curated_relations --purge-remaining-heuristic | Out-Null
+    if ($LASTEXITCODE -ne 0) { throw "import_curated_relations failed" }
 }
 finally {
     Pop-Location

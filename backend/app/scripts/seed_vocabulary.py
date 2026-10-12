@@ -238,11 +238,21 @@ def run(source_dir: Path, snapshot_path: Path, db: Session) -> dict[str, object]
 
 
 def main() -> None:
-    source_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(settings.vocabulary_csv_source_dir)
-    if not source_dir.is_dir():
-        raise FileNotFoundError(f"Vocabulary CSV source dir not found: {source_dir}")
-
     snapshot_path = default_snapshot_path()
+    source_dir = Path(sys.argv[1]) if len(sys.argv) > 1 else Path(settings.vocabulary_csv_source_dir)
+    if not str(source_dir) or str(source_dir) == "." or not source_dir.is_dir():
+        # Fresh clone / machine without the author's original Anki CSVs: the repo ships the
+        # derived snapshot, so load that instead of failing.
+        if not snapshot_path.is_file():
+            raise FileNotFoundError(
+                f"Vocabulary CSV source dir not found ({source_dir}) and no snapshot at {snapshot_path}"
+            )
+        rows = json.loads(snapshot_path.read_text(encoding="utf-8"))
+        with SessionLocal() as db:
+            upsert_vocabulary(db, rows)
+            total = db.execute(select(func.count()).select_from(Vocabulary)).scalar_one()
+        print(f"Loaded {len(rows)} vocabulary rows from snapshot {snapshot_path.name}; table now has {total}.")
+        return
 
     with SessionLocal() as db:
         report = run(source_dir, snapshot_path, db)

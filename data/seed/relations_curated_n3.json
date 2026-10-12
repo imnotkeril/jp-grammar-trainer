@@ -124,7 +124,7 @@
       },
       "b": {
         "level": "N3",
-        "expression_clean": "もしもし、今、駅<rt>についたところです。／できあがったばかりのケーキをみんなでたべた。</rt>に着いたところです。／でき上がったばかりのケーキをみんなで食べた。"
+        "expression_clean": "もしもし、今、駅に着いたところです。／でき上がったばかりのケーキをみんなで食べた。"
       },
       "relation_type": "commonly_confused",
       "strength": 0.9,
@@ -137,7 +137,7 @@
       },
       "b": {
         "level": "N3",
-        "expression_clean": "もしもし、今、駅<rt>についたところです。／できあがったばかりのケーキをみんなでたべた。</rt>に着いたところです。／でき上がったばかりのケーキをみんなで食べた。"
+        "expression_clean": "もしもし、今、駅に着いたところです。／でき上がったばかりのケーキをみんなで食べた。"
       },
       "relation_type": "related",
       "strength": 0.6,
@@ -289,7 +289,7 @@
     {
       "a": {
         "level": "N3",
-        "target_construction": "はんめん(反面)"
+        "target_construction": "反面"
       },
       "b": {
         "level": "N3",
@@ -306,7 +306,7 @@
       },
       "b": {
         "level": "N3",
-        "target_construction": "はんめん(反面)"
+        "target_construction": "反面"
       },
       "relation_type": "related",
       "strength": 0.6,
@@ -319,7 +319,7 @@
       },
       "b": {
         "level": "N3",
-        "target_construction": "はんめん(反面)"
+        "target_construction": "反面"
       },
       "relation_type": "related",
       "strength": 0.5,
@@ -332,7 +332,7 @@
       },
       "b": {
         "level": "N3",
-        "target_construction": "はんめん(反面)"
+        "target_construction": "反面"
       },
       "relation_type": "commonly_confused",
       "strength": 0.7,
@@ -406,7 +406,7 @@
     {
       "a": {
         "level": "N3",
-        "expression_clean": "その男<rt>おとこ</rt>はわたしの顔を見ると、すぐに逃げていってしまった。"
+        "expression_clean": "その男はわたしの顔を見ると、すぐに逃げていってしまった。"
       },
       "b": {
         "level": "N3",
@@ -1216,7 +1216,7 @@
       },
       "b": {
         "level": "N3",
-        "expression_clean": "昔<rt>ものvsことの違い</rt>、おじが外国から買ってきてくれた物を今でも大切にしている。／昔おじが外国からお土産を買ってきてくれたことをよく覚えている。"
+        "expression_clean": "昔、おじが外国から買ってきてくれた物を今でも大切にしている。／昔おじが外国からお土産を買ってきてくれたことをよく覚えている。"
       },
       "relation_type": "related",
       "strength": 0.6,
@@ -1329,7 +1329,7 @@
     {
       "a": {
         "level": "N3",
-        "expression_clean": "試験でいい成績が残せるように練習 vs 試験<rt>でいいせいせきをのこすために</rt>でいい成績を残すために練習"
+        "expression_clean": "試験でいい成績が残せるように練習 vs 試験でいい成績を残すために練習"
       },
       "b": {
         "level": "N3",
@@ -1342,7 +1342,7 @@
     {
       "a": {
         "level": "N3",
-        "expression_clean": "試験でいい成績が残せるように練習 vs 試験<rt>でいいせいせきをのこすために</rt>でいい成績を残すために練習"
+        "expression_clean": "試験でいい成績が残せるように練習 vs 試験でいい成績を残すために練習"
       },
       "b": {
         "level": "N3",
@@ -1671,7 +1671,7 @@
       },
       "b": {
         "level": "N3",
-        "expression_clean": "駅までのバス。母からの手紙。友<rt>だちへのプレゼント。</rt>だちへのプレゼント。"
+        "expression_clean": "駅までのバス。母からの手紙。友だちへのプレゼント。"
       },
       "relation_type": "commonly_confused",
       "strength": 0.8,
@@ -1680,7 +1680,7 @@
     {
       "a": {
         "level": "N3",
-        "expression_clean": "駅までのバス。母からの手紙。友<rt>だちへのプレゼント。</rt>だちへのプレゼント。"
+        "expression_clean": "駅までのバス。母からの手紙。友だちへのプレゼント。"
       },
       "b": {
         "level": "N3",
@@ -1710,7 +1710,7 @@
       },
       "b": {
         "level": "N3",
-        "expression_clean": "駅までのバス。母からの手紙。友<rt>だちへのプレゼント。</rt>だちへのプレゼント。"
+        "expression_clean": "駅までのバス。母からの手紙。友だちへのプレゼント。"
       },
       "relation_type": "similar_form",
       "strength": 0.7,
@@ -1723,7 +1723,7 @@
       },
       "b": {
         "level": "N3",
-        "target_construction": "というう"
+        "expression_clean": "鈴木さんが会社を辞めるといううわさを聞いた。「三日坊主」はすぐにあきてしまうというような意味だと思います。"
       },
       "relation_type": "similar_form",
       "strength": 0.8,
@@ -1732,7 +1732,7 @@
     {
       "a": {
         "level": "N3",
-        "target_construction": "というう"
+        "expression_clean": "鈴木さんが会社を辞めるといううわさを聞いた。「三日坊主」はすぐにあきてしまうというような意味だと思います。"
       },
       "b": {
         "level": "N3",
@@ -1771,7 +1771,7 @@
     {
       "a": {
         "level": "N3",
-        "target_construction": "というう"
+        "expression_clean": "鈴木さんが会社を辞めるといううわさを聞いた。「三日坊主」はすぐにあきてしまうというような意味だと思います。"
       },
       "b": {
         "level": "N3",

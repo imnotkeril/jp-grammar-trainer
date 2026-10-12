@@ -71,9 +71,19 @@ try {
         $code = Invoke-Logged "uv run python -m app.scripts.seed_import"
         if ($code -ne 0) { throw "seed_import failed" }
 
+        Log "Seeding N4 + N2 grammar (idempotent)..."
+        $env:PYTHONUTF8 = "1"
+        $env:PYTHONIOENCODING = "utf-8"
+        $code = Invoke-Logged "uv run python -m app.scripts.seed_import_authored"
+        if ($code -ne 0) { throw "seed_import_authored failed" }
+
         Log "Seeding vocabulary data (idempotent)..."
         $code = Invoke-Logged "uv run python -m app.scripts.seed_vocabulary"
         if ($code -ne 0) { throw "seed_vocabulary failed" }
+
+        Log "Importing curated relations (idempotent)..."
+        $code = Invoke-Logged "uv run python -m app.scripts.import_curated_relations --purge-remaining-heuristic"
+        if ($code -ne 0) { throw "import_curated_relations failed" }
     } finally {
         Pop-Location
     }
