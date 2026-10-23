@@ -11,6 +11,8 @@ import type {
   GrammarListParams,
   GrammarRelationEdge,
   GrammarRelationOut,
+  ProductionCheckResult,
+  ProductionPrompt,
   ReviewMode,
   SessionResponse,
   Stats,
@@ -76,6 +78,22 @@ export const api = {
         ...(level ? { level } : {}),
         ...(familyOf ? { family_of: familyOf } : {}),
       }),
+    }),
+
+  // Sentence-production practice — offline, stateless (no grammar_progress writes).
+  startProductionSession: (
+    size: 5 | 10 | 20,
+    level?: GrammarLevel,
+  ): Promise<{ prompts: ProductionPrompt[] }> =>
+    request("/production/session", {
+      method: "POST",
+      body: JSON.stringify({ size, ...(level ? { level } : {}) }),
+    }),
+
+  checkProduction: (grammarId: string, answer: string): Promise<ProductionCheckResult> =>
+    request("/production/check", {
+      method: "POST",
+      body: JSON.stringify({ grammar_id: grammarId, answer }),
     }),
 
   submitAnswer: (body: AnswerRequest): Promise<AnswerResponse> =>

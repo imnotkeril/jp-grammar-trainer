@@ -6,7 +6,7 @@ from fastapi.responses import PlainTextResponse
 
 from app.config import settings
 from app.llms_txt import LLMS_TXT
-from app.routers import grammar, review, stats
+from app.routers import grammar, production, review, stats
 
 app = FastAPI(
     title="JP Grammar Trainer API",
@@ -23,6 +23,7 @@ app.add_middleware(
 )
 
 app.include_router(grammar.router)
+app.include_router(production.router)
 app.include_router(review.router)
 app.include_router(stats.router)
 

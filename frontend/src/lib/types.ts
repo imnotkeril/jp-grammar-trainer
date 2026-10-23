@@ -147,6 +147,27 @@ export interface GrammarRelationEdge {
   strength: number;
 }
 
+// --- Sentence-production practice (offline, stateless) — backend/app/schemas/production.py ---
+
+export interface ProductionPrompt {
+  grammar_id: string;
+  level: string;
+  pattern_hint: string;
+  meaning_hint: string;
+  meaning_ru: string;
+  formation_hints: string[];
+}
+
+export type ProductionMatch = "exact" | "stem" | "none" | "empty";
+
+export interface ProductionCheckResult {
+  match: ProductionMatch;
+  too_short: boolean;
+  target_construction: string;
+  model_sentence_html: string;
+  model_sentence_clean: string;
+}
+
 export interface GrammarListParams {
   q?: string;
   status?: GrammarStatus;

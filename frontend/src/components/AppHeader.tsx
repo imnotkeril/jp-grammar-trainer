@@ -7,6 +7,7 @@ import { useLevel } from "@/lib/level-context";
 const NAV = [
   { href: "/", label: "Главная" },
   { href: "/review", label: "Повторение" },
+  { href: "/produce", label: "Письмо" },
   { href: "/grammar", label: "Грамматика" },
   { href: "/stats", label: "Статистика" },
 ] as const;

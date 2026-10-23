@@ -14,6 +14,7 @@ Classification: webapp/tool (personal single-user, FastAPI + Next.js + Postgres 
 ## Log
 - [x] adopt — baseline: pytest 159 passed (before changes), tsc clean, mypy clean
 - [x] T1 family-scoped confusion practice — `family_of` on POST /review/session, 8 new tests (167 passed), mypy clean, tsc clean
+- [x] T2 offline sentence-production practice — POST /production/session|check (stateless, no SRS writes), /produce page; 184 backend tests passed, mypy + tsc + next build clean, smoke-tested in browser against a seeded throwaway DB
 
 ## Next
-- [ ] T2 offline sentence-production practice (see docs/plan.md)
+- [ ] T3 LLM relation re-classification behind flag (see docs/plan.md)
