@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field
 
 class ProductionSessionRequest(BaseModel):
     size: Literal[5, 10, 20] = 5
-    level: Literal["N3", "N4", "N2"] | None = None
+    level: Literal["N5", "N4", "N3", "N2", "N1"] | None = None
 
 
 class ProductionPrompt(BaseModel):

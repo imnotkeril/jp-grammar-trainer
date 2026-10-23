@@ -36,7 +36,13 @@ def test_compute_source_note_id_differs_by_level_and_key() -> None:
 
 def test_default_seed_paths_points_at_data_seed() -> None:
     paths = default_seed_paths()
-    assert [p.name for p in paths] == ["n4_grammar_authored.json", "n2_grammar_authored.json"]
+    # n5/n1 are empty scaffold files (see data/seed/README.md): listed, import zero rows.
+    assert [p.name for p in paths] == [
+        "n5_grammar_authored.json",
+        "n4_grammar_authored.json",
+        "n2_grammar_authored.json",
+        "n1_grammar_authored.json",
+    ]
     assert all(p.parent.name == "seed" for p in paths)
 
 

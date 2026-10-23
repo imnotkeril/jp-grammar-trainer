@@ -16,5 +16,8 @@ Classification: webapp/tool (personal single-user, FastAPI + Next.js + Postgres 
 - [x] T1 family-scoped confusion practice — `family_of` on POST /review/session, 8 new tests (167 passed), mypy clean, tsc clean
 - [x] T2 offline sentence-production practice — POST /production/session|check (stateless, no SRS writes), /produce page; 184 backend tests passed, mypy + tsc + next build clean, smoke-tested in browser against a seeded throwaway DB
 
+- [x] T3 LLM relation re-classification behind LLM_RELATION_RECLASSIFY — `generate_relations --reclassify`, mocked-provider tests (6), 190 passed, mypy clean; NOT verified live (no key)
+- [x] T4 N5/N1 scaffold — offline `validate_authored_seed` (shipped N4/N2: 0 errors), empty n5/n1 seed slots, `data/seed/README.md`, backend accepts all 5 levels; no content invented; 207 passed, mypy clean
+
 ## Next
-- [ ] T3 LLM relation re-classification behind flag (see docs/plan.md)
+- [ ] T5 README roadmap + llms.txt, final full verification (pytest, mypy, tsc, next build)

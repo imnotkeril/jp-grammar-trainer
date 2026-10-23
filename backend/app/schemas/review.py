@@ -10,7 +10,7 @@ from pydantic import BaseModel, model_validator
 class SessionRequest(BaseModel):
     size: Literal[5, 10, 20] = 10
     mode: Literal["due", "confusion", "weak_points"] = "due"
-    level: Literal["N3", "N4", "N2"] | None = None
+    level: Literal["N5", "N4", "N3", "N2", "N1"] | None = None
     # Confusion Practice scoped to the relation family containing this grammar id (any member
     # works as the anchor). Omitted = pool every confusable item, the original behavior.
     family_of: uuid.UUID | None = None

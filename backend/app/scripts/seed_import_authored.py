@@ -181,7 +181,10 @@ def default_seed_paths() -> list[Path]:
     # backend/app/scripts/seed_import_authored.py -> repo root is 3 parents up.
     repo_root = Path(__file__).resolve().parents[3]
     seed_dir = repo_root / "data" / "seed"
-    return [seed_dir / "n4_grammar_authored.json", seed_dir / "n2_grammar_authored.json"]
+    # N5/N1 files are empty scaffolds until content is authored (data/seed/README.md); an empty
+    # `items` list imports as zero rows, so including them is harmless either way.
+    names = ("n5", "n4", "n2", "n1")
+    return [seed_dir / f"{name}_grammar_authored.json" for name in names if (seed_dir / f"{name}_grammar_authored.json").exists()]
 
 
 @beartype
