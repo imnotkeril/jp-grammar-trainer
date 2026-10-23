@@ -36,6 +36,10 @@ Pipeline:
   5. Print/write a summary report (`generate_relations_report.json`, next to this script,
      mirroring `seed_import_report.json`'s pattern).
 
+`--reclassify` (roadmap item 2) runs `reclassify_heuristic_edges` instead: it only upgrades
+edges that are still heuristic guesses, and only when `LLM_RELATION_RECLASSIFY=true` and a
+key is configured. Cannot be verified live without a key — covered by mocked-provider tests.
+
 Owner-gated per ADR-12: this is a manual one-time/occasional script, not wired into any
 request path or background job. Costs real API tokens once a key is configured — run
 deliberately.
@@ -44,6 +48,7 @@ deliberately.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from pathlib import Path
 
 from beartype import beartype
@@ -354,12 +359,77 @@ async def run(db: Session) -> dict[str, object]:
 
 
 @beartype
+def reclassify_enabled() -> bool:
+    """Roadmap item 2 gate: the opt-in flag AND a configured key for the selected provider."""
+    return settings.llm_relation_reclassify and _has_configured_key()
+
+
+@beartype
+async def reclassify_heuristic_edges(
+    db: Session, provider_factory: Callable[[], LLMProvider] = get_provider
+) -> dict[str, object]:
+    """Re-classify every existing `source="heuristic"` edge with the LLM (roadmap item 2).
+
+    Unlike `run`, this does not regenerate candidates: it takes exactly the pairs already in
+    `grammar_relation` that only carry a heuristic guess, asks the provider for a real verdict,
+    and swaps the verdicts in (an edge the model calls "no relation" is dropped). `manual`
+    (curated) and `llm_classified` rows are never read or modified. Gated by
+    `LLM_RELATION_RECLASSIFY` + a configured key — when either is missing nothing is called or
+    written. The LLM pass runs before any delete, so a provider error leaves the table as-is.
+    """
+    if not reclassify_enabled():
+        return {
+            "mode": "skipped",
+            "reason": "LLM_RELATION_RECLASSIFY is off or no API key is configured for LLM_PROVIDER",
+        }
+
+    heuristic_rows = list(
+        db.scalars(select(GrammarRelation).where(GrammarRelation.source == RelationSource.HEURISTIC))
+    )
+    pairs = sorted({_pair_key(str(r.grammar_id), str(r.related_grammar_id)) for r in heuristic_rows})
+    grammar_by_id = {str(g.id): g for g in db.scalars(select(Grammar))}
+    candidates = [
+        Candidate(item_a_id=a, item_b_id=b, score=0.0, shared_stem=None, meaning_jaccard=0.0)
+        for a, b in pairs
+        if a in grammar_by_id and b in grammar_by_id
+    ]
+    if not candidates:
+        return {
+            "mode": "llm_reclassify",
+            "pairs_considered": 0,
+            "classified_count": 0,
+            "none_count": 0,
+            "dropped_heuristic_rows": 0,
+            "count_by_relation_type": {},
+        }
+
+    results = await _run_llm_pass(provider_factory(), candidates, grammar_by_id)
+
+    dropped = _delete_stale_heuristic_rows(db, {(c.item_a_id, c.item_b_id) for c in candidates})
+    db.flush()  # same ordering concern as in `run`: ORM deletes before the raw upserts
+    classified, none_count, by_type = _apply_llm_results(db, results)
+    db.commit()
+    return {
+        "mode": "llm_reclassify",
+        "pairs_considered": len(candidates),
+        "classified_count": classified,
+        "none_count": none_count,
+        "dropped_heuristic_rows": dropped,
+        "count_by_relation_type": by_type,
+    }
+
+
+@beartype
 def main() -> None:
     import asyncio
+    import sys
 
     db = SessionLocal()
     try:
-        report = asyncio.run(run(db))
+        if "--reclassify" in sys.argv[1:]:
+            report = asyncio.run(reclassify_heuristic_edges(db))
+        else:
+            report = asyncio.run(run(db))
     finally:
         db.close()
 

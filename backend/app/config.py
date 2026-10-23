@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     anthropic_api_key: str | None = None
 
+    # Roadmap item 2: opt-in LLM re-classification of the existing heuristic relation edges
+    # (`generate_relations.py --reclassify`). Off by default so adding an API key for question
+    # generation never silently starts spending tokens on relation work.
+    llm_relation_reclassify: bool = False
+
     generation_shortage_threshold: int = 5
     generation_batch_size: int = 15
 
