@@ -121,7 +121,10 @@ Request body:
 SessionRequest = {
   size?: 5 | 10 | 20,                          # default 10
   mode?: "due" | "confusion" | "weak_points",  # default "due"
-  level?: "N3" | "N4" | "N2",                  # V4, NEW. default null = all levels pooled
+  level?: "N5" | "N4" | "N3" | "N2" | "N1",    # V4, NEW. default null = all levels pooled
+  family_of?: string,                          # grammar id; only with mode "confusion" (else 422).
+                                               # Limits the session to that item's relation family
+                                               # (connected component over all relation edges).
 }
 ```
 - `due` — overdue items first, then new (MVP behavior). For `size > 5`, ~20% of slots are
@@ -202,6 +205,19 @@ AnswerResponse = {
 ```
 Response 404: `{"detail": "Question not found"}`
 Response 500: grammar/progress record missing (should not happen — data integrity error)
+
+### POST /production/session
+Offline sentence-production prompts (no LLM call, no database writes).
+Request body: `{ size?: 5 | 10 | 20 (default 5), level?: "N5" | "N4" | "N3" | "N2" | "N1" }`
+Response 200: `{ prompts: [{ grammar_id, level, pattern_hint, meaning_hint, meaning_ru, formation_hints[] }] }`
+— overdue items first, topped up with random ones. The target form is NOT included.
+
+### POST /production/check
+Advisory check of a learner-typed Japanese sentence; never changes grammar_progress.
+Request body: `{ grammar_id: uuid, answer: string (max 500 chars) }`
+Response 200: `{ match: "exact" | "stem" | "none" | "empty", too_short, target_construction,
+model_sentence_html, model_sentence_clean }`
+Response 404: unknown grammar_id.
 
 ### GET /stats
 Dashboard aggregates for the single owner.

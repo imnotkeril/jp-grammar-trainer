@@ -140,10 +140,10 @@ cd frontend && npx tsc --noEmit && npm run build
 
 ## Roadmap
 
-- [ ] Scope a confusion-practice session to one "family" (today it pools all confusable items)
-- [ ] LLM re-classification of relations once an API key is configured
-- [ ] N5 / N1
-- [ ] Sentence-production and speaking practice
+- [x] Scope a confusion-practice session to one "family" (the "Тренировать похожие конструкции" link on a /grammar group card)
+- [x] LLM re-classification of relations once an API key is configured — code path behind `LLM_RELATION_RECLASSIFY` (`python -m app.scripts.generate_relations --reclassify`); untested against a real provider
+- [ ] N5 / N1 — importer/validator/seed slots are ready (`data/seed/README.md`); the content itself still has to be authored from a real source
+- [x] Sentence-production practice (`/produce`, offline) · [ ] speaking practice
 
 ---
 

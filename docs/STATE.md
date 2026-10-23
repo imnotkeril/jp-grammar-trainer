@@ -19,5 +19,7 @@ Classification: webapp/tool (personal single-user, FastAPI + Next.js + Postgres 
 - [x] T3 LLM relation re-classification behind LLM_RELATION_RECLASSIFY — `generate_relations --reclassify`, mocked-provider tests (6), 190 passed, mypy clean; NOT verified live (no key)
 - [x] T4 N5/N1 scaffold — offline `validate_authored_seed` (shipped N4/N2: 0 errors), empty n5/n1 seed slots, `data/seed/README.md`, backend accepts all 5 levels; no content invented; 207 passed, mypy clean
 
+- [x] T5 README roadmap + llms.txt — final: pytest 207 passed, mypy clean, tsc clean, next build OK (branch feature/finish-roadmap, 5 local commits, not pushed)
+
 ## Next
-- [ ] T5 README roadmap + llms.txt, final full verification (pytest, mypy, tsc, next build)
+- [ ] Owner items in docs/plan.md ("Needs owner"): live LLM reclassify run, N5/N1 content source, speaking practice decision, merge/push decision
