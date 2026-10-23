@@ -7,7 +7,9 @@
 *.env.local
 
 # Internal working docs (plans/specs generated mid-pipeline) — not shipped to users.
-docs/
+docs/*
+!docs/STATE.md
+!docs/plan.md
 
 # OS / editor cruft
 .DS_Store

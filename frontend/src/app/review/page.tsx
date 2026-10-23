@@ -65,6 +65,10 @@ function ReviewPageInner() {
   // Deep-linkable via ?level= (e.g. the Dashboard's "Начать повторение"/"Слабые места" links,
   // which append the currently-selected header level). Falls back to "all" (no filter).
   const [level, setLevel] = useState<LevelFilter>("all");
+  // Deep-linkable via ?family=<grammar id> (the "Тренировать похожие конструкции" link on a
+  // /grammar cluster card): scopes Confusion Practice to that relation family. Only honored
+  // in confusion mode — switching the mode picker away drops the scope.
+  const [familyId, setFamilyId] = useState<string | undefined>(undefined);
   const [phase, setPhase] = useState<Phase>("setup");
   const [startError, setStartError] = useState(false);
 
@@ -85,18 +89,20 @@ function ReviewPageInner() {
     if (isReviewMode(fromQuery)) {
       setReviewMode(fromQuery);
     }
+    const familyFromQuery = searchParams.get("family");
+    setFamilyId(familyFromQuery && isReviewMode(fromQuery) && fromQuery === "confusion" ? familyFromQuery : undefined);
     const levelFromQuery = searchParams.get("level");
     if (isLevelFilter(levelFromQuery)) {
       setLevel(levelFromQuery);
     }
   }, [searchParams]);
 
-  function startSession(size: SessionSize, mode: ReviewMode, sessionLevel: LevelFilter) {
+  function startSession(size: SessionSize, mode: ReviewMode, sessionLevel: LevelFilter, family?: string) {
     setSessionSize(size);
     setPhase("starting");
     setStartError(false);
     api
-      .startSession(size, mode, sessionLevel === "all" ? undefined : sessionLevel)
+      .startSession(size, mode, sessionLevel === "all" ? undefined : sessionLevel, mode === "confusion" ? family : undefined)
       .then((res) => {
         if (res.questions.length === 0) {
           setPhase("empty");
@@ -195,7 +201,10 @@ function ReviewPageInner() {
               <button
                 key={m.value}
                 type="button"
-                onClick={() => setReviewMode(m.value)}
+                onClick={() => {
+                  setReviewMode(m.value);
+                  if (m.value !== "confusion") setFamilyId(undefined);
+                }}
                 aria-pressed={reviewMode === m.value}
                 className="transition-standard flex-1 rounded-md border border-[var(--border)] px-4 py-2 text-left aria-pressed:border-[var(--accent)] aria-pressed:bg-[var(--accent-soft)]"
               >
@@ -205,13 +214,26 @@ function ReviewPageInner() {
             ))}
           </div>
 
+          {reviewMode === "confusion" && familyId && (
+            <p className="flex items-center justify-between gap-3 rounded-md border border-[var(--accent)]/30 bg-[var(--accent-soft)] px-3 py-2 text-sm text-[var(--ink)]">
+              <span>Только выбранная группа похожих конструкций</span>
+              <button
+                type="button"
+                onClick={() => setFamilyId(undefined)}
+                className="text-xs text-[var(--accent)] underline"
+              >
+                Все группы
+              </button>
+            </p>
+          )}
+
           <p className="mt-2 text-sm text-[var(--ink-muted)]">Уровень</p>
           <LevelSelector value={level} onChange={setLevel} />
 
           {startError && <ErrorBlock message="Не удалось начать сессию. Backend недоступен?" />}
           <button
             type="button"
-            onClick={() => startSession(sessionSize, reviewMode, level)}
+            onClick={() => startSession(sessionSize, reviewMode, level, familyId)}
             className="transition-standard mt-2 rounded-lg bg-[var(--accent)] px-6 py-3 font-medium text-[var(--accent-ink)] hover:bg-[var(--accent-hover)]"
           >
             Начать

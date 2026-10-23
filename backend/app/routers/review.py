@@ -52,7 +52,9 @@ async def start_session(
     """
     now = datetime.now(timezone.utc)
     if request.mode == "confusion":
-        selected_progress = select_confusion_progress(db, request.size, level=request.level)
+        selected_progress = select_confusion_progress(
+            db, request.size, level=request.level, family_of=request.family_of
+        )
     elif request.mode == "weak_points":
         selected_progress = select_weak_progress(db, request.size, level=request.level)
     else:

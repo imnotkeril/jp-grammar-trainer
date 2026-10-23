@@ -10,8 +10,15 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
-from app.db import Base, get_db
-from app.main import app
+# Background generation tasks open their own `SessionLocal()` (not the overridden `get_db`), so
+# point the app's engine at the disposable test DB *before* app.db is imported — otherwise they
+# would connect to the owner's real dev database from backend/.env (or hang if it's down).
+os.environ["DATABASE_URL"] = os.environ.get(
+    "TEST_DATABASE_URL", "postgresql+psycopg://postgres:test@localhost:5544/jp_grammar_test"
+)
+
+from app.db import Base, get_db  # noqa: E402
+from app.main import app  # noqa: E402
 from app.models.grammar import Grammar
 from app.models.grammar_progress import GrammarProgress, GrammarStatus
 from app.models.grammar_relation import GrammarRelation, RelationSource, RelationType

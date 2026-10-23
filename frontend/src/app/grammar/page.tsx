@@ -302,14 +302,8 @@ function ClusterCard({
           </li>
         ))}
       </ul>
-      {/* NOTE(frontend-dev): true per-cluster practice sessions need POST /review/session's
-          "confusion" mode to accept a scoped set of grammar ids — today it pools ALL
-          commonly_confused-connected items globally (ARCHITECTURE.md V3 §V3.3/§V3.10). That's
-          a backend contract change, flagged here rather than built now (owner said don't
-          scope-creep). Linking to the global confusion mode is the reasonable "close enough"
-          stand-in until that lands. */}
       <Link
-        href="/review?mode=confusion"
+        href={`/review?mode=confusion&family=${cluster.members[0]?.id ?? ""}`}
         className="transition-standard mt-3 inline-flex items-center gap-1.5 text-xs font-medium text-[var(--accent)] hover:text-[var(--accent-hover)]"
       >
         Тренировать похожие конструкции →

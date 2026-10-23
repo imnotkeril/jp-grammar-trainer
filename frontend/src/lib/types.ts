@@ -48,6 +48,9 @@ export interface SessionRequest {
   // V4 §V4.4 — optional level filter, null/omitted = due/weak/confusion selection spans all
   // levels together (default, unchanged behavior).
   level?: GrammarLevel;
+  // Confusion mode only: id of any member of a relation family (a "Группы похожих
+  // конструкций" cluster) — scopes the session to that family instead of pooling all.
+  family_of?: string;
 }
 
 export interface SessionResponse {

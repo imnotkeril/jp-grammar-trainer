@@ -62,13 +62,19 @@ export const api = {
 
   // ARCHITECTURE.md V3 §V3.6 — mode defaults to "due" server-side when omitted.
   // V4 §V4.4 — level is an additional opt-in filter, null/omitted = spans all levels.
-  startSession: (size: 5 | 10 | 20, mode?: ReviewMode, level?: GrammarLevel): Promise<SessionResponse> =>
+  startSession: (
+    size: 5 | 10 | 20,
+    mode?: ReviewMode,
+    level?: GrammarLevel,
+    familyOf?: string,
+  ): Promise<SessionResponse> =>
     request("/review/session", {
       method: "POST",
       body: JSON.stringify({
         size,
         ...(mode ? { mode } : {}),
         ...(level ? { level } : {}),
+        ...(familyOf ? { family_of: familyOf } : {}),
       }),
     }),
 

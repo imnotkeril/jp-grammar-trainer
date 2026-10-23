@@ -54,8 +54,33 @@ CONFUSION_RELATION_TYPES: frozenset[RelationType] = frozenset(
 
 
 @beartype
+def family_member_ids(db: Session, anchor_id: uuid.UUID) -> frozenset[uuid.UUID]:
+    """The relation "family" containing `anchor_id`: its connected component over *every*
+    grammar_relation edge, treated as undirected. Mirrors the frontend's
+    `computeRelationClusters` (the "Группы похожих конструкций" cards on /grammar), so a
+    cluster card and the practice session it launches always cover the same items.
+
+    Returns an empty set when `anchor_id` has no edges at all — a lone item is not a family.
+    """
+    adjacency: dict[uuid.UUID, set[uuid.UUID]] = {}
+    for a, b in db.execute(select(GrammarRelation.grammar_id, GrammarRelation.related_grammar_id)).all():
+        adjacency.setdefault(a, set()).add(b)
+        adjacency.setdefault(b, set()).add(a)
+    if anchor_id not in adjacency:
+        return frozenset()
+    seen = {anchor_id}
+    stack = [anchor_id]
+    while stack:
+        for neighbor in adjacency[stack.pop()]:
+            if neighbor not in seen:
+                seen.add(neighbor)
+                stack.append(neighbor)
+    return frozenset(seen)
+
+
+@beartype
 def select_confusion_progress(
-    db: Session, size: int, level: str | None = None
+    db: Session, size: int, level: str | None = None, family_of: uuid.UUID | None = None
 ) -> list[GrammarProgress]:
     """Confusion Practice (idea doc §15, ARCHITECTURE.md V3.3): up to `size` grammar items
     drawn only from items connected by a commonly_confused/similar_form edge, ranked by their
@@ -64,7 +89,20 @@ def select_confusion_progress(
 
     `level` (ARCHITECTURE.md V4 slice §V4.4): when set, only edges where BOTH sides belong to
     that level are considered, and the ranked ids are narrowed to that level.
+
+    `family_of` (roadmap: family-scoped confusion practice): when set, the session is limited
+    to the relation family containing that grammar id (see `family_member_ids`) instead of
+    pooling every confusable item. All family members are eligible — a member linked only by
+    a non-confusion edge (e.g. similar_meaning) still belongs to the group the learner clicked
+    — but those with a confusion edge are ranked first, strongest edge first. A "family" of
+    fewer than 2 items yields no session.
     """
+    family: frozenset[uuid.UUID] | None = None
+    if family_of is not None:
+        family = family_member_ids(db, family_of)
+        if len(family) < 2:
+            return []
+
     stmt = select(
         GrammarRelation.grammar_id, GrammarRelation.related_grammar_id, GrammarRelation.strength
     ).where(GrammarRelation.relation_type.in_(CONFUSION_RELATION_TYPES))
@@ -84,12 +122,18 @@ def select_confusion_progress(
             if strength > best_strength.get(gid, -1.0):
                 best_strength[gid] = strength
 
-    if not best_strength:
+    if family is not None:
+        ranked = {gid: best_strength.get(gid, -1.0) for gid in family}
+        if level is not None:
+            in_level = set(db.scalars(select(Grammar.id).where(Grammar.id.in_(family), Grammar.level == level)))
+            ranked = {gid: strength for gid, strength in ranked.items() if gid in in_level}
+    else:
+        ranked = best_strength
+
+    if not ranked:
         return []
 
-    ordered_ids = [
-        gid for gid, _ in sorted(best_strength.items(), key=lambda kv: kv[1], reverse=True)
-    ][:size]
+    ordered_ids = [gid for gid, _ in sorted(ranked.items(), key=lambda kv: kv[1], reverse=True)][:size]
 
     progress_by_id = {
         p.grammar_id: p

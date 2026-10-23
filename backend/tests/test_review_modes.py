@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.models.grammar_progress import GrammarStatus
 from app.models.grammar_relation import RelationType
 from app.services.review import (
+    family_member_ids,
     select_confusion_progress,
     select_due_progress_mixed,
     select_weak_progress,
@@ -194,3 +195,75 @@ def test_session_endpoint_weak_points_mode(client: TestClient, db_session: Sessi
     body = resp.json()
     grammar_ids = {q["grammar_id"] for q in body["questions"]}
     assert grammar_ids == {str(weak.id)}
+
+
+def _two_families(db: Session):  # type: ignore[no-untyped-def]
+    """Family X: a-b (confused) + b-c (similar_meaning only) chain; family Y: d-e; f isolated."""
+    names = ["a", "b", "c", "d", "e", "f"]
+    g = {n: make_grammar(db, target_construction=n, source_note_id=9_600_000 + i) for i, n in enumerate(names)}
+    for grammar in g.values():
+        make_progress(db, grammar, status=GrammarStatus.REVIEW)
+        make_question(db, grammar)
+    make_relation(db, g["a"], g["b"], relation_type=RelationType.COMMONLY_CONFUSED, strength=0.8)
+    make_relation(db, g["b"], g["c"], relation_type=RelationType.SIMILAR_MEANING, strength=0.9)
+    make_relation(db, g["d"], g["e"], relation_type=RelationType.COMMONLY_CONFUSED, strength=0.95)
+    db.commit()
+    return g
+
+
+def test_family_member_ids_is_connected_component_over_all_edge_types(db_session: Session) -> None:
+    g = _two_families(db_session)
+    assert family_member_ids(db_session, g["c"].id) == {g["a"].id, g["b"].id, g["c"].id}
+    assert family_member_ids(db_session, g["d"].id) == {g["d"].id, g["e"].id}
+
+
+def test_family_member_ids_empty_for_item_without_edges(db_session: Session) -> None:
+    g = _two_families(db_session)
+    assert family_member_ids(db_session, g["f"].id) == frozenset()
+
+
+def test_select_confusion_progress_scoped_to_family(db_session: Session) -> None:
+    g = _two_families(db_session)
+    result = select_confusion_progress(db_session, 10, family_of=g["a"].id)
+    assert {p.grammar_id for p in result} == {g["a"].id, g["b"].id, g["c"].id}
+    # unscoped pooling still sees family Y (regression guard for the original behavior)
+    pooled = {p.grammar_id for p in select_confusion_progress(db_session, 10)}
+    assert {g["d"].id, g["e"].id} <= pooled
+
+
+def test_family_scope_ranks_confusion_edges_first_and_respects_size(db_session: Session) -> None:
+    g = _two_families(db_session)
+    result = select_confusion_progress(db_session, 2, family_of=g["c"].id)
+    # c has no confusion edge (similar_meaning only) so it ranks last and is cut at size=2
+    assert {p.grammar_id for p in result} == {g["a"].id, g["b"].id}
+
+
+def test_family_scope_of_lone_item_yields_nothing(db_session: Session) -> None:
+    g = _two_families(db_session)
+    assert select_confusion_progress(db_session, 10, family_of=g["f"].id) == []
+
+
+def test_family_scope_respects_level_filter(db_session: Session) -> None:
+    a = make_grammar(db_session, target_construction="n4a", source_note_id=9_610_001, level="N4")
+    b = make_grammar(db_session, target_construction="n3b", source_note_id=9_610_002, level="N3")
+    for grammar in (a, b):
+        make_progress(db_session, grammar, status=GrammarStatus.REVIEW)
+    make_relation(db_session, a, b, relation_type=RelationType.COMMONLY_CONFUSED)
+    db_session.commit()
+    result = select_confusion_progress(db_session, 10, level="N3", family_of=a.id)
+    assert {p.grammar_id for p in result} == {b.id}
+
+
+def test_session_endpoint_family_scoped_confusion(client: TestClient, db_session: Session) -> None:
+    g = _two_families(db_session)
+    resp = client.post(
+        "/review/session", json={"size": 10, "mode": "confusion", "family_of": str(g["d"].id)}
+    )
+    assert resp.status_code == 200
+    assert {q["grammar_id"] for q in resp.json()["questions"]} == {str(g["d"].id), str(g["e"].id)}
+
+
+def test_session_endpoint_rejects_family_outside_confusion_mode(client: TestClient, db_session: Session) -> None:
+    g = _two_families(db_session)
+    resp = client.post("/review/session", json={"size": 10, "mode": "due", "family_of": str(g["d"].id)})
+    assert resp.status_code == 422
